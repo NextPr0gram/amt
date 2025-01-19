@@ -8,8 +8,8 @@ export function DateStage() {
             <div className="flex h-16 shrink-0 items-center gap-2">
                 <div className="flex items-center gap-2 px-4">
                     <SidebarTrigger className="-ml-1" />
-                    <Separator orientation="vertical" className="mr-2 h-4" />
-                    {date}
+                    <Separator orientation="vertical" className="mr-2 h-6" />
+                    <h3>{date}</h3>
                 </div>
             </div>
             <div className="px-4">
