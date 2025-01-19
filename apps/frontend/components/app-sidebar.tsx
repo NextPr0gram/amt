@@ -21,27 +21,27 @@ const data = {
 const items = [
     {
         title: "Modules",
-        url: "/modules",
+        url: "/dashboard/modules",
         icon: Component,
     },
     {
         title: "Review Groups",
-        url: "/review-groups",
+        url: "/dashboard/review-groups",
         icon: Users,
     },
     {
         title: "Modules Tutors",
-        url: "/modules-tutors",
+        url: "/dashboard/module-tutors",
         icon: UserRoundPen,
     },
     {
         title: "Assessments",
-        url: "/assessments",
+        url: "/dashboard/assessments",
         icon: BookOpenText,
     },
     {
         title: "Other",
-        url: "",
+        url: "/dashboard/other",
         icon: Settings,
     },
 ];
@@ -52,7 +52,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <a href="#">
+                            <Link href="/dashboard">
                                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                                     <Command className="size-4" />
                                 </div>
@@ -60,14 +60,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     <span className="truncate font-semibold">AMT</span>
                                     <span className="truncate text-xs">Aston Moderation Tracker</span>
                                 </div>
-                            </a>
+                            </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel>Application</SidebarGroupLabel>
+                    <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {items.map((item) => (
