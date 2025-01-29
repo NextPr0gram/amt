@@ -3,8 +3,57 @@ import { DateStage } from "@/components/date-stage";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { DataTable } from "@/components/review-groups-page/data-table";
+import { columns, ReviewGroup } from "@/components/review-groups-page/columns";
 
 export default function Page() {
+    const data: ReviewGroup[] = [
+        {
+            year: "1",
+            group: "A",
+            moduleCode: "CS1OOP",
+            hasExam: true,
+            moduleTutors: ["N Powell", "L Hakobyan", "K Fatema"],
+            convener: "L Hakobyan",
+            button: "Edit",
+        },
+        {
+            year: "2",
+            group: "A",
+            moduleCode: "CS2HCI",
+            hasExam: true,
+            moduleTutors: ["N Powell", "L Hakobyan", "K Fatema"],
+            convener: "N Powell",
+            button: "Edit",
+        },
+        {
+            year: "2",
+            group: "B",
+            moduleCode: "CS2IAD",
+            hasExam: true,
+            moduleTutors: ["N Powell", "L Hakobyan", "K Fatema"],
+            convener: "L Hakobyan",
+            button: "Edit",
+        },
+        {
+            year: "3",
+            group: "A",
+            moduleCode: "CS3SMC",
+            hasExam: true,
+            moduleTutors: ["N Powell", "L Hakobyan", "K Fatema"],
+            convener: "K Fatema",
+            button: "Edit",
+        },
+        {
+            year: "3",
+            group: "B",
+            moduleCode: "CS3IVP",
+            hasExam: true,
+            moduleTutors: ["N Powell", "L Hakobyan", "K Fatema"],
+            convener: "K Fatema",
+            button: "Edit",
+        },
+    ];
     return (
         <SidebarProvider>
             <AppSidebar />
@@ -26,12 +75,7 @@ export default function Page() {
                     </div>
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                    <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                        <div className="aspect-video rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50" />
-                        <div className="aspect-video rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50" />
-                        <div className="aspect-video rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50" />
-                    </div>
-                    <div className="min-h-[100vh] flex-1 rounded-xl bg-zinc-100/50 md:min-h-min dark:bg-zinc-800/50" />
+                    <DataTable columns={columns} data={data} />
                 </div>
             </SidebarInset>
         </SidebarProvider>

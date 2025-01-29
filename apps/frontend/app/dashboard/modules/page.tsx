@@ -2,7 +2,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { DateStage } from "@/components/date-stage";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Module } from "@components/modules-page/columns";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/modules-page/data-table";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { columns } from "@/components/modules-page/columns";
 
