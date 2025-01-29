@@ -1,20 +1,21 @@
-const { BoxClient, BoxDeveloperTokenAuth } = require('box-typescript-sdk-gen');
+const { BoxClient, BoxDeveloperTokenAuth } = require("box-typescript-sdk-gen");
+import { Prisma, PrismaClient } from '@prisma/client'
 
 // start the webserver
-const express = require('express')
-const app = express()
-const port = 3000
+const express = require("express");
+const app = express();
+const port = 3000;
+const prisma = new PrismaClient()
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+app.get("/", (req: any, res: any) => {
+    res.send("Hello World!");
+});
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+    console.log(`Example app listening on port ${port}`);
+});
 
-
-async function main(token) {
+/* async function main(token) {
   let auth = new BoxDeveloperTokenAuth({ token });
   let client = new BoxClient({ auth });
   let entries = (await client.folders.getFolderItems('0')).entries;
@@ -32,4 +33,5 @@ async function main(token) {
   } satisfies CreateFolderRequestBody);
 }
 
-main('omR5Tn7yjF9YmnTa3sLhzTXuCFYydnuN');
+main('omR5Tn7yjF9YmnTa3sLhzTXuCFYydnuN'); */
+

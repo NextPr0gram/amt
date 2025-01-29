@@ -4,11 +4,24 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+// A generator is a tool that automatically creates code for us based on our database setup
 generator client {
   provider = "prisma-client-js"
 }
 
+// Datasource determines how prisma connects to the database
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String
+  surname String
+}
+
+model Module {
+    id String @id
+    name String
 }
