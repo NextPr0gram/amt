@@ -1,5 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import prisma from "./primsa-client"; // Ensure the path is correct
+
 async function main() {
     const alexandros = await prisma.user.create({
         data: {
