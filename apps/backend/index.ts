@@ -1,16 +1,20 @@
+import { Prisma, PrismaClient } from "@prisma/client";
+import express, { Request, Response, Application } from "express";
 const { BoxClient, BoxDeveloperTokenAuth } = require("box-typescript-sdk-gen");
-import { Prisma, PrismaClient } from '@prisma/client'
 
 // start the webserver
-const express = require("express");
-const app = express();
+const app: Application = express();
 const port = 3000;
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-app.get("/", (req: any, res: any) => {
+app.get("/", (req: Request, res: Response) => {
     res.send("Hello World!");
 });
 
+app.get("/users", async (req: Request, res) => {
+    const users = await prisma.user.findMany();
+    res.json(users);
+});
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
 });
@@ -35,3 +39,6 @@ app.listen(port, () => {
 
 main('omR5Tn7yjF9YmnTa3sLhzTXuCFYydnuN'); */
 
+// function express() {
+//     throw new Error("Function not implemented.");
+// }
