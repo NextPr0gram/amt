@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import { PORT } from "./constants/env";
 import errorHandler from "./middleware/error-handler";
 import { OK } from "./constants/http";
+import authRoutes from "./routes/auth-routes";
 const { BoxClient, BoxDeveloperTokenAuth } = require("box-typescript-sdk-gen");
 
 dotenv.config();
@@ -23,10 +24,10 @@ app.use(cors({ origin: process.env.APP_ORIGIN, credentials: true })); // Enable 
 app.use(cookieParser()); // Allows parsing of cookies in the request headers
 
 // Routes
-app.use("/api", routes);
 app.get("/", (req: Request, res: Response) => {
     res.status(OK).json({ status: "healthy" });
 });
+app.use("/auth", authRoutes);
 
 // Error handler middleware
 app.use(errorHandler);
