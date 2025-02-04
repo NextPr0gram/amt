@@ -1,13 +1,13 @@
 import prisma from "./primsa-client"; // Ensure the path is correct
 
 async function main() {
-    const alexandros = await prisma.user.create({
+    /* const alexandros = await prisma.user.create({
         data: {
             email: "a.karim@aston.ac.uk",
             name: "Anaf",
             surname: "Karim",
         },
-    });
+    }); */
 
     const ivp = await prisma.module.create({
         data: {

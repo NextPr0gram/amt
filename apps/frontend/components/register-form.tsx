@@ -6,17 +6,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function LoginForm() {
+export function RegisterForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
 
+        if (password !== confirmPassword) {
+            setError("Passwords do not match");
+            return;
+        }
+
         try {
-            const response = await fetch("/api/login", {
+            const response = await fetch("http://localhost:3030/api/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -25,21 +31,21 @@ export function LoginForm() {
             });
 
             if (!response.ok) {
-                throw new Error("Login failed");
+                throw new Error("Registration failed");
             }
 
-            // Redirect to dashboard on successful login
-            window.location.href = "/dashboard";
+            // Redirect to login page on successful registration
+            window.location.href = "/login";
         } catch (err) {
-            setError("Invalid email or password");
+            setError("Registration failed");
         }
     };
 
     return (
         <Card className="mx-auto max-w-sm">
             <CardHeader>
-                <CardTitle className="text-2xl">Login</CardTitle>
-                <CardDescription>Enter your email below to login to your account</CardDescription>
+                <CardTitle className="text-2xl">Register</CardTitle>
+                <CardDescription>Enter your details below to create a new account</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="grid gap-4">
@@ -48,23 +54,22 @@ export function LoginForm() {
                         <Input id="email" type="email" placeholder="m@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                     </div>
                     <div className="grid gap-2">
-                        <div className="flex items-center">
-                            <Label htmlFor="password">Password</Label>
-                            <Link href="#" className="ml-auto inline-block text-sm underline">
-                                Forgot your password?
-                            </Link>
-                        </div>
+                        <Label htmlFor="password">Password</Label>
                         <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="confirmPassword">Confirm Password</Label>
+                        <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                     </div>
                     {error && <p className="text-red-500">{error}</p>}
                     <Button type="submit" className="w-full">
-                        Login
+                        Register
                     </Button>
                 </form>
                 <div className="mt-4 text-center text-sm">
-                    Don&apos;t have an account?{" "}
-                    <Link href="#" className="underline">
-                        Sign up
+                    Already have an account?{" "}
+                    <Link href="/login" className="underline">
+                        Login
                     </Link>
                 </div>
             </CardContent>
