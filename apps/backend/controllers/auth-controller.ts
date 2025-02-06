@@ -1,6 +1,9 @@
 import catchErrors from "../utils/catch-errors";
 import { z } from "zod";
-import { Request } from 'express';
+import { Request } from "express";
+import { createAccount } from "../services/auth-service";
+import { CREATED } from "../constants/http";
+import { setAuthCookies } from "../utils/cookies";
 
 // Controllers are responsible for 3 things:
 // 1. Validate the request
@@ -21,7 +24,6 @@ const registerSchema = z
     });
 
 export const registerHandler = catchErrors(async (req, res) => {
-
     // Validate the request
     const Request = registerSchema.parse({
         ...req.body,
@@ -29,7 +31,9 @@ export const registerHandler = catchErrors(async (req, res) => {
     });
 
     // Call the service
+    const { user, accessToken, refreshToken } = await createAccount(Request);
 
     // Return the response
 
+    return setAuthCookies({ res, accessToken, refreshToken }).status(CREATED).json(user);
 });

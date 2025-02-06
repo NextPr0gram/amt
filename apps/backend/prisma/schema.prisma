@@ -18,7 +18,20 @@ model User {
   id    Int     @id @default(autoincrement())
   email String  @unique
   password String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sessions  Session[] // establishes reverse relation to Session model (this is a feature in Prisma ORM, it is not a real column in the database)
 }
+
+model Session {
+  id         String   @id @default(uuid()) // Unique session identifier
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)// Describes relation to User model (one session belongs to one user, this is a feature in Prisma ORM, it is not a real column in the database)
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime @default(dbgenerated("NOW() + interval '1 year'")) // Expiration logic
+}
+
 
 model Module {
     id String @id
