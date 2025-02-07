@@ -1,5 +1,7 @@
 import { JWT_REFRESH_SECRET, JWT_SECRET } from "../constants/env";
+import { CONFLICT } from "../constants/http";
 import prisma from "../prisma/primsa-client";
+import appAssert from "../utils/app-assert";
 import { hashValue } from "../utils/bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -21,16 +23,15 @@ export const createAccount = async (data: CreateAccountParams) => {
             email: data.email,
         },
     });
-    if (existingUser) {
-        throw new Error("User already exists");
-    }
+
+    appAssert(!existingUser, CONFLICT, "Email already in use");
 
     // Hash the password then create new user
     const hashedPassword = await hashValue(data.password);
     const user = await prisma.user.create({
         data: {
             email: data.email,
-            password: data.password,
+            password: hashedPassword,
         },
     });
 
@@ -43,10 +44,13 @@ export const createAccount = async (data: CreateAccountParams) => {
         },
     });
 
+    // Remove password from user object before returning
+    const { password, ...userWithoutPassword } = user;
+
     // Sign access token and refresh token
     const refreshToken = jwt.sign({ sessionID: session.id }, JWT_REFRESH_SECRET, { audience: ["user"], expiresIn: "30d" });
     const accessToken = jwt.sign({ userID: user.id, sessionID: session.id }, JWT_SECRET, { audience: ["user"], expiresIn: "15m" });
 
     // return the user and tokens
-    return { user, accessToken, refreshToken };
+    return { user: userWithoutPassword, accessToken, refreshToken };
 };
