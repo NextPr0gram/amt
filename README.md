@@ -28,7 +28,7 @@ This project is developed as part of my final year project at Aston University.
 <img src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white">
 </p>
 
-**Database**
+**Database:**
 
 <p align="left">
 <img src="https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white">
