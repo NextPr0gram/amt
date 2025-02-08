@@ -1,9 +1,8 @@
 import catchErrors from "../utils/catch-errors";
 import { z } from "zod";
-import { Request } from "express";
 import { createAccount, loginUser } from "../services/auth-service";
-import { CREATED } from "../constants/http";
-import { setAuthCookies } from "../utils/cookies";
+import { CREATED, OK } from "../constants/http";
+import { clearAuthCookies, setAuthCookies } from "../utils/cookies";
 import { verifyToken } from "../utils/jwt";
 import prisma from "../prisma/primsa-client";
 
@@ -54,7 +53,7 @@ export const loginHandler = catchErrors(async (req, res) => {
     return setAuthCookies({ res, accessToken, refreshToken }).status(CREATED).json({ message: "Login successul" });
 });
 
-export const LogoutHandler = catchErrors(async (req, res) => {
+export const logoutHandler = catchErrors(async (req, res) => {
     const accessToken = req.cookies.accessToken;
     const { payload } = verifyToken(accessToken);
 
@@ -65,4 +64,6 @@ export const LogoutHandler = catchErrors(async (req, res) => {
             },
         });
     }
+
+    return clearAuthCookies(res).status(OK).json({ message: "Logout successful" });
 });

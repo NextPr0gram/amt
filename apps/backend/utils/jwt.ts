@@ -37,7 +37,7 @@ export const verifyToken = <TPayLoad extends object = AccessTokenPayload>(token:
 
     try {
         const payload = jwt.verify(token, secret, { ...defaults, ...verifyOpts }) as TPayLoad;
-        return payload;
+        return { payload };
     } catch (error: any) {
         return {
             error: error.message,
