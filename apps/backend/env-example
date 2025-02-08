@@ -1,0 +1,10 @@
+# Duplicate this file and rename it to .env
+# Fill in the values for the constants below
+
+PORT=5000
+JWT_SECRET=myjwtsecret
+JWT_REFRESH_SECRET=myjwtrefreshsecret
+APP_ORIGIN=http://localhost:3000
+
+# Postgres database 
+DATABASE_URL="postgresql://user:password@ip:port/databasename?schema=public"
