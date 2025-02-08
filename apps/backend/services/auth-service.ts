@@ -1,9 +1,10 @@
 import { JWT_REFRESH_SECRET, JWT_SECRET } from "../constants/env";
-import { CONFLICT } from "../constants/http";
+import { CONFLICT, UNAUTHORIZED } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
-import { hashValue } from "../utils/bcrypt";
+import { compareValue, hashValue } from "../utils/bcrypt";
 import jwt from "jsonwebtoken";
+import { refreshTokenSignOptions, signToken } from "../utils/jwt";
 
 export type CreateAccountParams = {
     email: string;
@@ -44,13 +45,54 @@ export const createAccount = async (data: CreateAccountParams) => {
         },
     });
 
+    // Sign access token and refresh token
+    const refreshToken = signToken({ sessionId: session.id }, refreshTokenSignOptions);
+    const accessToken = signToken({ userId: user.id, sessionId: session.id });
+
     // Remove password from user object before returning
     const { password, ...userWithoutPassword } = user;
 
-    // Sign access token and refresh token
-    const refreshToken = jwt.sign({ sessionID: session.id }, JWT_REFRESH_SECRET, { audience: ["user"], expiresIn: "30d" });
-    const accessToken = jwt.sign({ userID: user.id, sessionID: session.id }, JWT_SECRET, { audience: ["user"], expiresIn: "15m" });
-
     // return the user and tokens
+    return { user: userWithoutPassword, accessToken, refreshToken };
+};
+
+export type LoginUserParams = {
+    email: string;
+    password: string;
+    userAgent?: string;
+};
+
+export const loginUser = async ({ email, password, userAgent }: LoginUserParams) => {
+    // Find the user by email
+    const user = await prisma.user.findUnique({
+        where: {
+            email,
+        },
+    });
+    appAssert(user, UNAUTHORIZED, "Invalid email or password");
+
+    // Verify the password
+    const passwordIsValid = await compareValue(password, user.password);
+    appAssert(passwordIsValid, UNAUTHORIZED, "Invalid email or password");
+
+    // Create a new session
+    const session = await prisma.session.create({
+        data: {
+            userId: user.id,
+            userAgent,
+        },
+    });
+    const sessionInfo = {
+        sessionId: session.id,
+    };
+
+    // Sign access and refresh tokens
+    const refreshToken = signToken(sessionInfo, refreshTokenSignOptions);
+    const accessToken = signToken({ ...sessionInfo, userId: user.id });
+
+    // Remove password from user object before returning
+    const { password: userPassword, ...userWithoutPassword } = user;
+
+    // Return the user and tokens
     return { user: userWithoutPassword, accessToken, refreshToken };
 };

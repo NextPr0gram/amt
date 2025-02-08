@@ -1,9 +1,14 @@
 import catchErrors from "../utils/catch-errors";
 import { z } from "zod";
 import { Request } from "express";
-import { createAccount } from "../services/auth-service";
+import { createAccount, loginUser } from "../services/auth-service";
 import { CREATED } from "../constants/http";
 import { setAuthCookies } from "../utils/cookies";
+import { verifyToken } from "../utils/jwt";
+import prisma from "../prisma/primsa-client";
+
+const emailSchema = z.string().email().min(3).max(255);
+const passwordSchema = z.string().min(6).max(255);
 
 // Controllers are responsible for 3 things:
 // 1. Validate the request
@@ -13,8 +18,8 @@ import { setAuthCookies } from "../utils/cookies";
 // This function is responsible for validating the request, we are using zod to validate
 const registerSchema = z
     .object({
-        email: z.string().email().min(3).max(255),
-        password: z.string().min(6).max(255),
+        email: emailSchema,
+        password: passwordSchema,
         confirmPassword: z.string().min(6).max(255),
         userAgent: z.string().optional(),
     })
@@ -34,6 +39,30 @@ export const registerHandler = catchErrors(async (req, res) => {
     const { user, accessToken, refreshToken } = await createAccount(Request);
 
     // Return the response
-
     return setAuthCookies({ res, accessToken, refreshToken }).status(CREATED).json(user);
+});
+
+const loginSchema = z.object({
+    email: emailSchema,
+    password: passwordSchema,
+    userAgent: z.string().optional(),
+});
+
+export const loginHandler = catchErrors(async (req, res) => {
+    const Request = loginSchema.parse({ ...req.body, userAgent: req.headers["user-agent"] });
+    const { accessToken, refreshToken } = await loginUser(Request);
+    return setAuthCookies({ res, accessToken, refreshToken }).status(CREATED).json({ message: "Login successul" });
+});
+
+export const LogoutHandler = catchErrors(async (req, res) => {
+    const accessToken = req.cookies.accessToken;
+    const { payload } = verifyToken(accessToken);
+
+    if (payload) {
+        await prisma.session.delete({
+            where: {
+                id: payload.sessionId,
+            },
+        });
+    }
 });
