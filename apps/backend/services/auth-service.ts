@@ -48,11 +48,8 @@ export const createAccount = async (data: CreateAccountParams) => {
     const refreshToken = signToken({ sessionId: session.id }, refreshTokenSignOptions);
     const accessToken = signToken({ userId: user.id, sessionId: session.id });
 
-    // Remove password from user object before returning
-    const { password, ...userWithoutPassword } = user;
-
     // return the user and tokens
-    return { user: userWithoutPassword, accessToken, refreshToken };
+    return { user, accessToken, refreshToken };
 };
 
 export type LoginUserParams = {
@@ -70,8 +67,17 @@ export const loginUser = async ({ email, password, userAgent }: LoginUserParams)
     });
     appAssert(user, UNAUTHORIZED, "Invalid email or password");
 
-    // Verify the password
-    const passwordIsValid = await compareValue(password, user.password);
+    // Get password from the user for verification, we need this because by default we are not
+    const storedPasswordResult = await prisma.user.findUnique({
+        where: {
+            email,
+        },
+        select: {
+            password: true,
+        },
+    });
+    appAssert(storedPasswordResult, UNAUTHORIZED, "Invalid email or password");
+    const passwordIsValid = await compareValue(password, storedPasswordResult.password);
     appAssert(passwordIsValid, UNAUTHORIZED, "Invalid email or password");
 
     // Create a new session
@@ -89,11 +95,8 @@ export const loginUser = async ({ email, password, userAgent }: LoginUserParams)
     const refreshToken = signToken(sessionInfo, refreshTokenSignOptions);
     const accessToken = signToken({ ...sessionInfo, userId: user.id });
 
-    // Remove password from user object before returning
-    const { password: userPassword, ...userWithoutPassword } = user;
-
     // Return the user and tokens
-    return { user: userWithoutPassword, accessToken, refreshToken };
+    return { user, accessToken, refreshToken };
 };
 
 export const refreshUserAccessToken = async (refreshToken: string) => {

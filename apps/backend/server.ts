@@ -1,11 +1,10 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import prisma from "./prisma/primsa-client";
 import express, { Request, Response, Application } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { PORT } from "./constants/env";
 import errorHandler from "./middleware/error-handler";
-import authRoutes from "./routes/auth/auth-routes";
 import router from "./routes/router";
 const { BoxClient, BoxDeveloperTokenAuth } = require("box-typescript-sdk-gen");
 
@@ -13,9 +12,7 @@ dotenv.config();
 
 // start the webserver
 const app = express();
-const port = PORT;
-const prisma = new PrismaClient();
-
+prisma.$connect();
 // Initialise middlewares
 app.use(express.json()); // Allows parsing of JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Allows parsing of URL-encoded request bodies
@@ -28,6 +25,6 @@ app.use("/", router);
 app.use(errorHandler);
 
 // Start the server
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+app.listen(PORT, () => {
+    console.log(`Example app listening on port ${PORT}`);
 });
