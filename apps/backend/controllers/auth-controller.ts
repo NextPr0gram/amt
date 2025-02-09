@@ -1,10 +1,11 @@
 import catchErrors from "../utils/catch-errors";
 import { z } from "zod";
-import { createAccount, loginUser } from "../services/auth-service";
-import { CREATED, OK } from "../constants/http";
-import { clearAuthCookies, setAuthCookies } from "../utils/cookies";
+import { createAccount, loginUser, refreshUserAccessToken } from "../services/auth-service";
+import { CREATED, OK, UNAUTHORIZED } from "../constants/http";
+import { clearAuthCookies, getAccessTokenCookieOptions, getRefreshTokenCookieOptions, setAuthCookies } from "../utils/cookies";
 import { verifyToken } from "../utils/jwt";
 import prisma from "../prisma/primsa-client";
+import appAssert from "../utils/app-assert";
 
 const emailSchema = z.string().email().min(3).max(255);
 const passwordSchema = z.string().min(6).max(255);
@@ -54,8 +55,8 @@ export const loginHandler = catchErrors(async (req, res) => {
 });
 
 export const logoutHandler = catchErrors(async (req, res) => {
-    const accessToken = req.cookies.accessToken;
-    const { payload } = verifyToken(accessToken);
+    const accessToken = req.cookies.accessToken as string | undefined;
+    const { payload } = verifyToken(accessToken || "");
 
     if (payload) {
         await prisma.session.delete({
@@ -66,4 +67,16 @@ export const logoutHandler = catchErrors(async (req, res) => {
     }
 
     return clearAuthCookies(res).status(OK).json({ message: "Logout successful" });
+});
+
+export const refreshHandler = catchErrors(async (req, res) => {
+    const refreshToken = req.cookies.refreshToken as string | undefined;
+    appAssert(refreshToken, UNAUTHORIZED, "Missing refresh token");
+
+    const { accessToken, newRefreshToken } = await refreshUserAccessToken(refreshToken);
+
+    if (newRefreshToken) {
+        res.cookie("refreshToken", newRefreshToken, getRefreshTokenCookieOptions());
+    }
+    return res.status(OK).cookie("accessToken", accessToken, getAccessTokenCookieOptions()).json({ message: "Access token refreshed" });
 });
