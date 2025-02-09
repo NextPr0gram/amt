@@ -9,7 +9,6 @@ const router = Router();
 router.use("/auth", authRouter);
 
 // Protected routes
-router.use(authenticate); // All routes below this line are protected and go through the authenticate middleware
-router.use("/user", userRouter);
+router.use("/user", authenticate, userRouter);
 
 export default router;
