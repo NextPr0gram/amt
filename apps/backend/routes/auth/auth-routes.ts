@@ -3,6 +3,7 @@ import { registerHandler, loginHandler, logoutHandler, refreshHandler } from "..
 
 const authRouter = Router();
 
+// prefix: /auth
 authRouter.post("/register", registerHandler);
 authRouter.post("/login", loginHandler);
 authRouter.get("/logout", logoutHandler);
