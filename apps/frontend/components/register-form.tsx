@@ -1,18 +1,20 @@
 "use client";
-import { useState } from "react";
+import { SyntheticEvent, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 
 export function RegisterForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
+    const router = useRouter();
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: SyntheticEvent) => {
         e.preventDefault();
         setError("");
 
@@ -21,24 +23,15 @@ export function RegisterForm() {
             return;
         }
 
-        try {
-            const response = await fetch("http://localhost:3030/api/register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Registration failed");
-            }
-
-            // Redirect to login page on successful registration
-            window.location.href = "/login";
-        } catch (err) {
-            setError("Registration failed");
-        }
+        // Add more checks
+        await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email, password, confirmPassword }),
+        });
+        await router.push("/login");
     };
 
     return (
