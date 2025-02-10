@@ -132,3 +132,17 @@ export const refreshUserAccessToken = async (refreshToken: string) => {
 
     return { accessToken, newRefreshToken };
 };
+
+export const validate = async (accessToken: string) => {
+    const { payload } = verifyToken(accessToken);
+    appAssert(payload, UNAUTHORIZED, "Invalid access token");
+
+    const session = await prisma.session.findUnique({
+        where: {
+            id: payload.sessionId,
+        },
+    });
+    appAssert(session, UNAUTHORIZED, "Session not found");
+
+    return true;
+};

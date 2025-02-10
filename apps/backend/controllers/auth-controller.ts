@@ -1,6 +1,6 @@
 import catchErrors from "../utils/catch-errors";
 import { z } from "zod";
-import { createAccount, loginUser, refreshUserAccessToken } from "../services/auth-service";
+import { createAccount, loginUser, refreshUserAccessToken, validate } from "../services/auth-service";
 import { CREATED, OK, UNAUTHORIZED } from "../constants/http";
 import { clearAuthCookies, getAccessTokenCookieOptions, getRefreshTokenCookieOptions, setAuthCookies } from "../utils/cookies";
 import { verifyToken } from "../utils/jwt";
@@ -79,4 +79,13 @@ export const refreshHandler = catchErrors(async (req, res) => {
         res.cookie("refreshToken", newRefreshToken, getRefreshTokenCookieOptions());
     }
     return res.status(OK).cookie("accessToken", accessToken, getAccessTokenCookieOptions()).json({ message: "Access token refreshed" });
+});
+
+export const validateHandler = catchErrors(async (req, res) => {
+    if (req.cookies.accessToken) {
+        if (await validate(req.cookies.accessToken)) {
+            return res.status(OK).json({ message: "Valid token" });
+        }
+    }
+    return res.status(UNAUTHORIZED).json({ message: "Invalid token" });
 });
