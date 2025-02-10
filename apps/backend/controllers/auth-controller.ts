@@ -83,7 +83,8 @@ export const refreshHandler = catchErrors(async (req, res) => {
 
 export const validateHandler = catchErrors(async (req, res) => {
     if (req.cookies.accessToken) {
-        if (await validate(req.cookies.accessToken)) {
+        const isValid = await validate(req.cookies.accessToken);
+        if (isValid) {
             return res.status(OK).json({ message: "Valid token" });
         }
     }
