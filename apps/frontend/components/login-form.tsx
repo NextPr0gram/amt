@@ -1,38 +1,32 @@
 "use client";
-import { useState } from "react";
+import { SyntheticEvent, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 
 export function LoginForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const router = useRouter();
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: SyntheticEvent) => {
         e.preventDefault();
         setError("");
 
-        try {
-            const response = await fetch("/api/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-            });
+        await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include", // This allows the storing of cookies in our browser
+            body: JSON.stringify({ email, password }),
+        });
 
-            if (!response.ok) {
-                throw new Error("Login failed");
-            }
-
-            // Redirect to dashboard on successful login
-            window.location.href = "/dashboard";
-        } catch (err) {
-            setError("Invalid email or password");
-        }
+        router.push("/dashboard");
     };
 
     return (
@@ -63,7 +57,7 @@ export function LoginForm() {
                 </form>
                 <div className="mt-4 text-center text-sm">
                     Don&apos;t have an account?{" "}
-                    <Link href="#" className="underline">
+                    <Link href="/register" className="underline">
                         Sign up
                     </Link>
                 </div>

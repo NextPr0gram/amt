@@ -29,9 +29,11 @@ export function RegisterForm() {
             headers: {
                 "Content-Type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify({ email, password, confirmPassword }),
         });
-        await router.push("/login");
+
+        router.push("/login");
     };
 
     return (
