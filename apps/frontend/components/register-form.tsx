@@ -33,7 +33,7 @@ export function RegisterForm() {
             body: JSON.stringify({ email, password, confirmPassword }),
         });
 
-        router.push("/login");
+        router.push("/dashboard");
     };
 
     return (
