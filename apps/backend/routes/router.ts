@@ -10,5 +10,5 @@ router.use("/auth", authRouter);
 
 // Protected routes
 router.use("/user", authenticate, userRouter);
-
+router.use("/modules", authenticate, userRouter);
 export default router;
