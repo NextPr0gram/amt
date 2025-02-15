@@ -38,8 +38,7 @@ model Session {
 // Many modules have many module tutors
 // One module lead can lead many modules
 model Module {
-    id           Int                     @id
-    code         String
+    id           String                     @id
     name         String
     year         Int
     moduleLeadId Int?
@@ -49,7 +48,7 @@ model Module {
 
 model ModuleTutorAssignment {
     userId   Int
-    moduleId Int
+    moduleId String
 
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
     module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
