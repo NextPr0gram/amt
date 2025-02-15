@@ -38,7 +38,7 @@ model Session {
 // Many modules have many module tutors
 // One module lead can lead many modules
 model Module {
-    id           String                     @id
+    id           String                  @id
     name         String
     year         Int
     moduleLeadId Int?
