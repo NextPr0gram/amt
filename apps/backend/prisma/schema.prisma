@@ -42,8 +42,8 @@ model Module {
     code         String
     name         String
     year         Int
-    moduleLeadId Int
-    moduleLead   User                    @relation(fields: [moduleLeadId], references: [id])
+    moduleLeadId Int?
+    moduleLead   User?                   @relation(fields: [moduleLeadId], references: [id])
     moduleTutors ModuleTutorAssignment[]
 }
 
