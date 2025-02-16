@@ -20,7 +20,7 @@ export function NavUser({
     const { isMobile } = useSidebar();
     const handleLogout = async () => {
         await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/logout", {
-            method: "POST",
+            method: "GET",
             headers: {
                 "Content-Type": "application/json",
             },
