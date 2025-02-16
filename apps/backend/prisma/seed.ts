@@ -7,7 +7,6 @@ const generateRandomPassword = () => {
 async function main() {
     const createUsers = await prisma.user.createMany({
         data: [
-            { email: "a.karim@aston.ac.uk", password: await generateRandomPassword() },
             { email: "n.powell@aston.ac.uk", password: await generateRandomPassword() },
             { email: "a.giagkos@aston.ac.uk", password: await generateRandomPassword() },
             { email: "hongxia.wang@aston.ac.uk", password: await generateRandomPassword() },
