@@ -8,6 +8,8 @@ import { RefreshTokenPayload, refreshTokenSignOptions, signToken, verifyToken } 
 export type CreateAccountParams = {
     email: string;
     password: string;
+    firstName: string;
+    lastName: string;
     userAgent?: string;
 };
 
@@ -32,6 +34,8 @@ export const createAccount = async (data: CreateAccountParams) => {
         data: {
             email: data.email,
             password: hashedPassword,
+            firstName: data.firstName,
+            lastName: data.lastName,
         },
     });
 

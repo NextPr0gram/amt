@@ -21,6 +21,8 @@ const registerSchema = z
         email: emailSchema,
         password: passwordSchema,
         confirmPassword: z.string().min(6).max(255),
+        firstName: z.string().min(1).max(255),
+        lastName: z.string().min(1).max(255),
         userAgent: z.string().optional(),
     })
     .refine((data) => data.password === data.confirmPassword, {
