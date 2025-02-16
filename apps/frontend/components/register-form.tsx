@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 
 export function RegisterForm() {
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -30,7 +32,7 @@ export function RegisterForm() {
                 "Content-Type": "application/json",
             },
             credentials: "include",
-            body: JSON.stringify({ email, password, confirmPassword }),
+            body: JSON.stringify({ email, password, confirmPassword, firstName, lastName }),
         });
 
         router.push("/dashboard");
@@ -44,6 +46,16 @@ export function RegisterForm() {
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="grid gap-4">
+                    <div className="flex gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="firstName">First Name</Label>
+                            <Input id="firstName" type="text" placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="lastName">Last Name</Label>
+                            <Input id="lastName" type="text" placeholder="John" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+                        </div>
+                    </div>
                     <div className="grid gap-2">
                         <Label htmlFor="email">Email</Label>
                         <Input id="email" type="email" placeholder="m@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
