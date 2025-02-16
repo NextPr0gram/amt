@@ -1,5 +1,5 @@
 import jwt, { SignOptions, VerifyOptions } from "jsonwebtoken";
-import { JWT_SECRET } from "../constants/env";
+import { JWT_REFRESH_SECRET, JWT_SECRET } from "../constants/env";
 import type { User, Session } from "@prisma/client";
 
 export type RefreshTokenPayload = {
@@ -24,7 +24,7 @@ export const accessTokenSignOptions: SignOptionsAndSecret = {
 
 export const refreshTokenSignOptions: SignOptionsAndSecret = {
     expiresIn: "30d",
-    secret: JWT_SECRET,
+    secret: JWT_REFRESH_SECRET,
 };
 
 export const signToken = (payload: AccessTokenPayload | RefreshTokenPayload, options?: SignOptionsAndSecret) => {
