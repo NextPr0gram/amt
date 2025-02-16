@@ -4,6 +4,10 @@ import prisma from "./primsa-client"; // Ensure the path is correct
 const generateRandomPassword = () => {
     return hashValue(Math.random().toString(36).slice(-8));
 };
+
+const getRandomInt = (max: number) => {
+    return Math.floor(Math.random() * max);
+};
 async function main() {
     const createUsers = await prisma.user.createMany({
         data: [
@@ -53,71 +57,85 @@ async function main() {
                 id: "CS1IAD",
                 name: "Internet Applications and Databases",
                 year: 1,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS1OOP",
                 name: "Object-Oriented Programming",
                 year: 1,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS1PSA",
                 name: "Programming and Software Architecture",
                 year: 1,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS2HCI",
                 name: "Human-Computer Interaction",
                 year: 2,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS2IS",
                 name: "Information Security",
                 year: 2,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS2IDS",
                 name: "Introduction to Distributed Systems",
                 year: 2,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS2OS",
                 name: "Operating Systems",
                 year: 2,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS2PLC",
                 name: "Programming Language Concepts",
                 year: 2,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS3IVP",
                 name: "Image and Video Processing",
                 year: 3,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS3ADG",
                 name: "Advanced Database Systems and GIS",
                 year: 3,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS3DM",
                 name: "Data Mining",
                 year: 3,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS3ECS",
                 name: "Enterprise Computing Strategies",
                 year: 3,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS3CA",
                 name: "Computer Animation",
                 year: 3,
+                moduleLeadId: await getRandomInt(37),
             },
             {
                 id: "CS3GD",
                 name: "Game Development",
                 year: 3,
+                moduleLeadId: await getRandomInt(37),
             },
         ],
     });
