@@ -1,3 +1,4 @@
+import AppErrorCode from "../constants/app-error-code";
 import { CONFLICT, UNAUTHORIZED } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
@@ -139,14 +140,5 @@ export const refreshUserAccessToken = async (refreshToken: string) => {
 
 export const validate = async (accessToken: string) => {
     const { payload } = verifyToken(accessToken);
-    appAssert(payload, UNAUTHORIZED, "Invalid access token");
-
-    const session = await prisma.session.findUnique({
-        where: {
-            id: payload.sessionId,
-        },
-    });
-    appAssert(session, UNAUTHORIZED, "Session not found");
-
-    return true;
+    return !!payload; // Returns boolean, if payload is not null, return true
 };

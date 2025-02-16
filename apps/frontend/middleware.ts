@@ -1,32 +1,4 @@
-/* import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export default middleware((request: NextRequest) => {
-    console.log("Middleware executed");
-
-    const token = request.cookies.get("token");
-
-    if (!token) {
-        return NextResponse.redirect(new URL("/login", request.url));
-    }
-
-    const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/validate", {
-        headers: {
-            cookie: request.headers.get("cookie") || "",
-        },
-    });
-
-    if (res.status !== 200) {
-        return NextResponse.redirect(new URL("/login", request.url));
-    }
-
-    return NextResponse.next();
-});
-
-export const config = {
-    matcher: ["/dashboard/:path*"],
-};
- */
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 

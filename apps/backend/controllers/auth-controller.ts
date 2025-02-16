@@ -6,6 +6,7 @@ import { clearAuthCookies, getAccessTokenCookieOptions, getRefreshTokenCookieOpt
 import { verifyToken } from "../utils/jwt";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
+import AppErrorCode from "../constants/app-error-code";
 
 const emailSchema = z.string().email().min(3).max(255);
 const passwordSchema = z.string().min(6).max(255);
@@ -84,11 +85,11 @@ export const refreshHandler = catchErrors(async (req, res) => {
 });
 
 export const validateHandler = catchErrors(async (req, res) => {
-    if (req.cookies.accessToken) {
-        const isValid = await validate(req.cookies.accessToken);
-        if (isValid) {
-            return res.status(OK).json({ message: "Valid token" });
-        }
-    }
-    return res.status(UNAUTHORIZED).json({ message: "Invalid token" });
+    const accessToken = req.cookies.accessToken as string | undefined;
+    appAssert(accessToken, UNAUTHORIZED, "Missing access token");
+
+    const isValid = await validate(accessToken);
+    appAssert(isValid, UNAUTHORIZED, AppErrorCode.InvalidAccessToken);
+
+    return res.status(OK).end();
 });
