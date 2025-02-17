@@ -6,10 +6,10 @@ import { clearAuthCookies, refreshPath } from "../utils/cookies";
 
 const handleZodError = (res: Response, error: z.ZodError) => {
     const errors = error.issues.map((err) => ({
-        path: err.path.join("."),
-        message: err.message,
+        message: err.path.join(".") + ": " + err.message,
     }));
-    res.status(BAD_REQUEST).json({ message: error.message, errors });
+    const formattedMessage = errors.map((err) => err.message).join(", ");
+    res.status(BAD_REQUEST).json({ message: formattedMessage });
 };
 
 const handleAppError = (res: Response, error: AppError) => {
