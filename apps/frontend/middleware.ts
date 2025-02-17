@@ -1,10 +1,9 @@
-
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
     const token = request.cookies.get("accessToken")?.value;
-    console.log(token);
+    const refreshToken = request.cookies.get("refreshToken")?.value;
     const path = request.nextUrl.pathname;
 
     // Public routes that don't require authentication
@@ -30,7 +29,40 @@ export async function middleware(request: NextRequest) {
         });
 
         if (res.status !== 200) {
-            return NextResponse.redirect(new URL("/login", request.url));
+            const resJson = await res.json();
+            if (resJson.message === "InvalidAccessToken" && refreshToken) {
+                try {
+                    const refreshRes = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/refresh", {
+                        method: "GET",
+                        headers: {
+                            cookie: `refreshToken=${refreshToken}`,
+                        },
+                        credentials: "include",
+                    });
+
+                    if (refreshRes.status === 200) {
+                        const refreshJson = await refreshRes.json();
+                        const newAccessToken = refreshJson.accessToken;
+
+                        // Set the new access token in the response cookies
+                        const response = NextResponse.next();
+                        response.cookies.set("accessToken", newAccessToken, {
+                            httpOnly: true,
+                            secure: process.env.NODE_ENV === "production",
+                            path: "/",
+                        });
+
+                        return response;
+                    } else {
+                        return NextResponse.redirect(new URL("/login", request.url));
+                    }
+                } catch (error) {
+                    console.log(error);
+                    return NextResponse.redirect(new URL("/login", request.url));
+                }
+            } else {
+                return NextResponse.redirect(new URL("/login", request.url));
+            }
         }
 
         return NextResponse.next();
