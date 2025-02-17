@@ -9,14 +9,8 @@ export async function middleware(request: NextRequest) {
     // Public routes that don't require authentication
     const publicPaths = ["/login", "/register"];
 
-    // Check if the path is public
     if (publicPaths.includes(path)) {
         return NextResponse.next();
-    }
-
-    // If no token exists, redirect to login
-    if (!token) {
-        return NextResponse.redirect(new URL("/login", request.url));
     }
 
     try {
@@ -27,48 +21,32 @@ export async function middleware(request: NextRequest) {
                 cookie: `accessToken=${token}`,
             },
         });
-
         if (res.status !== 200) {
-            const resJson = await res.json();
-            if (resJson.message === "InvalidAccessToken" && refreshToken) {
-                try {
-                    const refreshRes = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/refresh", {
-                        method: "GET",
-                        headers: {
-                            cookie: `refreshToken=${refreshToken}`,
-                        },
-                        credentials: "include",
-                    });
+            // If token is invalid or does not exist try refreshing
+            if (refreshToken) {
+                const refreshRes = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/refresh", {
+                    method: "GET",
+                    headers: {
+                        cookie: `refreshToken=${refreshToken}`,
+                    },
+                });
 
-                    if (refreshRes.status === 200) {
-                        const refreshJson = await refreshRes.json();
-                        const newAccessToken = refreshJson.accessToken;
-
-                        // Set the new access token in the response cookies
+                if (refreshRes.status === 200) {
+                    const newToken = refreshRes.headers.get("set-cookie")?.match(/accessToken=([^;]+)/)?.[1];
+                    if (newToken) {
+                        // Set new accessToken in the response
                         const response = NextResponse.next();
-                        response.cookies.set("accessToken", newAccessToken, {
-                            httpOnly: true,
-                            secure: process.env.NODE_ENV === "production",
-                            path: "/",
-                        });
-
+                        response.cookies.set("accessToken", newToken, { httpOnly: true });
                         return response;
-                    } else {
-                        return NextResponse.redirect(new URL("/login", request.url));
                     }
-                } catch (error) {
-                    console.log(error);
-                    return NextResponse.redirect(new URL("/login", request.url));
                 }
-            } else {
-                return NextResponse.redirect(new URL("/login", request.url));
             }
+            return NextResponse.redirect(new URL("/login", request.url));
         }
 
         return NextResponse.next();
     } catch (error) {
         console.log(error);
-        // Handle any verification errors
         return NextResponse.redirect(new URL("/login", request.url));
     }
 }
