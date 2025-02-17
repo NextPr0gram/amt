@@ -2,20 +2,11 @@
 
 import * as React from "react";
 import { Command, Settings, Component, Users, UserRoundPen, BookOpenText } from "lucide-react";
-import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
-import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import Link from "next/link";
-
-const data = {
-    user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg",
-    },
-};
+import { protectedFetch } from "@/utils/protected-fetch";
+import { useEffect, useState } from "react";
 
 // Menu items.
 const items = [
@@ -46,6 +37,28 @@ const items = [
     },
 ];
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const [userData, setUserData] = useState({ name: "", email: "", avatar: "" });
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const res = await protectedFetch("/user", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+            });
+            const resJson = await res.json();
+            setUserData({
+                name: resJson.firstName + " " + resJson.lastName,
+                email: resJson.email,
+                avatar: "/avatars/shadcn.jpg",
+            });
+        };
+        fetchData();
+    }, []);
+
+    console.log(userData);
     return (
         <Sidebar variant="inset" {...props}>
             <SidebarHeader>
@@ -85,7 +98,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={data.user} />
+                <NavUser user={userData} />
             </SidebarFooter>
         </Sidebar>
     );
