@@ -18,7 +18,6 @@ export const getAccessTokenCookieOptions = (): CookieOptions => ({
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
     ...defaults,
     expires: oneYearFromNow(),
-    path: refreshPath,
 });
 
 type Params = {
