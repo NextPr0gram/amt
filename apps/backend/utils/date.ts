@@ -4,9 +4,9 @@ export const fifteenMinutesFromNow = () => {
     return now;
 };
 
-export const thirtyDaysFromNow = () => {
+export const oneYearFromNow = () => {
     const now = new Date();
-    now.setDate(now.getDate() + 30);
+    now.setFullYear(now.getFullYear() + 1);
     return now;
 };
 

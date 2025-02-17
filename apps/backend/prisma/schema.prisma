@@ -34,7 +34,7 @@ model Session {
     user      User     @relation(fields: [userId], references: [id], onDelete: Cascade) // Describes relation to User model (one session belongs to one user, this is a feature in Prisma ORM, it is not a real column in the database)
     userAgent String?
     createdAt DateTime @default(now())
-    expiresAt DateTime @default(dbgenerated("NOW() + interval '1 year'")) // Expiration logic
+    expiresAt DateTime // Expiration logic
 }
 
 // Many modules have many module tutors

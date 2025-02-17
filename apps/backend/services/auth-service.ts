@@ -3,7 +3,7 @@ import { CONFLICT, UNAUTHORIZED } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
 import { compareValue, hashValue } from "../utils/bcrypt";
-import { ONE_DAY_IN_MS, thirtyDaysFromNow } from "../utils/date";
+import { ONE_DAY_IN_MS, oneYearFromNow } from "../utils/date";
 import { RefreshTokenPayload, refreshTokenSignOptions, signToken, verifyToken } from "../utils/jwt";
 
 export type CreateAccountParams = {
@@ -46,6 +46,7 @@ export const createAccount = async (data: CreateAccountParams) => {
         data: {
             userId: user.id,
             userAgent: data.userAgent,
+            expiresAt: oneYearFromNow(),
         },
     });
 
@@ -90,6 +91,7 @@ export const loginUser = async ({ email, password, userAgent }: LoginUserParams)
         data: {
             userId: user.id,
             userAgent,
+            expiresAt: oneYearFromNow(),
         },
     });
     const sessionInfo = {
@@ -121,7 +123,7 @@ export const refreshUserAccessToken = async (refreshToken: string) => {
     const sessionNeedsRefresh = session.expiresAt.getTime() - Date.now() <= ONE_DAY_IN_MS;
 
     if (sessionNeedsRefresh) {
-        const newSessionExpiresAt = thirtyDaysFromNow();
+        const newSessionExpiresAt = oneYearFromNow();
         await prisma.session.update({
             where: {
                 id: session.id,
