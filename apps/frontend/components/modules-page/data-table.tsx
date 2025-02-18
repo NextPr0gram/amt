@@ -14,7 +14,7 @@ type Module = {
     lead: string;
 };
 
-type APIResponseModule = {
+type ModuleAPIResponse = {
     id: string;
     name: string;
     moduleLead: {
@@ -56,7 +56,7 @@ export function DataTable() {
                 credentials: "include",
             });
             const resJson = await response.json();
-            const resData = resJson.map((module: APIResponseModule) => ({
+            const resData = resJson.map((module: ModuleAPIResponse) => ({
                 code: module.id,
                 name: module.name,
                 year: "1",
