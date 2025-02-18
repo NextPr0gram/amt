@@ -1,14 +1,72 @@
 "use client";
 
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ColumnDef } from "@tanstack/react-table";
+import { useEffect, useState } from "react";
+import { protectedFetch } from "@/utils/protected-fetch";
 
-interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[];
-    data: TData[];
-}
+// This type is used to define the shape of our data.
+type Module = {
+    code: string;
+    name: string;
+    year: "1" | "2" | "3" | "PG";
+    lead: string;
+};
 
-export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+type APIResponseModule = {
+    id: string;
+    name: string;
+    moduleLead: {
+        firstName: string;
+        lastName: string;
+    };
+};
+
+const columns: ColumnDef<Module>[] = [
+    {
+        accessorKey: "code",
+        header: "Module Code",
+    },
+    {
+        accessorKey: "name",
+        header: "Module Name",
+    },
+    {
+        accessorKey: "year",
+        header: "Year",
+    },
+    {
+        accessorKey: "lead",
+        header: "Module Lead",
+    },
+];
+// Columns are where you define the core of what your table will look like. They define the data that will be displayed, how it will be formatted, sorted and filtered.
+
+export function DataTable() {
+    const [data, setData] = useState<Module[]>([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await protectedFetch("/modules", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+            });
+            const resJson = await response.json();
+            const resData = resJson.map((module: APIResponseModule) => ({
+                code: module.id,
+                name: module.name,
+                year: "1",
+                lead: module.moduleLead.firstName + " " + module.moduleLead.lastName,
+            }));
+            setData(resData);
+        };
+        fetchData();
+    }, []);
+
     const table = useReactTable({
         data,
         columns,
