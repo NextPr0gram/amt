@@ -1,34 +1,11 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { DateStage } from "@/components/date-stage";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Module } from "@components/modules-page/columns";
 import { DataTable } from "@/components/modules-page/data-table";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { columns } from "@/components/modules-page/columns";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function Page() {
     // https://ui.shadcn.com/docs/components/data-table#basic-table
-
-    const data: Module[] = [
-        {
-            code: "CS1OOP",
-            name: "Object Oriented Programming",
-            year: "1",
-            lead: "N Powell",
-        },
-        {
-            code: "CS2HCI",
-            name: "Human Computer Interaction",
-            year: "2",
-            lead: "L Hakobyan",
-        },
-        {
-            code: "CS3SMC",
-            name: "System management, access and control",
-            year: "3",
-            lead: "K Fatema",
-        },
-    ];
     return (
         <SidebarProvider>
             <AppSidebar />
