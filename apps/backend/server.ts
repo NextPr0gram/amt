@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import { PORT } from "./constants/env";
 import errorHandler from "./middleware/error-handler";
 import router from "./routes/router";
+import logRequests from "./middleware/log-requests";
 const { BoxClient, BoxDeveloperTokenAuth } = require("box-typescript-sdk-gen");
 
 dotenv.config();
@@ -19,7 +20,7 @@ app.use(express.urlencoded({ extended: true })); // Allows parsing of URL-encode
 app.use(cors({ origin: process.env.APP_ORIGIN, credentials: true })); // Enable CORS, only allow requests from our frontend next.js app
 app.use(cookieParser()); // Allows parsing of cookies in the request headers
 
-app.use("/", router);
+app.use("/", logRequests, router);
 
 // Error handler middleware
 app.use(errorHandler);
