@@ -3,9 +3,8 @@ import { DateStage } from "@/components/date-stage";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { DataTable } from "@/components/modules-page/data-table";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import ButtonWithModal from "../../../components/button-with-modal";
 import AddModuleModal from "../../../components/modules-page/add-module-modal";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 export default function Page() {

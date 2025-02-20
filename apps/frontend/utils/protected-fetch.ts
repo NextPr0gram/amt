@@ -10,8 +10,9 @@ export const protectedFetch = async (url: string, opts: object) => {
 
     let res = await fetchWithToken();
 
+    const resJson = await res.json();
     // If access token expired then get refresh token
-    if (res.status !== 200) {
+    if (res.status !== 200 && resJson.errorCode === "InvalidAccessToken") {
         const refreshRes = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/refresh", {
             method: "GET",
             headers: {
@@ -28,6 +29,6 @@ export const protectedFetch = async (url: string, opts: object) => {
 
         window.location.href = "/login"; // Redirect to login page
     }
-
-    return res;
+    // return status and resjon
+    return { status: res.status, data: resJson };
 };

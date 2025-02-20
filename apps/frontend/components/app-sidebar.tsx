@@ -48,10 +48,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 },
                 credentials: "include",
             });
-            const resJson = await res.json();
             setUserData({
-                name: resJson.firstName + " " + resJson.lastName,
-                email: resJson.email,
+                name: res.data.firstName + " " + res.data.lastName,
+                email: res.data.email,
                 avatar: "/avatars/shadcn.jpg",
             });
         };

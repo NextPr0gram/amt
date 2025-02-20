@@ -1,11 +1,3 @@
-/* import React from "react";
-
-const AddModuleModal = () => {
-    return <div>add-module-modal</div>;
-};
-
-export default AddModuleModal;
- */
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,41 +6,178 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEffect, useState } from "react";
+import { protectedFetch } from "@/utils/protected-fetch";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { NextResponse } from "next/server";
+
+type ModuleTutor = {
+    id: number;
+    firstName: string;
+    lastName: string;
+};
 
 const formSchema = z.object({
-    username: z.string().min(2, {
-        message: "Username must be at least 2 characters.",
+    moduleCode: z.string().min(1, {
+        message: "This field is required",
     }),
+    moduleName: z.string().min(1, {
+        message: "This field is required",
+    }),
+    year: z
+        .number({
+            required_error: "Please select a year",
+        })
+        .int(),
+    moduleTutorId: z
+        .number({
+            required_error: "Please select a module tutor to be assigned as the module lead",
+        })
+        .int(),
 });
 
 const AddModuleModal = () => {
-    // 1. Define your form.
+    const [moduleTutors, setModuleTutors] = useState<ModuleTutor[]>([]);
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false); // Add this state
+
+    useEffect(() => {
+        // Fetch module tutors
+        const fetchModuleTutors = async () => {
+            const res = await protectedFetch("/users/get-module-tutors", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+            });
+            setModuleTutors(res.data);
+        };
+        fetchModuleTutors();
+    }, []);
+
+    // Define your form.
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            username: "",
+            moduleCode: "",
+            moduleName: "",
+            year: 1,
+            moduleTutorId: 1,
         },
     });
 
-    // 2. Define a submit handler.
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values);
-    }
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        const res = await protectedFetch("/modules/create-module", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ id: values.moduleCode, name: values.moduleName, year: values.year, moduleLeadId: values.moduleTutorId }),
+        });
+
+        if (res.status === 500 && res.data.errorCode === "P2002") {
+            form.setError("moduleCode", {
+                type: "manual",
+                message: "Module with the given ID already exists",
+            });
+        }
+    };
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField
                     control={form.control}
-                    name="username"
+                    name="moduleCode"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Username</FormLabel>
+                            <FormLabel>Module Code</FormLabel>
                             <FormControl>
-                                <Input placeholder="shadcn" {...field} />
+                                <Input placeholder="e.g AB1CDE" {...field} />
                             </FormControl>
-                            <FormDescription>This is your public display name.</FormDescription>
+                            {/*<FormDescription>This is your public display name.</FormDescription>*/}
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="moduleName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Module Name</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g. System Design" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="year"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Year</FormLabel>
+                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value.toString()}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="e.g. Year 1" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="1">Year 1</SelectItem>
+                                    <SelectItem value="2">year 2</SelectItem>
+                                    <SelectItem value="3">Year 3</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="moduleTutorId"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                            <FormLabel>Module Lead</FormLabel>
+                            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                                <PopoverTrigger asChild>
+                                    <FormControl>
+                                        <Button variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")}>
+                                            {field.value ? `${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.firstName} ${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.lastName}` : "Select module tutor"}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 -mt-2">
+                                    <Command>
+                                        <CommandInput placeholder="Search module tutor..." />
+                                        <CommandList>
+                                            <CommandEmpty>No module tutors found.</CommandEmpty>
+                                            <CommandGroup>
+                                                {moduleTutors.map((moduleTutor: ModuleTutor) => (
+                                                    <CommandItem
+                                                        value={moduleTutor.firstName + " " + moduleTutor.lastName}
+                                                        key={moduleTutor.id}
+                                                        onSelect={() => {
+                                                            form.setValue("moduleTutorId", moduleTutor.id);
+                                                            setIsPopoverOpen(false);
+                                                        }}
+                                                    >
+                                                        {moduleTutor.firstName + " " + moduleTutor.lastName}
+                                                        <Check className={cn("ml-auto", moduleTutor.id === field.value ? "opacity-100" : "opacity-0")} />
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
                             <FormMessage />
                         </FormItem>
                     )}

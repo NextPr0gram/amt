@@ -44,31 +44,30 @@ const columns: ColumnDef<Module>[] = [
 // Columns are where you define the core of what your table will look like. They define the data that will be displayed, how it will be formatted, sorted and filtered.
 
 export function DataTable() {
-    const [data, setData] = useState<Module[]>([]);
+    const [modules, setModules] = useState<Module[]>([]);
 
     useEffect(() => {
-        const fetchData = async () => {
-            const response = await protectedFetch("/modules", {
+        const fetchModules = async () => {
+            const res = await protectedFetch("/modules", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 credentials: "include",
             });
-            const resJson = await response.json();
-            const resData = resJson.map((module: ModuleAPIResponse) => ({
+            const resData = res.data.map((module: ModuleAPIResponse) => ({
                 code: module.id,
                 name: module.name,
                 year: "1",
                 lead: module.moduleLead.firstName + " " + module.moduleLead.lastName,
             }));
-            setData(resData);
+            setModules(resData);
         };
-        fetchData();
+        fetchModules();
     }, []);
 
     const table = useReactTable({
-        data,
+        data: modules,
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
