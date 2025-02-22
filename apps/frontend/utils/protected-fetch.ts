@@ -1,7 +1,7 @@
 "use client";
 
 // Wrapper function for fetch that handles token refresh
-export const protectedFetch = async (path: string, method: "GET" | "POST", body?: object) => {
+export const protectedFetch = async (path: string, method: "GET" | "POST" | "PATCH" | "DELETE", body?: object) => {
     const endpoint = process.env.NEXT_PUBLIC_API_URL + path;
     const opts = {
         method,
@@ -17,8 +17,8 @@ export const protectedFetch = async (path: string, method: "GET" | "POST", body?
     };
 
     let res = await fetchWithToken();
+    let resJson = await res.json();
 
-    const resJson = await res.json();
     // If access token expired then get refresh token
     if (res.status !== 200 && resJson.errorCode === "InvalidAccessToken") {
         const refreshRes = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/refresh", {
@@ -31,10 +31,10 @@ export const protectedFetch = async (path: string, method: "GET" | "POST", body?
         if (refreshRes.status === 200) {
             // Retry the original request with the new token
             res = await fetchWithToken();
-            return res.json();
+            resJson = await res.json();
+        } else {
+            window.location.href = "/login"; // Redirect to login page
         }
-
-        window.location.href = "/login"; // Redirect to login page
     }
     // return status and resjon
     return { status: res.status, data: resJson };
