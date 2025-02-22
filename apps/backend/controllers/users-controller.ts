@@ -9,6 +9,15 @@ export const getModuleTutorsHandler = catchErrors(async (req, res) => {
             id: true,
             firstName: true,
             lastName: true,
+            Role: {
+                select: {
+                    role: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                },
+            },
         },
     });
 

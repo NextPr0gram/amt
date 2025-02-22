@@ -51,6 +51,60 @@ async function main() {
         ],
     });
 
+    const createRoles = await prisma.role.createMany({
+        data: [{ name: "Assessment Lead" }, { name: "Module Lead" }, { name: "Module Tutor" }, { name: "Office Staff" }, { name: "External Revier" }],
+    });
+
+    const AssignRoles = await prisma.userRole.createMany({
+        data: [
+            { userId: 1, roleId: 3 },
+            { userId: 2, roleId: 1 },
+            { userId: 2, roleId: 2 },
+            { userId: 2, roleId: 3 },
+            { userId: 3, roleId: 3 },
+            { userId: 4, roleId: 3 },
+            { userId: 5, roleId: 3 },
+            { userId: 6, roleId: 3 },
+            { userId: 7, roleId: 3 },
+            { userId: 8, roleId: 3 },
+            { userId: 8, roleId: 2 },
+            { userId: 9, roleId: 3 },
+            { userId: 10, roleId: 3 },
+            { userId: 11, roleId: 3 },
+            { userId: 12, roleId: 3 },
+            { userId: 13, roleId: 3 },
+            { userId: 14, roleId: 3 },
+            { userId: 15, roleId: 3 },
+            { userId: 16, roleId: 3 },
+            { userId: 17, roleId: 3 },
+            { userId: 17, roleId: 2 },
+            { userId: 18, roleId: 3 },
+            { userId: 19, roleId: 3 },
+            { userId: 20, roleId: 3 },
+            { userId: 21, roleId: 3 },
+            { userId: 22, roleId: 3 },
+            { userId: 22, roleId: 2 },
+            { userId: 23, roleId: 3 },
+            { userId: 24, roleId: 3 },
+            { userId: 24, roleId: 2 },
+            { userId: 25, roleId: 3 },
+            { userId: 26, roleId: 3 },
+            { userId: 27, roleId: 3 },
+            { userId: 28, roleId: 3 },
+            { userId: 29, roleId: 3 },
+            { userId: 30, roleId: 3 },
+            { userId: 31, roleId: 3 },
+            { userId: 31, roleId: 2 },
+            { userId: 32, roleId: 3 },
+            { userId: 33, roleId: 3 },
+            { userId: 33, roleId: 2 },
+            { userId: 34, roleId: 3 },
+            { userId: 35, roleId: 3 },
+            { userId: 36, roleId: 3 },
+            { userId: 37, roleId: 3 },
+        ],
+    });
+
     const createModules = await prisma.module.createMany({
         data: [
             {
