@@ -3,9 +3,15 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { protectedFetch } from "@/utils/protected-fetch";
 
 export type User = {
-    id: number;
     firstName: string;
     lastName: string;
+    roles: string[];
+};
+
+type UserAPIRespone = {
+    firstName: string;
+    lastName: string;
+    Role: { role: { name: string } }[];
 };
 
 type UsersContextType = {
@@ -20,7 +26,13 @@ export const UsersProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const fetchUsers = async () => {
         const res = await protectedFetch("/users", "GET");
-        setUsers(res.data);
+        const resData = res.data.map((user: UserAPIRespone) => ({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            roles: user.Role.map((role) => role.role.name),
+        }));
+        console.log(resData);
+        setUsers(resData);
     };
 
     useEffect(() => {
