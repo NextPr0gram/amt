@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ColumnDef } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
 import { protectedFetch } from "@/utils/protected-fetch";
+import { useModules } from "@/components/modules-page/module-context";
 
 // This type is used to define the shape of our data.
 type Module = {
@@ -44,17 +45,12 @@ const columns: ColumnDef<Module>[] = [
 // Columns are where you define the core of what your table will look like. They define the data that will be displayed, how it will be formatted, sorted and filtered.
 
 export function DataTable() {
+    const { isModuleAdded, setIsModuleAdded } = useModules();
     const [modules, setModules] = useState<Module[]>([]);
 
     useEffect(() => {
         const fetchModules = async () => {
-            const res = await protectedFetch("/modules", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-            });
+            const res = await protectedFetch("/modules", "GET");
             const resData = res.data.map((module: ModuleAPIResponse) => ({
                 code: module.id,
                 name: module.name,
@@ -64,7 +60,8 @@ export function DataTable() {
             setModules(resData);
         };
         fetchModules();
-    }, []);
+        setIsModuleAdded(false);
+    }, [isModuleAdded, setIsModuleAdded]);
 
     const table = useReactTable({
         data: modules,

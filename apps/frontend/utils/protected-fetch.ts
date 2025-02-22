@@ -1,11 +1,19 @@
 "use client";
 
 // Wrapper function for fetch that handles token refresh
-export const protectedFetch = async (url: string, opts: object) => {
-    const fullUrl = process.env.NEXT_PUBLIC_API_URL + url;
+export const protectedFetch = async (path: string, method: "GET" | "POST", body?: object) => {
+    const endpoint = process.env.NEXT_PUBLIC_API_URL + path;
+    const opts = {
+        method,
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include" as RequestCredentials,
+        body: body ? JSON.stringify(body) : undefined,
+    };
 
     const fetchWithToken = async () => {
-        return await fetch(fullUrl, opts);
+        return await fetch(endpoint, opts);
     };
 
     let res = await fetchWithToken();
@@ -21,7 +29,6 @@ export const protectedFetch = async (url: string, opts: object) => {
             credentials: "include",
         });
         if (refreshRes.status === 200) {
-            console.log("Access token refreshed");
             // Retry the original request with the new token
             res = await fetchWithToken();
             return res.json();

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
@@ -13,7 +13,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NextResponse } from "next/server";
+import { useModules } from "@/components/modules-page/module-context";
 
 type ModuleTutor = {
     id: number;
@@ -41,25 +41,20 @@ const formSchema = z.object({
 });
 
 const AddModuleModal = () => {
+    const { setIsModuleAdded } = useModules();
     const [moduleTutors, setModuleTutors] = useState<ModuleTutor[]>([]);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false); // Add this state
 
     useEffect(() => {
         // Fetch module tutors
         const fetchModuleTutors = async () => {
-            const res = await protectedFetch("/users/get-module-tutors", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-            });
+            const res = await protectedFetch("/users/get-module-tutors", "GET");
             setModuleTutors(res.data);
         };
         fetchModuleTutors();
     }, []);
 
-    // Define your form.
+    // Define form.
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -71,20 +66,16 @@ const AddModuleModal = () => {
     });
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const res = await protectedFetch("/modules/create-module", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({ id: values.moduleCode, name: values.moduleName, year: values.year, moduleLeadId: values.moduleTutorId }),
-        });
+        const body = { id: values.moduleCode, name: values.moduleName, year: values.year, moduleLeadId: values.moduleTutorId };
+        const res = await protectedFetch("/modules/create-module", "POST", body);
 
         if (res.status === 500 && res.data.errorCode === "P2002") {
             form.setError("moduleCode", {
                 type: "manual",
                 message: "Module with the given ID already exists",
             });
+        } else {
+            setIsModuleAdded(true);
         }
     };
     return (

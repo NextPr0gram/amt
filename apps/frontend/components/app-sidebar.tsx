@@ -41,13 +41,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     useEffect(() => {
         const fetchData = async () => {
-            const res = await protectedFetch("/user", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-            });
+            const res = await protectedFetch("/user", "GET");
             setUserData({
                 name: res.data.firstName + " " + res.data.lastName,
                 email: res.data.email,
