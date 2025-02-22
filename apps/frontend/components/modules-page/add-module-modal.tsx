@@ -17,8 +17,7 @@ import { useModules } from "@/components/modules-page/module-context";
 
 type ModuleTutor = {
     id: number;
-    firstName: string;
-    lastName: string;
+    name: string;
 };
 
 const formSchema = z.object({
@@ -33,11 +32,7 @@ const formSchema = z.object({
             required_error: "Please select a year",
         })
         .int(),
-    moduleTutorId: z
-        .number({
-            required_error: "Please select a module tutor to be assigned as the module lead",
-        })
-        .int(),
+    moduleTutorId: z.number({ invalid_type_error: "Value must be an integer" }).int().optional(),
 });
 
 const AddModuleModal = () => {
@@ -49,7 +44,8 @@ const AddModuleModal = () => {
         // Fetch module tutors
         const fetchModuleTutors = async () => {
             const res = await protectedFetch("/users/get-module-tutors", "GET");
-            setModuleTutors(res.data);
+            const moduleTutors = res.data.map((moduleTutor: { id: number; firstName: string; lastName: string }) => ({ ...moduleTutor, name: moduleTutor.firstName + " " + moduleTutor.lastName }));
+            setModuleTutors(moduleTutors);
         };
         fetchModuleTutors();
     }, []);
@@ -61,7 +57,7 @@ const AddModuleModal = () => {
             moduleCode: "",
             moduleName: "",
             year: 1,
-            moduleTutorId: 1,
+            moduleTutorId: undefined,
         },
     });
 
@@ -140,7 +136,7 @@ const AddModuleModal = () => {
                                 <PopoverTrigger asChild>
                                     <FormControl>
                                         <Button variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")}>
-                                            {field.value ? `${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.firstName} ${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.lastName}` : "Select module tutor"}
+                                            {field.value ? `${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.name}` : "Select module tutor"}
                                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                         </Button>
                                     </FormControl>
@@ -153,14 +149,14 @@ const AddModuleModal = () => {
                                             <CommandGroup>
                                                 {moduleTutors.map((moduleTutor: ModuleTutor) => (
                                                     <CommandItem
-                                                        value={moduleTutor.firstName + " " + moduleTutor.lastName}
+                                                        value={moduleTutor.name}
                                                         key={moduleTutor.id}
                                                         onSelect={() => {
                                                             form.setValue("moduleTutorId", moduleTutor.id);
                                                             setIsPopoverOpen(false);
                                                         }}
                                                     >
-                                                        {moduleTutor.firstName + " " + moduleTutor.lastName}
+                                                        {moduleTutor.name}
                                                         <Check className={cn("ml-auto", moduleTutor.id === field.value ? "opacity-100" : "opacity-0")} />
                                                     </CommandItem>
                                                 ))}

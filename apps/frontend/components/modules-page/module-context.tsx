@@ -34,7 +34,7 @@ export const ModulesProvider: React.FC<{ children: React.ReactNode }> = ({ child
             code: module.id,
             name: module.name,
             year: "1",
-            lead: module.moduleLead.firstName + " " + module.moduleLead.lastName,
+            lead: module.moduleLead ? `${module.moduleLead.firstName} ${module.moduleLead.lastName}` : null,
         }));
         setModules(resData);
     };
