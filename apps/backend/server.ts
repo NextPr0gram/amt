@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true })); // Allows parsing of URL-encode
 app.use(cors({ origin: process.env.APP_ORIGIN, credentials: true })); // Enable CORS, only allow requests from our frontend next.js app
 app.use(cookieParser()); // Allows parsing of cookies in the request headers
 
-app.use("/", logRequests, router);
+app.use("/api/v1/", logRequests, router);
 
 // Error handler middleware
 app.use(errorHandler);

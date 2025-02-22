@@ -21,8 +21,8 @@ const items = [
         icon: Users,
     },
     {
-        title: "Modules Tutors",
-        url: "/dashboard/module-tutors",
+        title: "Users",
+        url: "/dashboard/users",
         icon: UserRoundPen,
     },
     {

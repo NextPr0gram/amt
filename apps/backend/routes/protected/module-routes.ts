@@ -5,6 +5,6 @@ const modulesRouter = Router();
 
 // Prefix: /modules
 modulesRouter.get("/", getModulesHandler);
-modulesRouter.post("/create-module", createModuleHandler);
+modulesRouter.post("/", createModuleHandler);
 
 export default modulesRouter;

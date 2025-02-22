@@ -43,7 +43,7 @@ const AddModuleModal = () => {
     useEffect(() => {
         // Fetch module tutors
         const fetchModuleTutors = async () => {
-            const res = await protectedFetch("/users", "GET");
+            const res = await protectedFetch("/users/get-module-tutors", "GET");
             const moduleTutors = res.data.map((moduleTutor: { id: number; firstName: string; lastName: string }) => ({ ...moduleTutor, name: moduleTutor.firstName + " " + moduleTutor.lastName }));
             setModuleTutors(moduleTutors);
         };

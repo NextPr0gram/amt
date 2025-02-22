@@ -4,6 +4,6 @@ import { Router } from "express";
 const usersRouter = Router();
 
 // Prefix: /users
-usersRouter.get("/get-module-tutors", getModuleTutorsHandler);
+usersRouter.get("/", getModuleTutorsHandler);
 
 export default usersRouter;

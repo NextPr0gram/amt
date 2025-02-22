@@ -21,7 +21,7 @@ export default function Page() {
                             <Breadcrumb>
                                 <BreadcrumbList>
                                     <BreadcrumbItem className="hidden md:block">
-                                        <BreadcrumbLink href="#">Dashboard</BreadcrumbLink>
+                                        <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator className="hidden md:block" />
                                     <BreadcrumbItem>
@@ -29,7 +29,7 @@ export default function Page() {
                                     </BreadcrumbItem>
                                 </BreadcrumbList>
                             </Breadcrumb>
-                        </div>{" "}
+                        </div>
                         <Dialog>
                             <DialogTrigger asChild>
                                 <Button size="sm" className="ml-auto">
