@@ -1,15 +1,49 @@
 "use client";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { protectedFetch } from "@/utils/protected-fetch";
 
-const ModulesContext = createContext<{ isModuleAdded: boolean; setIsModuleAdded: React.Dispatch<React.SetStateAction<boolean>> } | undefined>(undefined);
+export type Module = {
+    code: string;
+    name: string;
+    year: "1" | "2" | "3" | "PG";
+    lead: string;
+};
+
+type ModuleAPIResponse = {
+    id: string;
+    name: string;
+    moduleLead: {
+        firstName: string;
+        lastName: string;
+    };
+};
+
+type ModulesContextType = {
+    modules: Module[];
+    fetchModules: () => void;
+};
+
+const ModulesContext = createContext<ModulesContextType | undefined>(undefined);
 
 export const ModulesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [isModuleAdded, setIsModuleAdded] = useState(false);
-    useEffect(() => {
-        console.log("Module added: ", isModuleAdded);
-    }, [isModuleAdded]);
+    const [modules, setModules] = useState<Module[]>([]);
 
-    return <ModulesContext.Provider value={{ isModuleAdded, setIsModuleAdded }}>{children}</ModulesContext.Provider>;
+    const fetchModules = async () => {
+        const res = await protectedFetch("/modules", "GET");
+        const resData = res.data.map((module: ModuleAPIResponse) => ({
+            code: module.id,
+            name: module.name,
+            year: "1",
+            lead: module.moduleLead.firstName + " " + module.moduleLead.lastName,
+        }));
+        setModules(resData);
+    };
+
+    useEffect(() => {
+        fetchModules();
+    }, []);
+
+    return <ModulesContext.Provider value={{ modules, fetchModules }}>{children}</ModulesContext.Provider>;
 };
 
 export const useModules = () => {

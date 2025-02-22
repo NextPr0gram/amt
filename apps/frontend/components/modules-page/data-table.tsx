@@ -3,26 +3,7 @@
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ColumnDef } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
-import { protectedFetch } from "@/utils/protected-fetch";
-import { useModules } from "@/components/modules-page/module-context";
-
-// This type is used to define the shape of our data.
-type Module = {
-    code: string;
-    name: string;
-    year: "1" | "2" | "3" | "PG";
-    lead: string;
-};
-
-type ModuleAPIResponse = {
-    id: string;
-    name: string;
-    moduleLead: {
-        firstName: string;
-        lastName: string;
-    };
-};
+import { Module, useModules } from "@/components/modules-page/module-context";
 
 const columns: ColumnDef<Module>[] = [
     {
@@ -45,23 +26,7 @@ const columns: ColumnDef<Module>[] = [
 // Columns are where you define the core of what your table will look like. They define the data that will be displayed, how it will be formatted, sorted and filtered.
 
 export function DataTable() {
-    const { isModuleAdded, setIsModuleAdded } = useModules();
-    const [modules, setModules] = useState<Module[]>([]);
-
-    useEffect(() => {
-        const fetchModules = async () => {
-            const res = await protectedFetch("/modules", "GET");
-            const resData = res.data.map((module: ModuleAPIResponse) => ({
-                code: module.id,
-                name: module.name,
-                year: "1",
-                lead: module.moduleLead.firstName + " " + module.moduleLead.lastName,
-            }));
-            setModules(resData);
-        };
-        fetchModules();
-        setIsModuleAdded(false);
-    }, [isModuleAdded, setIsModuleAdded]);
+    const { modules } = useModules();
 
     const table = useReactTable({
         data: modules,

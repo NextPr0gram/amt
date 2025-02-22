@@ -41,7 +41,7 @@ const formSchema = z.object({
 });
 
 const AddModuleModal = () => {
-    const { setIsModuleAdded } = useModules();
+    const { fetchModules } = useModules();
     const [moduleTutors, setModuleTutors] = useState<ModuleTutor[]>([]);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false); // Add this state
 
@@ -75,7 +75,7 @@ const AddModuleModal = () => {
                 message: "Module with the given ID already exists",
             });
         } else {
-            setIsModuleAdded(true);
+            fetchModules();
         }
     };
     return (
