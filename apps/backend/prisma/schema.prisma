@@ -43,7 +43,7 @@ model Session {
 model Module {
     id           String        @id
     name         String
-    year         Int
+    year         String
     moduleLeadId Int?
     moduleLead   User?         @relation(fields: [moduleLeadId], references: [id])
     moduleTutors ModuleTutor[]
