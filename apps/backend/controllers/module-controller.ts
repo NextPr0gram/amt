@@ -9,6 +9,7 @@ export const getModulesHandler = catchErrors(async (req, res) => {
         select: {
             id: true,
             name: true,
+            year: true,
             moduleLead: {
                 select: {
                     firstName: true,
