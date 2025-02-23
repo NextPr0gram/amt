@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { DataTable } from "@/components/users-page/data-table";
 import { UsersProvider } from "@/components/users-page/user-context";
-import { DataTablePagination } from "../../../components/users-page/pagination";
+import { DataTablePagination } from "../../../components/users-page/data-table-pagination";
 
 export default function Page() {
     return (
