@@ -17,12 +17,13 @@ interface DataTableFacetedFilterProps<TData, TValue> {
         value: string;
         icon?: React.ComponentType<{ className?: string }>;
     }[];
+    customFacetMap?: Map<string, number>;
 }
 
-export function DataTableFacetedFilter<TData, TValue>({ column, title, options }: DataTableFacetedFilterProps<TData, TValue>) {
-    const facets = column?.getFacetedUniqueValues();
-    const selectedValues = new Set(column?.getFilterValue() as string[]);
+export function DataTableFacetedFilter<TData, TValue>({ column, title, options, customFacetMap }: DataTableFacetedFilterProps<TData, TValue>) {
+    const facets = customFacetMap || column?.getFacetedUniqueValues?.();
 
+    const selectedValues = new Set(column?.getFilterValue() as string[]);
     return (
         <Popover>
             <PopoverTrigger asChild>

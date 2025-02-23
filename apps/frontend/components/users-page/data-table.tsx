@@ -5,8 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ColumnDef } from "@tanstack/react-table";
 import { User, useUsers } from "./user-context";
 import { useState } from "react";
-import { DataTableToolbar } from "./data-table-toolbar";
-import { DataTablePagination } from "./data-table-pagination";
+import { DataTableToolbar } from "../data-table/data-table-toolbar";
+import { DataTablePagination } from "../data-table/data-table-pagination";
 
 export const columns: ColumnDef<User>[] = [
     {
@@ -20,10 +20,40 @@ export const columns: ColumnDef<User>[] = [
     {
         accessorKey: "roles",
         header: "Roles",
+        // convert split array to individual strings
+        accessorFn: (row) => row.roles.join(", "), // Convert array → string
         cell: ({ row }) => row.original.roles.join(", "),
         filterFn: "arrIncludesSome",
+        enableColumnFilter: true,
     },
 ];
+
+const filterOptions = [
+    {
+        label: "Assessment Lead",
+        value: "Assessment Lead",
+    },
+    {
+        label: "Module Lead",
+        value: "Module Lead",
+    },
+    {
+        label: "Module Tutor",
+        value: "Module Tutor",
+    },
+];
+
+const getCustomFacetMap = (data: User[]) => {
+    const facetMap = new Map<string, number>();
+
+    data.forEach((user) => {
+        user.roles.forEach((role) => {
+            facetMap.set(role, (facetMap.get(role) || 0) + 1);
+        });
+    });
+
+    return facetMap;
+};
 
 export function DataTable() {
     const { users } = useUsers();
@@ -45,7 +75,7 @@ export function DataTable() {
 
     return (
         <div>
-            <DataTableToolbar table={table} />
+            <DataTableToolbar table={table} filterColumn="roles" filterTitle="Roles" filterOptions={filterOptions} seachInputPlaceholder="Search user" customFacetMap={getCustomFacetMap(users)} />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
