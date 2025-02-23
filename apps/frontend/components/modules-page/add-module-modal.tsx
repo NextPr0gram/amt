@@ -21,9 +21,12 @@ type ModuleTutor = {
 };
 
 const formSchema = z.object({
-    moduleCode: z.string().min(1, {
-        message: "This field is required",
-    }),
+    moduleCode: z
+        .string()
+        .min(1, {
+            message: "This field is required",
+        })
+        .refine((s) => !s.includes(" "), "Module code cannot have spaces"),
     moduleName: z.string().min(1, {
         message: "This field is required",
     }),
