@@ -7,7 +7,7 @@ import { Module, useModules } from "@/components/modules-page/module-context";
 import { DataTableToolbar } from "../data-table/data-table-toolbar";
 import { useState } from "react";
 import { DataTablePagination } from "../data-table/data-table-pagination";
-import { DialogContent, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { DialogContent, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Dialog } from "@radix-ui/react-dialog";
 import ModuleModal from "./module-modal";
@@ -112,7 +112,6 @@ export function DataTable() {
                             )}
                         </TableBody>
                         <DialogContent>
-                            <DialogTitle>View or edit module</DialogTitle>
                             <ModuleModal type="viewOrEdit" module={selectedModule as Module} />
                         </DialogContent>
                     </Dialog>

@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Module, useModules } from "@/components/modules-page/module-context";
-import { DialogClose } from "../ui/dialog";
+import { DialogClose, DialogTitle } from "../ui/dialog";
 
 type ModuleTutor = {
     id: number;
@@ -90,16 +90,29 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
         if (type === "viewOrEdit") {
             return isEditing ? (
                 <div className="flex space-x-4">
-                    <Button>Save changes</Button>
-                    <Button onClick={() => setIsEditing(!isEditing)} variant="outline">
+                    <Button type="submit">Save changes</Button>
+                    <Button
+                        onClick={() => {
+                            form.reset(getFormSchema()); // Reset to initial values
+                            setIsEditing(false);
+                        }}
+                        variant="outline"
+                    >
                         Back
                     </Button>
                 </div>
             ) : (
                 <div className="flex space-x-4">
-                    <Button onClick={() => setIsEditing(!isEditing)}>Edit</Button>
+                    <Button
+                        onClick={(e) => {
+                            e.preventDefault(); // prevent form submission
+                            setIsEditing(true);
+                        }}
+                    >
+                        Edit
+                    </Button>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline">Close</Button>
                     </DialogClose>
                 </div>
             );
@@ -129,104 +142,107 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
         }
     };
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                <FormField
-                    control={form.control}
-                    name="moduleCode"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Module Code</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g AB1CDE" {...field} readOnly={!isEditing} />
-                            </FormControl>
-                            {/*<FormDescription>This is your public display name.</FormDescription>*/}
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="moduleName"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Module Name</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g. System Design" {...field} readOnly={!isEditing} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="year"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Year</FormLabel>
-                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value.toString()} disabled={!isEditing}>
+        <>
+            <DialogTitle>{isEditing ? "Edit module information" : "View module information"}</DialogTitle>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <FormField
+                        control={form.control}
+                        name="moduleCode"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Module Code</FormLabel>
                                 <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="e.g. Year 1" />
-                                    </SelectTrigger>
+                                    <Input placeholder="e.g AB1CDE" {...field} readOnly={!isEditing} />
                                 </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="1">Year 1</SelectItem>
-                                    <SelectItem value="2">year 2</SelectItem>
-                                    <SelectItem value="3">Year 3</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="moduleTutorId"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                            <FormLabel>Module Lead</FormLabel>
-                            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                                <PopoverTrigger asChild>
+                                {/*<FormDescription>This is your public display name.</FormDescription>*/}
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="moduleName"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Module Name</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="e.g. System Design" {...field} readOnly={!isEditing} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="year"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Year</FormLabel>
+                                <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value.toString()} disabled={!isEditing}>
                                     <FormControl>
-                                        <Button variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} disabled={!isEditing}>
-                                            {field.value ? `${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.name}` : "Select module tutor"}
-                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                        </Button>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="e.g. Year 1" />
+                                        </SelectTrigger>
                                     </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 -mt-2">
-                                    <Command>
-                                        <CommandInput placeholder="Search module tutor..." />
-                                        <CommandList>
-                                            <CommandEmpty>No module tutors found.</CommandEmpty>
-                                            <CommandGroup>
-                                                {moduleTutors.map((moduleTutor: ModuleTutor) => (
-                                                    <CommandItem
-                                                        value={moduleTutor.name}
-                                                        key={moduleTutor.id}
-                                                        onSelect={() => {
-                                                            form.setValue("moduleTutorId", moduleTutor.id);
-                                                            setIsPopoverOpen(false);
-                                                        }}
-                                                    >
-                                                        {moduleTutor.name}
-                                                        <Check className={cn("ml-auto", moduleTutor.id === field.value ? "opacity-100" : "opacity-0")} />
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                                    <SelectContent>
+                                        <SelectItem value="1">Year 1</SelectItem>
+                                        <SelectItem value="2">year 2</SelectItem>
+                                        <SelectItem value="3">Year 3</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="moduleTutorId"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel>Module Lead</FormLabel>
+                                <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} disabled={!isEditing}>
+                                                {field.value ? `${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.name}` : "Select module tutor"}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 -mt-2">
+                                        <Command>
+                                            <CommandInput placeholder="Search module tutor..." />
+                                            <CommandList>
+                                                <CommandEmpty>No module tutors found.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {moduleTutors.map((moduleTutor: ModuleTutor) => (
+                                                        <CommandItem
+                                                            value={moduleTutor.name}
+                                                            key={moduleTutor.id}
+                                                            onSelect={() => {
+                                                                form.setValue("moduleTutorId", moduleTutor.id);
+                                                                setIsPopoverOpen(false);
+                                                            }}
+                                                        >
+                                                            {moduleTutor.name}
+                                                            <Check className={cn("ml-auto", moduleTutor.id === field.value ? "opacity-100" : "opacity-0")} />
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                {buttons()}
-            </form>
-        </Form>
+                    {buttons()}
+                </form>
+            </Form>
+        </>
     );
 };
 
