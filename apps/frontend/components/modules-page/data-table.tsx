@@ -7,6 +7,10 @@ import { Module, useModules } from "@/components/modules-page/module-context";
 import { DataTableToolbar } from "../data-table/data-table-toolbar";
 import { useState } from "react";
 import { DataTablePagination } from "../data-table/data-table-pagination";
+import { DialogContent, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Button } from "../ui/button";
+import { Dialog } from "@radix-ui/react-dialog";
+import ModuleModal from "./module-modal";
 
 // Columns are define the core of what the table will look like. They define the data that will be displayed, how it will be formatted, sorted and filtered.
 const columns: ColumnDef<Module>[] = [
@@ -26,6 +30,10 @@ const columns: ColumnDef<Module>[] = [
     {
         accessorKey: "lead",
         header: "Module Lead",
+    },
+    {
+        id: "edit",
+        enableHiding: false,
     },
 ];
 
@@ -47,6 +55,7 @@ const filterOptions = [
 export function DataTable() {
     const { modules } = useModules();
     const [globalFilter, setGlobalFilter] = useState([]);
+    const [selectedModule, setSelectedModule] = useState<Module | null>(null);
 
     const table = useReactTable({
         data: modules,
@@ -76,23 +85,37 @@ export function DataTable() {
                             </TableRow>
                         ))}
                     </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                                    ))}
+                    <Dialog>
+                        <TableBody>
+                            {table.getRowModel().rows?.length ? (
+                                table.getRowModel().rows.map((row) => (
+                                    <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                                        {row.getVisibleCells().map((cell) => (
+                                            <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                                        ))}
+                                        {/* View Button to trigger dialog for module details */}
+                                        <TableCell>
+                                            <DialogTrigger asChild>
+                                                <Button variant={"link"} size="sm" className="ml-auto" onClick={() => setSelectedModule(row.original as Module)}>
+                                                    View
+                                                </Button>
+                                            </DialogTrigger>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                                        No results.
+                                    </TableCell>
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
+                            )}
+                        </TableBody>
+                        <DialogContent>
+                            <DialogTitle>View or edit module</DialogTitle>
+                            <ModuleModal type="viewOrEdit" module={selectedModule as Module} />
+                        </DialogContent>
+                    </Dialog>
                 </Table>
             </div>
             <DataTablePagination table={table} />

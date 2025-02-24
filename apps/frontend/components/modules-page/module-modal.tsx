@@ -13,12 +13,19 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useModules } from "@/components/modules-page/module-context";
+import { Module, useModules } from "@/components/modules-page/module-context";
+import { DialogClose } from "../ui/dialog";
 
 type ModuleTutor = {
     id: number;
     name: string;
 };
+
+// module prop required if mode is edit
+interface ModuleModalProps {
+    type: "add" | "viewOrEdit";
+    module?: Module;
+}
 
 const formSchema = z.object({
     moduleCode: z
@@ -38,10 +45,11 @@ const formSchema = z.object({
     moduleTutorId: z.number({ invalid_type_error: "Value must be an integer" }).int().optional(),
 });
 
-const AddModuleModal = () => {
+const ModuleModal = ({ type, module }: ModuleModalProps) => {
     const { fetchModules } = useModules();
     const [moduleTutors, setModuleTutors] = useState<ModuleTutor[]>([]);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false); // Add this state
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         // Fetch module tutors
@@ -53,16 +61,59 @@ const AddModuleModal = () => {
         fetchModuleTutors();
     }, []);
 
+    console.log(module);
+    const getFormSchema = () => {
+        if (type === "add") {
+            return {
+                moduleCode: "",
+                moduleName: "",
+                year: 1,
+                moduleTutorId: undefined,
+            };
+        } else if (type === "viewOrEdit") {
+            return {
+                moduleCode: module?.code || "",
+                moduleName: module?.name || "",
+                year: module?.year ? parseInt(module.year.toString()) : 1,
+                moduleTutorId: module?.leadId,
+            };
+        }
+    };
+
     // Define form.
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            moduleCode: "",
-            moduleName: "",
-            year: 1,
-            moduleTutorId: undefined,
-        },
+        defaultValues: getFormSchema(),
     });
+
+    const buttons = () => {
+        if (type === "viewOrEdit") {
+            return isEditing ? (
+                <div className="flex space-x-4">
+                    <Button>Save changes</Button>
+                    <Button onClick={() => setIsEditing(!isEditing)} variant="outline">
+                        Back
+                    </Button>
+                </div>
+            ) : (
+                <div className="flex space-x-4">
+                    <Button onClick={() => setIsEditing(!isEditing)}>Edit</Button>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                </div>
+            );
+        } else if (type === "add") {
+            return (
+                <div className="flex space-x-4">
+                    <Button type="submit">Add</Button>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                </div>
+            );
+        }
+    };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         const body = { id: values.moduleCode, name: values.moduleName, year: values.year, moduleLeadId: values.moduleTutorId };
@@ -87,7 +138,7 @@ const AddModuleModal = () => {
                         <FormItem>
                             <FormLabel>Module Code</FormLabel>
                             <FormControl>
-                                <Input placeholder="e.g AB1CDE" {...field} />
+                                <Input placeholder="e.g AB1CDE" {...field} readOnly={!isEditing} />
                             </FormControl>
                             {/*<FormDescription>This is your public display name.</FormDescription>*/}
                             <FormMessage />
@@ -101,7 +152,7 @@ const AddModuleModal = () => {
                         <FormItem>
                             <FormLabel>Module Name</FormLabel>
                             <FormControl>
-                                <Input placeholder="e.g. System Design" {...field} />
+                                <Input placeholder="e.g. System Design" {...field} readOnly={!isEditing} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -113,7 +164,7 @@ const AddModuleModal = () => {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Year</FormLabel>
-                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value.toString()}>
+                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value.toString()} disabled={!isEditing}>
                                 <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="e.g. Year 1" />
@@ -138,7 +189,7 @@ const AddModuleModal = () => {
                             <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                                 <PopoverTrigger asChild>
                                     <FormControl>
-                                        <Button variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")}>
+                                        <Button variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} disabled={!isEditing}>
                                             {field.value ? `${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.name}` : "Select module tutor"}
                                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                         </Button>
@@ -172,10 +223,11 @@ const AddModuleModal = () => {
                         </FormItem>
                     )}
                 />
-                <Button type="submit">Submit</Button>
+
+                {buttons()}
             </form>
         </Form>
     );
 };
 
-export default AddModuleModal;
+export default ModuleModal;

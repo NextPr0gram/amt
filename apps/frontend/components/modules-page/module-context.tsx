@@ -7,6 +7,7 @@ export type Module = {
     name: string;
     year: "1" | "2" | "3" | "PG";
     lead: string;
+    leadId: number | undefined;
 };
 
 type ModuleAPIResponse = {
@@ -14,6 +15,7 @@ type ModuleAPIResponse = {
     name: string;
     year: "1" | "2" | "3" | "PG";
     moduleLead: {
+        id: number;
         firstName: string;
         lastName: string;
     };
@@ -36,6 +38,7 @@ export const ModulesProvider: React.FC<{ children: React.ReactNode }> = ({ child
             name: module.name,
             year: module.year,
             lead: module.moduleLead ? `${module.moduleLead.firstName} ${module.moduleLead.lastName}` : null,
+            leadId: module.moduleLead.id,
         }));
         setModules(resData);
     };
