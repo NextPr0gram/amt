@@ -7,6 +7,7 @@ import { User, useUsers } from "./user-context";
 import { useState } from "react";
 import { DataTableToolbar } from "../data-table/data-table-toolbar";
 import { DataTablePagination } from "../data-table/data-table-pagination";
+import { RoleBadge } from "../ui/roleBadge";
 
 export const columns: ColumnDef<User>[] = [
     {
@@ -22,7 +23,13 @@ export const columns: ColumnDef<User>[] = [
         header: "Roles",
         // convert split array to individual strings
         accessorFn: (row) => row.roles.join(", "), // Convert array → string
-        cell: ({ row }) => row.original.roles.join(", "),
+        cell: ({ row }) => (
+            <div className="flex flex-wrap gap-1">
+                {row.original.roles.map((role: string, index: number) => (
+                    <RoleBadge key={index} role={role as "Assessment Lead" | "Module Lead" | "Module Tutor"} />
+                ))}
+            </div>
+        ),
         filterFn: "arrIncludesSome",
         enableColumnFilter: true,
     },
