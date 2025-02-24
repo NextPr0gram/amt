@@ -41,17 +41,25 @@ model Session {
 // Many modules have many module tutors
 // One module lead can lead many modules
 model Module {
-    id           String        @id
+    id           Int           @id @default(autoincrement())
+    code         String        @unique
     name         String
-    year         String
+    yearId       Int
+    year         Year          @relation(fields: [yearId], references: [id])
     moduleLeadId Int?
     moduleLead   User?         @relation(fields: [moduleLeadId], references: [id])
     moduleTutors ModuleTutor[]
 }
 
+model Year {
+    id     Int      @id @default(autoincrement())
+    name   String
+    Module Module[]
+}
+
 model ModuleTutor {
     userId   Int
-    moduleId String
+    moduleId Int
 
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
     module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)

@@ -4,10 +4,21 @@ import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
 import catchErrors from "../utils/catch-errors";
 
+const moduleSchema = z.object({
+    code: z
+        .string()
+        .min(1)
+        .max(255)
+        .refine((s) => !s.includes(" "), "Id cannot have spaces"),
+    name: z.string().min(1).max(255),
+    yearId: z.number().int(),
+    moduleLeadId: z.number().int(),
+});
+
 export const getModulesHandler = catchErrors(async (req, res) => {
     const modules = await prisma.module.findMany({
         select: {
-            id: true,
+            code: true,
             name: true,
             year: true,
             moduleLead: {
@@ -25,27 +36,33 @@ export const getModulesHandler = catchErrors(async (req, res) => {
 });
 
 export const createModuleHandler = catchErrors(async (req, res) => {
-    const moduleSchema = z.object({
-        id: z
-            .string()
-            .min(1)
-            .max(255)
-            .refine((s) => !s.includes(" "), "Id cannot have spaces"),
-        name: z.string().min(1).max(255),
-        year: z.number().int(),
-        moduleLeadId: z.number().int(),
-    });
-
-    const { id, name, year, moduleLeadId } = moduleSchema.parse(req.body);
+    const { code, name, yearId, moduleLeadId } = moduleSchema.parse(req.body);
     const module = await prisma.module.create({
         data: {
-            id,
+            code,
             name,
-            year,
+            yearId,
             moduleLeadId,
         },
     });
 
     appAssert(module, UNPROCESSABLE_CONTENT, "Module with the given ID already exists");
+    return res.status(OK).json(module);
+});
+
+export const updateModuleHandler = catchErrors(async (req, res) => {
+    const { id, code, name, yearId, moduleLeadId } = moduleSchema.parse(req.body);
+    // update only fields that are not undefined
+
+    const module = await prisma.module.update({
+        where: { id },
+        data: {
+            code,
+            name,
+            yearId,
+            moduleLeadId,
+        },
+    });
+    appAssert(module, NOT_FOUND, "Module not found");
     return res.status(OK).json(module);
 });
