@@ -72,23 +72,7 @@ export const updateModuleHandler = catchErrors(async (req, res) => {
     const { id, code, name, yearId, moduleLeadId, moduleTutors } = moduleSchemaWithId.parse(req.body);
 
     const updateAssignTutors: { moduleId: number; userId: number }[] = moduleTutors.map((userId) => ({ moduleId: id, userId }));
-    /* const updateModule = await prisma.module.update({
-        where: { id },
-        data: {
-            code,
-            name,
-            yearId,
-            moduleLeadId,
-            moduleTutors: {
-                deleteMany: {
-                    moduleId: id,
-                },
-                createMany: {
-                    data: updateAssignTutors,
-                },
-            },
-        },
-    }); */
+
     const [updateModule, deleteModuleTutors, createModuleTutors] = await prisma.$transaction([
         prisma.module.update({
             where: { id },

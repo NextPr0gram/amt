@@ -127,11 +127,12 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
     const buttons = () => {
         if (type === "viewOrEdit") {
             return isEditing ? (
-                <div className="flex space-x-4">
+                <div className="flex space-x-4 item">
                     <Button size="sm" type="submit">
                         Save changes
                     </Button>
                     <Button
+                        size="sm"
                         onClick={() => {
                             form.reset(getFormSchema()); // Reset to initial values
                             setIsEditing(false);
@@ -144,6 +145,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
             ) : (
                 <div className="flex space-x-4">
                     <Button
+                        size="sm"
                         onClick={(e) => {
                             e.preventDefault(); // prevent form submission
                             setIsEditing(true);
