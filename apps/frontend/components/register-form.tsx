@@ -69,7 +69,7 @@ export function RegisterForm() {
                         <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
                     </div>
                     {error && <p className="text-red-500">{error}</p>}
-                    <Button type="submit" className="w-full">
+                    <Button size="sm"type="submit" className="w-full">
                         Register
                     </Button>
                 </form>

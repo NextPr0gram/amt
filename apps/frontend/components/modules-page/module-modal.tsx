@@ -11,10 +11,11 @@ import { useEffect, useState } from "react";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, CheckCircle2, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Module, useModules } from "@/components/modules-page/module-context";
 import { DialogClose, DialogTitle } from "../ui/dialog";
+import { Alert, AlertDescription } from "../ui/alert";
 
 type ModuleTutor = {
     id: number;
@@ -57,6 +58,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
     const [isModuleTutorPopoverOpen, setIsModuleTutorPopoverOpen] = useState(false);
     const [isYearPopoverOpen, setIsYearPopoverOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(type === "add" ? true : false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
         const fetchModuleTutors = async () => {
@@ -73,6 +75,15 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
         fetchModuleTutors();
         fetchYears();
     }, []);
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (showSuccess) {
+            timer = setTimeout(() => {
+                setShowSuccess(false);
+            }, 3000);
+        }
+        return () => clearTimeout(timer);
+    }, [showSuccess]);
 
     console.log(module);
     const getFormSchema = () => {
@@ -103,7 +114,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
         if (type === "viewOrEdit") {
             return isEditing ? (
                 <div className="flex space-x-4">
-                    <Button type="submit">Save changes</Button>
+                    <Button size="sm"type="submit">Save changes</Button>
                     <Button
                         onClick={() => {
                             form.reset(getFormSchema()); // Reset to initial values
@@ -125,16 +136,16 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                         Edit
                     </Button>
                     <DialogClose asChild>
-                        <Button variant="outline">Close</Button>
+                        <Button size="sm"variant="outline">Close</Button>
                     </DialogClose>
                 </div>
             );
         } else if (type === "add") {
             return (
                 <div className="flex space-x-4">
-                    <Button type="submit">Add</Button>
+                    <Button size="sm"type="submit">Add</Button>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button size="sm"variant="outline">Close</Button>
                     </DialogClose>
                 </div>
             );
@@ -142,7 +153,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const body = { id: module.id, code: values.moduleCode, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId };
+        const body = { id: module?.id, code: values.moduleCode, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId };
         console.log(body);
         let res;
 
@@ -159,11 +170,20 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
             });
         } else {
             fetchModules();
+            setShowSuccess(true);
+            //reset form
+            form.reset(getFormSchema());
         }
     };
     return (
         <>
             <DialogTitle>{type === "add" ? "Add new module" : isEditing ? "Edit module information" : "View module information"}</DialogTitle>
+            {showSuccess && (
+                <Alert className="bg-green-50 text-green-700 border-green-200">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <AlertDescription>Module has been added successfully.</AlertDescription>
+                </Alert>
+            )}
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <FormField
@@ -202,7 +222,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                                 <Popover open={isYearPopoverOpen} onOpenChange={setIsYearPopoverOpen}>
                                     <PopoverTrigger asChild>
                                         <FormControl>
-                                            <Button variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} disabled={!isEditing}>
+                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} disabled={!isEditing}>
                                                 {field.value ? `${years.find((year: Year) => year.id === field.value)?.name}` : "Select year"}
                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>
@@ -245,7 +265,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                                 <Popover open={isModuleTutorPopoverOpen} onOpenChange={setIsModuleTutorPopoverOpen}>
                                     <PopoverTrigger asChild>
                                         <FormControl>
-                                            <Button variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} disabled={!isEditing}>
+                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} disabled={!isEditing}>
                                                 {field.value ? `${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.name}` : "Select module tutor"}
                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>

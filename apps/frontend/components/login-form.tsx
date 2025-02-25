@@ -51,7 +51,7 @@ export function LoginForm() {
                         <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
                     {error && <p className="text-red-500">{error}</p>}
-                    <Button type="submit" className="w-full">
+                    <Button size="sm"type="submit" className="w-full">
                         Login
                     </Button>
                 </form>
