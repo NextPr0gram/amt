@@ -31,7 +31,7 @@ type Year = {
 // module prop required if mode is edit
 interface ModuleModalProps {
     type: "add" | "viewOrEdit";
-    module?: Module;
+    moduleId: number;
 }
 
 const formSchema = z
@@ -63,8 +63,8 @@ const formSchema = z
         { message: "Module tutors list cannot contain the module lead", path: ["moduleTutors"] }
     );
 
-const ModuleModal = ({ type, module }: ModuleModalProps) => {
-    const { fetchModules } = useModules();
+const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
+    const { fetchModules, modules } = useModules();
     const [moduleTutors, setModuleTutors] = useState<ModuleTutor[]>([]);
     const [years, setyears] = useState<Year[]>([]);
     const [isModuleTutorPopoverOpen, setIsModuleTutorPopoverOpen] = useState(false);
@@ -87,17 +87,17 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
         fetchModuleTutors();
         fetchYears();
     }, []);
+
     useEffect(() => {
         let timer: NodeJS.Timeout;
         if (showSuccess) {
             timer = setTimeout(() => {
                 setShowSuccess(false);
-            }, 3000);
+            }, 5000);
         }
         return () => clearTimeout(timer);
     }, [showSuccess]);
 
-    console.log(module);
     const getFormSchema = () => {
         if (type === "add") {
             return {
@@ -108,17 +108,25 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                 moduleTutors: [],
             };
         } else if (type === "viewOrEdit") {
+            const currentModule = modules.find((module: Module) => module.id === moduleId);
+
             return {
-                moduleCode: module?.code || "",
-                moduleName: module?.name || "",
-                yearId: module?.yearId,
-                moduleTutorId: module?.leadId,
-                moduleTutors: module?.moduleTutorIds,
+                moduleCode: currentModule?.code || "",
+                moduleName: currentModule?.name || "",
+                yearId: currentModule?.yearId || undefined,
+                moduleTutorId: currentModule?.leadId || undefined,
+                moduleTutors: currentModule?.moduleTutorIds || [],
             };
         }
     };
 
-    // Define form.
+    useEffect(() => {
+        if (type === "viewOrEdit") {
+            form.reset(getFormSchema());
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [modules]);
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: getFormSchema(),
@@ -177,8 +185,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const body = { id: module?.id, code: values.moduleCode, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId, moduleTutors: values.moduleTutors };
-        console.log(body);
+        const body = { id: moduleId, code: values.moduleCode, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId, moduleTutors: values.moduleTutors };
         let res;
 
         if (type === "viewOrEdit") {
@@ -195,10 +202,9 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                 });
             }
         } else {
-            fetchModules();
             setShowSuccess(true);
-            //reset form
-            form.reset(getFormSchema());
+            fetchModules();
+            setIsEditing(false);
         }
     };
     return (
@@ -219,7 +225,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                             <FormItem className={cn(!isEditing && "pointer-events-none")}>
                                 <FormLabel>Module Code</FormLabel>
                                 <FormControl>
-                                    <Input {...field} placeholder="e.g AB1CDE" readOnly={!isEditing} />
+                                    <Input  {...field} placeholder="e.g AB1CDE" readOnly={!isEditing} tabIndex={isEditing ? 0 : -1}/>
                                 </FormControl>
                                 {/*<FormDescription>This is your public display name.</FormDescription>*/}
                                 <FormMessage />
@@ -233,7 +239,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                             <FormItem className={cn(!isEditing && "pointer-events-none")}>
                                 <FormLabel>Module Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="e.g. System Design" {...field} readOnly={!isEditing} />
+                                    <Input  placeholder="e.g. System Design" {...field} readOnly={!isEditing} tabIndex={isEditing ? 0 : -1}/>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -248,7 +254,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                                 <Popover open={isYearPopoverOpen} onOpenChange={setIsYearPopoverOpen}>
                                     <PopoverTrigger asChild>
                                         <FormControl>
-                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")}>
+                                            <Button  size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} tabIndex={isEditing ? 0 : -1}>
                                                 {field.value ? `${years.find((year: Year) => year.id === field.value)?.name}` : "Select year"}
                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>
@@ -291,7 +297,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                                 <Popover open={isModuleTutorPopoverOpen} onOpenChange={setIsModuleTutorPopoverOpen}>
                                     <PopoverTrigger asChild>
                                         <FormControl>
-                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")}>
+                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} tabIndex={isEditing ? 0 : -1}>
                                                 {field.value ? `${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.name}` : "Assign module lead"}
                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>

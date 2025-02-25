@@ -55,7 +55,7 @@ const filterOptions = [
 export function DataTable() {
     const { modules } = useModules();
     const [globalFilter, setGlobalFilter] = useState([]);
-    const [selectedModule, setSelectedModule] = useState<Module | null>(null);
+    const [selectedModule, setSelectedModule] = useState<number>();
 
     const table = useReactTable({
         data: modules,
@@ -96,7 +96,7 @@ export function DataTable() {
                                         {/* View Button to trigger dialog for module details */}
                                         <TableCell>
                                             <DialogTrigger asChild>
-                                                <Button variant={"link"} size="sm" className="ml-auto" onClick={() => setSelectedModule(row.original as Module)}>
+                                                <Button variant={"link"} size="sm" className="ml-auto" onClick={() => setSelectedModule(row.original.id)}>
                                                     View
                                                 </Button>
                                             </DialogTrigger>
@@ -112,7 +112,7 @@ export function DataTable() {
                             )}
                         </TableBody>
                         <DialogContent>
-                            <ModuleModal type="viewOrEdit" module={selectedModule as Module} />
+                            <ModuleModal type="viewOrEdit" moduleId={selectedModule} />
                         </DialogContent>
                     </Dialog>
                 </Table>
