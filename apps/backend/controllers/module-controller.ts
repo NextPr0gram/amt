@@ -5,6 +5,7 @@ import appAssert from "../utils/app-assert";
 import catchErrors from "../utils/catch-errors";
 
 const moduleSchema = z.object({
+    id: z.number().int(),
     code: z
         .string()
         .min(1)
@@ -18,6 +19,7 @@ const moduleSchema = z.object({
 export const getModulesHandler = catchErrors(async (req, res) => {
     const modules = await prisma.module.findMany({
         select: {
+            id: true,
             code: true,
             name: true,
             year: true,
@@ -52,7 +54,6 @@ export const createModuleHandler = catchErrors(async (req, res) => {
 
 export const updateModuleHandler = catchErrors(async (req, res) => {
     const { id, code, name, yearId, moduleLeadId } = moduleSchema.parse(req.body);
-    // update only fields that are not undefined
 
     const module = await prisma.module.update({
         where: { id },

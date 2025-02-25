@@ -21,6 +21,11 @@ type ModuleTutor = {
     name: string;
 };
 
+type Year = {
+    id: number;
+    name: string;
+};
+
 // module prop required if mode is edit
 interface ModuleModalProps {
     type: "add" | "viewOrEdit";
@@ -37,7 +42,7 @@ const formSchema = z.object({
     moduleName: z.string().min(1, {
         message: "This field is required",
     }),
-    year: z
+    yearId: z
         .number({
             required_error: "Please select a year",
         })
@@ -48,17 +53,25 @@ const formSchema = z.object({
 const ModuleModal = ({ type, module }: ModuleModalProps) => {
     const { fetchModules } = useModules();
     const [moduleTutors, setModuleTutors] = useState<ModuleTutor[]>([]);
-    const [isPopoverOpen, setIsPopoverOpen] = useState(false); // Add this state
-    const [isEditing, setIsEditing] = useState(false);
+    const [years, setyears] = useState<Year[]>([]);
+    const [isModuleTutorPopoverOpen, setIsModuleTutorPopoverOpen] = useState(false);
+    const [isYearPopoverOpen, setIsYearPopoverOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(type === "add" ? true : false);
 
     useEffect(() => {
-        // Fetch module tutors
         const fetchModuleTutors = async () => {
             const res = await protectedFetch("/users", "GET");
             const moduleTutors = res.data.map((moduleTutor: { id: number; firstName: string; lastName: string }) => ({ ...moduleTutor, name: moduleTutor.firstName + " " + moduleTutor.lastName }));
             setModuleTutors(moduleTutors);
         };
+
+        const fetchYears = async () => {
+            const res = await protectedFetch("/years", "GET");
+            const years = res.data.map((year: { id: number; name: string }) => year);
+            setyears(years);
+        };
         fetchModuleTutors();
+        fetchYears();
     }, []);
 
     console.log(module);
@@ -67,14 +80,14 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
             return {
                 moduleCode: "",
                 moduleName: "",
-                year: 1,
+                yearId: undefined,
                 moduleTutorId: undefined,
             };
         } else if (type === "viewOrEdit") {
             return {
                 moduleCode: module?.code || "",
                 moduleName: module?.name || "",
-                year: module?.year ? parseInt(module.year.toString()) : 1,
+                yearId: module?.yearId,
                 moduleTutorId: module?.leadId,
             };
         }
@@ -129,10 +142,17 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const body = { id: values.moduleCode, name: values.moduleName, year: values.year, moduleLeadId: values.moduleTutorId };
-        const res = await protectedFetch("/modules", "POST", body);
+        const body = { id: module.id, code: values.moduleCode, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId };
+        console.log(body);
+        let res;
 
-        if (res.status === 500 && res.data.errorCode === "P2002") {
+        if (type === "viewOrEdit") {
+            res = await protectedFetch(`/modules/`, "PATCH", body);
+        } else if (type === "add") {
+            res = await protectedFetch("/modules", "POST", body);
+        }
+
+        if (res && res.status === 500 && res.data.errorCode === "P2002") {
             form.setError("moduleCode", {
                 type: "manual",
                 message: "Module with the given ID already exists",
@@ -143,7 +163,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
     };
     return (
         <>
-            <DialogTitle>{isEditing ? "Edit module information" : "View module information"}</DialogTitle>
+            <DialogTitle>{type === "add" ? "Add new module" : isEditing ? "Edit module information" : "View module information"}</DialogTitle>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <FormField
@@ -175,22 +195,43 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                     />
                     <FormField
                         control={form.control}
-                        name="year"
+                        name="yearId"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Year</FormLabel>
-                                <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value.toString()} disabled={!isEditing}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="e.g. Year 1" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="1">Year 1</SelectItem>
-                                        <SelectItem value="2">year 2</SelectItem>
-                                        <SelectItem value="3">Year 3</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                            <FormItem className="flex flex-col">
+                                <FormLabel>Module Lead</FormLabel>
+                                <Popover open={isYearPopoverOpen} onOpenChange={setIsYearPopoverOpen}>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} disabled={!isEditing}>
+                                                {field.value ? `${years.find((year: Year) => year.id === field.value)?.name}` : "Select year"}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 -mt-2">
+                                        <Command>
+                                            <CommandInput placeholder="Search module tutor..." />
+                                            <CommandList>
+                                                <CommandEmpty>No module tutors found.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {years.map((year: Year) => (
+                                                        <CommandItem
+                                                            value={year.name}
+                                                            key={year.id}
+                                                            onSelect={() => {
+                                                                form.setValue("yearId", year.id);
+                                                                setIsYearPopoverOpen(false);
+                                                            }}
+                                                        >
+                                                            {year.name}
+                                                            <Check className={cn("ml-auto", year.id === field.value ? "opacity-100" : "opacity-0")} />
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -201,7 +242,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                         render={({ field }) => (
                             <FormItem className="flex flex-col">
                                 <FormLabel>Module Lead</FormLabel>
-                                <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                                <Popover open={isModuleTutorPopoverOpen} onOpenChange={setIsModuleTutorPopoverOpen}>
                                     <PopoverTrigger asChild>
                                         <FormControl>
                                             <Button variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} disabled={!isEditing}>
@@ -222,7 +263,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                                                             key={moduleTutor.id}
                                                             onSelect={() => {
                                                                 form.setValue("moduleTutorId", moduleTutor.id);
-                                                                setIsPopoverOpen(false);
+                                                                setIsModuleTutorPopoverOpen(false);
                                                             }}
                                                         >
                                                             {moduleTutor.name}

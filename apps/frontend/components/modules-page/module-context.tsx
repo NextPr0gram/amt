@@ -3,17 +3,23 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { protectedFetch } from "@/utils/protected-fetch";
 
 export type Module = {
+    id: number;
     code: string;
     name: string;
-    year: "1" | "2" | "3" | "PG";
+    year: string;
+    yearId: number;
     lead: string;
     leadId: number | undefined;
 };
 
 type ModuleAPIResponse = {
-    id: string;
+    id: number;
+    code: string;
     name: string;
-    year: "1" | "2" | "3" | "PG";
+    year: {
+        id: number;
+        name: string;
+    };
     moduleLead: {
         id: number;
         firstName: string;
@@ -34,9 +40,11 @@ export const ModulesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const fetchModules = async () => {
         const res = await protectedFetch("/modules", "GET");
         const resData = res.data.map((module: ModuleAPIResponse) => ({
-            code: module.id,
+            id: module.id,
+            code: module.code,
             name: module.name,
-            year: module.year,
+            year: module.year.name,
+            yearId: module.year.id,
             lead: module.moduleLead ? `${module.moduleLead.firstName} ${module.moduleLead.lastName}` : null,
             leadId: module.moduleLead.id,
         }));

@@ -7,6 +7,7 @@ import AddModuleModal from "../../../components/modules-page/module-modal";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ModulesProvider } from "@/components/modules-page/module-context";
+import ModuleModal from "../../../components/modules-page/module-modal";
 
 export default function Page() {
     // https://ui.shadcn.com/docs/components/data-table#basic-table
@@ -37,8 +38,7 @@ export default function Page() {
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>
-                                <DialogTitle>Add module</DialogTitle>
-                                <AddModuleModal />
+                                <ModuleModal type="add" />
                             </DialogContent>
                         </Dialog>
                     </header>
