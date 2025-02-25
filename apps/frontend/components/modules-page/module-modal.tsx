@@ -16,8 +16,9 @@ import { cn } from "@/lib/utils";
 import { Module, useModules } from "@/components/modules-page/module-context";
 import { DialogClose, DialogTitle } from "../ui/dialog";
 import { Alert, AlertDescription } from "../ui/alert";
+import MultiSelect from "../multi-select";
 
-type ModuleTutor = {
+export type ModuleTutor = {
     id: number;
     name: string;
 };
@@ -33,23 +34,34 @@ interface ModuleModalProps {
     module?: Module;
 }
 
-const formSchema = z.object({
-    moduleCode: z
-        .string()
-        .min(1, {
+const formSchema = z
+    .object({
+        moduleCode: z
+            .string()
+            .min(1, {
+                message: "This field is required",
+            })
+            .refine((s) => !s.includes(" "), "Module code cannot have spaces"),
+        moduleName: z.string().min(1, {
             message: "This field is required",
-        })
-        .refine((s) => !s.includes(" "), "Module code cannot have spaces"),
-    moduleName: z.string().min(1, {
-        message: "This field is required",
-    }),
-    yearId: z
-        .number({
-            required_error: "Please select a year",
-        })
-        .int(),
-    moduleTutorId: z.number({ invalid_type_error: "Value must be an integer" }).int().optional(),
-});
+        }),
+        yearId: z
+            .number({
+                required_error: "Please select a year",
+            })
+            .int(),
+        moduleTutorId: z.number({ invalid_type_error: "Value must be an integer" }).int().optional(), // represents module lead id
+        // module tutors must be array of numbers and the modulettorid cannot be in the array
+        moduleTutors: z.array(z.number({ invalid_type_error: "Values must be integers" })).optional(),
+    })
+    .refine(
+        (data) => {
+            if (!data.moduleTutors) return true; // If undefined, skip validation
+            if (data.moduleTutorId === undefined) return true; // If no module lead, skip validation
+            return !data.moduleTutors.includes(data.moduleTutorId);
+        },
+        { message: "Module tutors list cannot contain the module lead", path: ["moduleTutors"] }
+    );
 
 const ModuleModal = ({ type, module }: ModuleModalProps) => {
     const { fetchModules } = useModules();
@@ -114,7 +126,9 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
         if (type === "viewOrEdit") {
             return isEditing ? (
                 <div className="flex space-x-4">
-                    <Button size="sm"type="submit">Save changes</Button>
+                    <Button size="sm" type="submit">
+                        Save changes
+                    </Button>
                     <Button
                         onClick={() => {
                             form.reset(getFormSchema()); // Reset to initial values
@@ -136,16 +150,22 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                         Edit
                     </Button>
                     <DialogClose asChild>
-                        <Button size="sm"variant="outline">Close</Button>
+                        <Button size="sm" variant="outline">
+                            Close
+                        </Button>
                     </DialogClose>
                 </div>
             );
         } else if (type === "add") {
             return (
                 <div className="flex space-x-4">
-                    <Button size="sm"type="submit">Add</Button>
+                    <Button size="sm" type="submit">
+                        Add
+                    </Button>
                     <DialogClose asChild>
-                        <Button size="sm"variant="outline">Close</Button>
+                        <Button size="sm" variant="outline">
+                            Close
+                        </Button>
                     </DialogClose>
                 </div>
             );
@@ -153,7 +173,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const body = { id: module?.id, code: values.moduleCode, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId };
+        const body = { id: module?.id, code: values.moduleCode, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId, moduleTutors: values.moduleTutors };
         console.log(body);
         let res;
 
@@ -163,11 +183,13 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
             res = await protectedFetch("/modules", "POST", body);
         }
 
-        if (res && res.status === 500 && res.data.errorCode === "P2002") {
-            form.setError("moduleCode", {
-                type: "manual",
-                message: "Module with the given ID already exists",
-            });
+        if (res && res.status !== 200) {
+            if (res.status === 500 && res.data.errorCode === "P2002") {
+                form.setError("moduleCode", {
+                    type: "manual",
+                    message: "Module with the given ID already exists",
+                });
+            }
         } else {
             fetchModules();
             setShowSuccess(true);
@@ -218,7 +240,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                         name="yearId"
                         render={({ field }) => (
                             <FormItem className="flex flex-col">
-                                <FormLabel>Module Lead</FormLabel>
+                                <FormLabel>Year</FormLabel>
                                 <Popover open={isYearPopoverOpen} onOpenChange={setIsYearPopoverOpen}>
                                     <PopoverTrigger asChild>
                                         <FormControl>
@@ -230,7 +252,6 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                                     </PopoverTrigger>
                                     <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 -mt-2">
                                         <Command>
-                                            <CommandInput placeholder="Search module tutor..." />
                                             <CommandList>
                                                 <CommandEmpty>No module tutors found.</CommandEmpty>
                                                 <CommandGroup>
@@ -266,7 +287,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                                     <PopoverTrigger asChild>
                                         <FormControl>
                                             <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} disabled={!isEditing}>
-                                                {field.value ? `${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.name}` : "Select module tutor"}
+                                                {field.value ? `${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.name}` : "Assign module lead"}
                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>
                                         </FormControl>
@@ -295,6 +316,17 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                                         </Command>
                                     </PopoverContent>
                                 </Popover>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="moduleTutors"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel>Module Tutors</FormLabel>
+                                <MultiSelect data={moduleTutors} field={field} isEditing={isEditing} />
                                 <FormMessage />
                             </FormItem>
                         )}

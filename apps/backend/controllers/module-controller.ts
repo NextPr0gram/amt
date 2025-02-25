@@ -5,7 +5,6 @@ import appAssert from "../utils/app-assert";
 import catchErrors from "../utils/catch-errors";
 
 const moduleSchema = z.object({
-    id: z.number().int(),
     code: z
         .string()
         .min(1)
@@ -14,6 +13,7 @@ const moduleSchema = z.object({
     name: z.string().min(1).max(255),
     yearId: z.number().int(),
     moduleLeadId: z.number().int(),
+    moduleTutors: z.array(z.number().int()),
 });
 
 export const getModulesHandler = catchErrors(async (req, res) => {
@@ -38,18 +38,27 @@ export const getModulesHandler = catchErrors(async (req, res) => {
 });
 
 export const createModuleHandler = catchErrors(async (req, res) => {
-    const { code, name, yearId, moduleLeadId } = moduleSchema.parse(req.body);
-    const module = await prisma.module.create({
+    const { code, name, yearId, moduleLeadId, moduleTutors } = moduleSchema.parse(req.body);
+    console.log(moduleTutors);
+
+    const assignTutors: { userId: number }[] = moduleTutors.map((userId) => ({ userId }));
+    console.log(assignTutors);
+    const createModule = await prisma.module.create({
         data: {
             code,
             name,
             yearId,
             moduleLeadId,
+            moduleTutors: {
+                createMany: { data: assignTutors },
+            },
         },
     });
+    console.log(createModule);
 
-    appAssert(module, UNPROCESSABLE_CONTENT, "Module with the given ID already exists");
-    return res.status(OK).json(module);
+    appAssert(createModule, UNPROCESSABLE_CONTENT, "Module with the given ID already exists");
+
+    return res.status(OK).json(createModule);
 });
 
 export const updateModuleHandler = catchErrors(async (req, res) => {
