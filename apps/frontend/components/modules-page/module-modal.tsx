@@ -105,6 +105,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                 moduleName: "",
                 yearId: undefined,
                 moduleTutorId: undefined,
+                moduleTutors: [],
             };
         } else if (type === "viewOrEdit") {
             return {
@@ -112,6 +113,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                 moduleName: module?.name || "",
                 yearId: module?.yearId,
                 moduleTutorId: module?.leadId,
+                moduleTutors: module?.moduleTutorIds,
             };
         }
     };
@@ -212,10 +214,10 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                         control={form.control}
                         name="moduleCode"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className={cn(!isEditing && "pointer-events-none")}>
                                 <FormLabel>Module Code</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="e.g AB1CDE" {...field} readOnly={!isEditing} />
+                                    <Input {...field} placeholder="e.g AB1CDE" readOnly={!isEditing} />
                                 </FormControl>
                                 {/*<FormDescription>This is your public display name.</FormDescription>*/}
                                 <FormMessage />
@@ -226,7 +228,7 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                         control={form.control}
                         name="moduleName"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className={cn(!isEditing && "pointer-events-none")}>
                                 <FormLabel>Module Name</FormLabel>
                                 <FormControl>
                                     <Input placeholder="e.g. System Design" {...field} readOnly={!isEditing} />
@@ -239,12 +241,12 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                         control={form.control}
                         name="yearId"
                         render={({ field }) => (
-                            <FormItem className="flex flex-col">
+                            <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
                                 <FormLabel>Year</FormLabel>
                                 <Popover open={isYearPopoverOpen} onOpenChange={setIsYearPopoverOpen}>
                                     <PopoverTrigger asChild>
                                         <FormControl>
-                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} disabled={!isEditing}>
+                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")}>
                                                 {field.value ? `${years.find((year: Year) => year.id === field.value)?.name}` : "Select year"}
                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>
@@ -255,19 +257,20 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                                             <CommandList>
                                                 <CommandEmpty>No module tutors found.</CommandEmpty>
                                                 <CommandGroup>
-                                                    {years.map((year: Year) => (
-                                                        <CommandItem
-                                                            value={year.name}
-                                                            key={year.id}
-                                                            onSelect={() => {
-                                                                form.setValue("yearId", year.id);
-                                                                setIsYearPopoverOpen(false);
-                                                            }}
-                                                        >
-                                                            {year.name}
-                                                            <Check className={cn("ml-auto", year.id === field.value ? "opacity-100" : "opacity-0")} />
-                                                        </CommandItem>
-                                                    ))}
+                                                    {isEditing &&
+                                                        years.map((year: Year) => (
+                                                            <CommandItem
+                                                                value={year.name}
+                                                                key={year.id}
+                                                                onSelect={() => {
+                                                                    form.setValue("yearId", year.id);
+                                                                    setIsYearPopoverOpen(false);
+                                                                }}
+                                                            >
+                                                                {year.name}
+                                                                <Check className={cn("ml-auto", year.id === field.value ? "opacity-100" : "opacity-0")} />
+                                                            </CommandItem>
+                                                        ))}
                                                 </CommandGroup>
                                             </CommandList>
                                         </Command>
@@ -281,12 +284,12 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                         control={form.control}
                         name="moduleTutorId"
                         render={({ field }) => (
-                            <FormItem className="flex flex-col">
+                            <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
                                 <FormLabel>Module Lead</FormLabel>
                                 <Popover open={isModuleTutorPopoverOpen} onOpenChange={setIsModuleTutorPopoverOpen}>
                                     <PopoverTrigger asChild>
                                         <FormControl>
-                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} disabled={!isEditing}>
+                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")}>
                                                 {field.value ? `${moduleTutors.find((moduleTutor: ModuleTutor) => moduleTutor.id === field.value)?.name}` : "Assign module lead"}
                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>
@@ -298,19 +301,20 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                                             <CommandList>
                                                 <CommandEmpty>No module tutors found.</CommandEmpty>
                                                 <CommandGroup>
-                                                    {moduleTutors.map((moduleTutor: ModuleTutor) => (
-                                                        <CommandItem
-                                                            value={moduleTutor.name}
-                                                            key={moduleTutor.id}
-                                                            onSelect={() => {
-                                                                form.setValue("moduleTutorId", moduleTutor.id);
-                                                                setIsModuleTutorPopoverOpen(false);
-                                                            }}
-                                                        >
-                                                            {moduleTutor.name}
-                                                            <Check className={cn("ml-auto", moduleTutor.id === field.value ? "opacity-100" : "opacity-0")} />
-                                                        </CommandItem>
-                                                    ))}
+                                                    {isEditing &&
+                                                        moduleTutors.map((moduleTutor: ModuleTutor) => (
+                                                            <CommandItem
+                                                                value={moduleTutor.name}
+                                                                key={moduleTutor.id}
+                                                                onSelect={() => {
+                                                                    form.setValue("moduleTutorId", moduleTutor.id);
+                                                                    setIsModuleTutorPopoverOpen(false);
+                                                                }}
+                                                            >
+                                                                {moduleTutor.name}
+                                                                <Check className={cn("ml-auto", moduleTutor.id === field.value ? "opacity-100" : "opacity-0")} />
+                                                            </CommandItem>
+                                                        ))}
                                                 </CommandGroup>
                                             </CommandList>
                                         </Command>
@@ -324,9 +328,9 @@ const ModuleModal = ({ type, module }: ModuleModalProps) => {
                         control={form.control}
                         name="moduleTutors"
                         render={({ field }) => (
-                            <FormItem className="flex flex-col">
+                            <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
                                 <FormLabel>Module Tutors</FormLabel>
-                                <MultiSelect data={moduleTutors} field={field} isEditing={isEditing} />
+                                <MultiSelect data={moduleTutors} field={{ ...field, value: field.value || [] }} isEditing={isEditing} />
                                 <FormMessage />
                             </FormItem>
                         )}

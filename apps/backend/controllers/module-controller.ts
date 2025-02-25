@@ -16,6 +16,10 @@ const moduleSchema = z.object({
     moduleTutors: z.array(z.number().int()),
 });
 
+const moduleSchemaWithId = moduleSchema.extend({
+    id: z.number().int(),
+});
+
 export const getModulesHandler = catchErrors(async (req, res) => {
     const modules = await prisma.module.findMany({
         select: {
@@ -30,6 +34,11 @@ export const getModulesHandler = catchErrors(async (req, res) => {
                     lastName: true,
                 },
             },
+            moduleTutors: {
+                select: {
+                    userId: true,
+                },
+            },
         },
     });
 
@@ -42,7 +51,6 @@ export const createModuleHandler = catchErrors(async (req, res) => {
     console.log(moduleTutors);
 
     const assignTutors: { userId: number }[] = moduleTutors.map((userId) => ({ userId }));
-    console.log(assignTutors);
     const createModule = await prisma.module.create({
         data: {
             code,
@@ -54,7 +62,6 @@ export const createModuleHandler = catchErrors(async (req, res) => {
             },
         },
     });
-    console.log(createModule);
 
     appAssert(createModule, UNPROCESSABLE_CONTENT, "Module with the given ID already exists");
 
@@ -62,17 +69,46 @@ export const createModuleHandler = catchErrors(async (req, res) => {
 });
 
 export const updateModuleHandler = catchErrors(async (req, res) => {
-    const { id, code, name, yearId, moduleLeadId } = moduleSchema.parse(req.body);
+    const { id, code, name, yearId, moduleLeadId, moduleTutors } = moduleSchemaWithId.parse(req.body);
 
-    const module = await prisma.module.update({
+    const updateAssignTutors: { moduleId: number; userId: number }[] = moduleTutors.map((userId) => ({ moduleId: id, userId }));
+    /* const updateModule = await prisma.module.update({
         where: { id },
         data: {
             code,
             name,
             yearId,
             moduleLeadId,
+            moduleTutors: {
+                deleteMany: {
+                    moduleId: id,
+                },
+                createMany: {
+                    data: updateAssignTutors,
+                },
+            },
         },
-    });
-    appAssert(module, NOT_FOUND, "Module not found");
-    return res.status(OK).json(module);
+    }); */
+    const [updateModule, deleteModuleTutors, createModuleTutors] = await prisma.$transaction([
+        prisma.module.update({
+            where: { id },
+            data: {
+                code,
+                name,
+                yearId,
+                moduleLeadId,
+            },
+        }),
+        prisma.moduleTutor.deleteMany({
+            where: {
+                moduleId: id,
+            },
+        }),
+        prisma.moduleTutor.createMany({
+            data: updateAssignTutors,
+        }),
+    ]);
+
+    appAssert([updateModule, deleteModuleTutors, createModuleTutors], NOT_FOUND, "Module not found");
+    return res.status(OK).json(updateModule);
 });

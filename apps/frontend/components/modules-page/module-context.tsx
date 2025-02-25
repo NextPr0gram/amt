@@ -10,6 +10,7 @@ export type Module = {
     yearId: number;
     lead: string;
     leadId: number | undefined;
+    moduleTutorIds: number[];
 };
 
 type ModuleAPIResponse = {
@@ -25,6 +26,9 @@ type ModuleAPIResponse = {
         firstName: string;
         lastName: string;
     };
+    moduleTutors: {
+        userId: number;
+    }[];
 };
 
 type ModulesContextType = {
@@ -47,6 +51,7 @@ export const ModulesProvider: React.FC<{ children: React.ReactNode }> = ({ child
             yearId: module.year.id,
             lead: module.moduleLead ? `${module.moduleLead.firstName} ${module.moduleLead.lastName}` : null,
             leadId: module.moduleLead.id,
+            moduleTutorIds: module.moduleTutors.map((tutor) => tutor.userId),
         }));
         setModules(resData);
     };

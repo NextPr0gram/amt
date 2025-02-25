@@ -43,8 +43,8 @@ const MultiSelect = ({ data, field, isEditing }: MultiSelectProps) => {
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <FormControl>
-                    <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal h-auto min-h-9", !selectedTutors.length && "text-muted-foreground")} disabled={!isEditing}>
-                        {selectedTutors.length ? (
+                    <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal h-auto min-h-9", !selectedTutors.length && "text-muted-foreground")}>
+                        {isEditing && selectedTutors.length ? (
                             <div className="flex flex-wrap gap-1 py-2">
                                 {selectedTutors.map((tutor) => (
                                     <Badge key={tutor.id} variant="secondary">
