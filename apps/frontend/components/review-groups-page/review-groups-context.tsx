@@ -10,8 +10,10 @@ export type ReviewGroup = {
         code: string;
         name: string;
         moduleLead: string;
+        shortNameML: string;
         moduleTutors: string[];
-    }[]
+        shortNameMT: string[];
+    }[];
     convener: string;
 };
 
@@ -67,9 +69,12 @@ export const ReviewGroupsProvider: React.FC<{ children: React.ReactNode }> = ({ 
             modules: reviewGroup.modules.map((module) => ({
                 code: module.module.code,
                 name: module.module.name,
+                shortNameML: `${module.module.moduleLead.firstName[0]}. ${module.module.moduleLead.lastName}`,
                 moduleLead: `${module.module.moduleLead.firstName} ${module.module.moduleLead.lastName}`,
+                shortNameMT: module.module.moduleTutors.map((tutor) => `${tutor.user.firstName[0]}. ${tutor.user.lastName}`),
                 moduleTutors: module.module.moduleTutors.map((tutor) => `${tutor.user.firstName} ${tutor.user.lastName}`),
             })),
+            shortConvener: `${reviewGroup.convener.firstName[0]}. ${reviewGroup.convener.lastName}`,
             convener: `${reviewGroup.convener.firstName} ${reviewGroup.convener.lastName}`,
         }));
         setReviewGroups(resData);

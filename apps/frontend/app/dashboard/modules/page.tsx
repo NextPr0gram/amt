@@ -3,7 +3,6 @@ import { DateStage } from "@/components/date-stage";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { DataTable } from "@/components/modules-page/data-table";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import AddModuleModal from "../../../components/modules-page/module-modal";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ModulesProvider } from "@/components/modules-page/module-context";
