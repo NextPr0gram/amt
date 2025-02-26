@@ -113,25 +113,25 @@ async function main() {
                 code: "CS1IAD",
                 name: "Internet Applications and Databases",
                 yearId: 1,
-                moduleLeadId: await getRandomInt(37),
+                moduleLeadId: 1,
             },
             {
                 code: "CS1OOP",
                 name: "Object-Oriented Programming",
                 yearId: 1,
-                moduleLeadId: await getRandomInt(37),
+                moduleLeadId: 2,
             },
             {
                 code: "CS1PSA",
                 name: "Programming and Software Architecture",
                 yearId: 1,
-                moduleLeadId: await getRandomInt(37),
+                moduleLeadId: 3,
             },
             {
                 code: "CS2HCI",
                 name: "Human-Computer Interaction",
                 yearId: 2,
-                moduleLeadId: await getRandomInt(37),
+                moduleLeadId: 4,
             },
             {
                 code: "CS2IS",
@@ -191,7 +191,7 @@ async function main() {
                 code: "CS3GD",
                 name: "Game Development",
                 yearId: 3,
-                moduleLeadId: await getRandomInt(37),
+                moduleLeadId: 6,
             },
             {
                 code: "CS4AI",
@@ -205,6 +205,39 @@ async function main() {
                 yearId: 4,
                 moduleLeadId: await getRandomInt(37),
             },
+        ],
+    });
+
+    const moduleTutors = await prisma.moduleTutor.createMany({
+        data: [
+            { moduleId: 1, userId: 7 },
+            { moduleId: 1, userId: 3 },
+            { moduleId: 1, userId: 4 },
+            { moduleId: 1, userId: 5 },
+            { moduleId: 2, userId: 6 },
+            { moduleId: 2, userId: 20 },
+            { moduleId: 2, userId: 23 },
+            { moduleId: 3, userId: 7 },
+            { moduleId: 3, userId: 3 },
+            { moduleId: 3, userId: 28 },
+        ],
+    });
+
+    const reviewGroups = await prisma.reviewGroup.createMany({
+        data: [
+            { yearId: 1, group: "A", convenerId: 1 },
+            { yearId: 2, group: "A", convenerId: 4 },
+        ],
+    });
+
+    const reviewGroupModules = await prisma.reviewGroupModules.createMany({
+        data: [
+            { reviewGroupId: 1, moduleId: 1 },
+            { reviewGroupId: 1, moduleId: 2 },
+            { reviewGroupId: 1, moduleId: 3 },
+            { reviewGroupId: 2, moduleId: 4 },
+            { reviewGroupId: 2, moduleId: 5 },
+            { reviewGroupId: 2, moduleId: 6 },
         ],
     });
 }

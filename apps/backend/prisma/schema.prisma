@@ -27,6 +27,7 @@ model User {
     moduleTutorOf ModuleTutor[]
     Module        Module[]
     Role          UserRole[]
+    ReviewGroup   ReviewGroup[]
 }
 
 model Session {
@@ -41,20 +42,22 @@ model Session {
 // Many modules have many module tutors
 // One module lead can lead many modules
 model Module {
-    id           Int           @id @default(autoincrement())
-    code         String        @unique
-    name         String
-    yearId       Int
-    year         Year          @relation(fields: [yearId], references: [id])
-    moduleLeadId Int?
-    moduleLead   User?         @relation(fields: [moduleLeadId], references: [id])
-    moduleTutors ModuleTutor[]
+    id                 Int                  @id @default(autoincrement())
+    code               String               @unique
+    name               String
+    yearId             Int
+    year               Year                 @relation(fields: [yearId], references: [id])
+    moduleLeadId       Int?
+    moduleLead         User?                @relation(fields: [moduleLeadId], references: [id])
+    moduleTutors       ModuleTutor[]
+    ReviewGroupModules ReviewGroupModules[]
 }
 
 model Year {
-    id     Int      @id @default(autoincrement())
-    name   String
-    Module Module[]
+    id          Int           @id @default(autoincrement())
+    name        String
+    Module      Module[]
+    ReviewGroup ReviewGroup[]
 }
 
 model ModuleTutor {
@@ -73,6 +76,7 @@ model Role {
     users UserRole[]
 }
 
+// Join table for User and Role
 model UserRole {
     userId Int
     roleId Int
@@ -81,4 +85,26 @@ model UserRole {
     role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
     @@id([userId, roleId])
+}
+
+// need to migrage again
+model ReviewGroup {
+    id         Int                  @id @default(autoincrement())
+    yearId     Int
+    group      String
+    convenerId Int
+    modules    ReviewGroupModules[]
+    convener   User                 @relation(fields: [convenerId], references: [id])
+    year       Year                 @relation(fields: [yearId], references: [id])
+}
+
+// Join table for ReviewGroup and Module
+model ReviewGroupModules {
+    reviewGroupId Int
+    moduleId      Int
+
+    reviewGroup ReviewGroup @relation(fields: [reviewGroupId], references: [id], onDelete: Cascade)
+    module      Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+    @@id([reviewGroupId, moduleId])
 }
