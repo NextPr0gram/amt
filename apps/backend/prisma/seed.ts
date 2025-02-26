@@ -218,7 +218,7 @@ async function main() {
             { moduleId: 2, userId: 20 },
             { moduleId: 2, userId: 23 },
             { moduleId: 3, userId: 7 },
-            { moduleId: 3, userId: 3 },
+            { moduleId: 3, userId: 24 },
             { moduleId: 3, userId: 28 },
         ],
     });
