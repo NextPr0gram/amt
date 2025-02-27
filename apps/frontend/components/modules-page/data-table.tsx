@@ -12,7 +12,6 @@ import { Button } from "../ui/button";
 import { Dialog } from "@radix-ui/react-dialog";
 import ModuleModal from "./module-modal";
 
-// Columns are define the core of what the table will look like. They define the data that will be displayed, how it will be formatted, sorted and filtered.
 const columns: ColumnDef<Module>[] = [
     {
         accessorKey: "code",
@@ -30,10 +29,6 @@ const columns: ColumnDef<Module>[] = [
     {
         accessorKey: "lead",
         header: "Module Lead",
-    },
-    {
-        id: "edit",
-        enableHiding: false,
     },
 ];
 
@@ -93,7 +88,7 @@ export function DataTable() {
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                         ))}
-                                        {/* View Button to trigger dialog for module details */}
+
                                         <TableCell>
                                             <DialogTrigger asChild>
                                                 <Button variant={"link"} size="sm" className="ml-auto" onClick={() => setSelectedModule(row.original.id)}>

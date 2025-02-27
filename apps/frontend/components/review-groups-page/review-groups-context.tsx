@@ -14,6 +14,7 @@ export type ReviewGroup = {
         moduleTutors: string[];
         shortNameMT: string[];
     }[];
+    shortConvener: string;
     convener: string;
 };
 
