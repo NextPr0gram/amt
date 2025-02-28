@@ -214,7 +214,7 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
     };
     return (
         <>
-            <DialogTitle>{type === "add" ? "Add new reviewGroup" : isEditing ? "Edit reviewGroup information" : "View reviewGroup information"}</DialogTitle>
+            <DialogTitle>{type === "add" ? "Create new review group" : isEditing ? "Edit reviewGroup information" : "View reviewGroup information"}</DialogTitle>
             {showSuccess && (
                 <Alert className="bg-green-50 text-green-700 border-green-200">
                     <CheckCircle2 className="h-4 w-4" />
@@ -272,7 +272,7 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
                         render={({ field }) => (
                             <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
                                 <FormLabel>Modules</FormLabel>
-                                <ModulesMultiSelect data={modules.filter((module) => module.year.id === form.watch("yearId"))} field={{ ...field, value: field.value || [] }} isEditing={isEditing} />
+                                <ModulesMultiSelect data={modules.filter((module) => module.year.id === form.watch("yearId"))} field={{ ...field, value: field.value || [] }} isEditing={isEditing} selectedYearId={form.watch("yearId")}/>
                                 <FormMessage />
                             </FormItem>
                         )}

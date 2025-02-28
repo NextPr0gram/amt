@@ -104,6 +104,7 @@ const columns: ColumnDef<ReviewGroup>[] = [
 export function DataTable() {
     const { reviewGroups } = useReviewGroups();
     const [selectedReviewGroup, setSelectedReviewGroup] = useState<number>();
+    
 
     const table = useReactTable({
         data: reviewGroups,
@@ -140,10 +141,11 @@ export function DataTable() {
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className={row.getIsGrouped() ? "bg-slate-100" : ""}>
                                         {row.getIsGrouped() ? (
-                                            // For grouped rows, render a single cell that spans all columns
-                                            <TableCell colSpan={totalColumnCount}>{flexRender(row.getVisibleCells()[0].column.columnDef.cell, row.getVisibleCells()[0].getContext())}</TableCell>
+                                            // Sub header
+                                            <TableCell className="py-1" colSpan={totalColumnCount}>
+                                                {flexRender(row.getVisibleCells()[0].column.columnDef.cell, row.getVisibleCells()[0].getContext())}
+                                            </TableCell>
                                         ) : (
-                                            // For non-grouped rows, render each cell normally
                                             row.getVisibleCells().map((cell) => <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)
                                         )}
                                     </TableRow>

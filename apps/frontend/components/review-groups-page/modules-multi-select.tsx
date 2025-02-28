@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { FormControl } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { Module } from "../modules-page/module-context";
+import { useEffect } from "react";
 
 interface MultiSelectProps {
     data: Module[];
@@ -17,11 +18,13 @@ interface MultiSelectProps {
         onChange: (value: number[]) => void;
     };
     isEditing: boolean;
+    selectedYearId: number;
 }
 
-const ModulesMultiSelect = ({ data, field, isEditing }: MultiSelectProps) => {
+const ModulesMultiSelect = ({ data, field, isEditing, selectedYearId }: MultiSelectProps) => {
     const [open, setOpen] = React.useState(false);
     const selectedModules = data.filter((module) => field.value?.includes(module.id));
+    console.log(selectedModules);
 
     const handleUnselect = (id: number) => {
         field.onChange(field.value.filter((moduleId: number) => moduleId !== id));
@@ -34,6 +37,11 @@ const ModulesMultiSelect = ({ data, field, isEditing }: MultiSelectProps) => {
             field.onChange([...(field.value || []), id]);
         }
     };
+
+    useEffect(() => {
+        field.onChange([]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedYearId]);
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
