@@ -4,6 +4,7 @@ import { protectedFetch } from "@/utils/protected-fetch";
 
 export type ReviewGroup = {
     id: number;
+    yearId: number;
     year: string;
     group: string;
     modules: {
@@ -15,6 +16,7 @@ export type ReviewGroup = {
         shortNameMT: string[];
     }[];
     shortConvener: string;
+    convenerId: number;
     convener: string;
 };
 
@@ -65,6 +67,7 @@ export const ReviewGroupsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         const res = await protectedFetch("/review-groups", "GET");
         const resData = res.data.map((reviewGroup: ReviewGroupAPIResponse) => ({
             id: reviewGroup.id,
+            yearId: reviewGroup.year.id,
             year: reviewGroup.year.name,
             group: reviewGroup.group,
             modules: reviewGroup.modules.map((module) => ({
@@ -76,6 +79,7 @@ export const ReviewGroupsProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 moduleTutors: module.module.moduleTutors.map((tutor) => `${tutor.user.firstName} ${tutor.user.lastName}`),
             })),
             shortConvener: `${reviewGroup.convener.firstName[0]}. ${reviewGroup.convener.lastName}`,
+            convenerId: reviewGroup.convener.id,
             convener: `${reviewGroup.convener.firstName} ${reviewGroup.convener.lastName}`,
         }));
         setReviewGroups(resData);

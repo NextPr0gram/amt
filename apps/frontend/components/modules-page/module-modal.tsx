@@ -31,7 +31,7 @@ type Year = {
 // module prop required if mode is edit
 interface ModuleModalProps {
     type: "add" | "viewOrEdit";
-    moduleId: number;
+    moduleId?: number;
 }
 
 const formSchema = z
@@ -225,7 +225,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
                             <FormItem className={cn(!isEditing && "pointer-events-none")}>
                                 <FormLabel>Module Code</FormLabel>
                                 <FormControl>
-                                    <Input  {...field} placeholder="e.g AB1CDE" readOnly={!isEditing} tabIndex={isEditing ? 0 : -1}/>
+                                    <Input {...field} placeholder="e.g AB1CDE" readOnly={!isEditing} tabIndex={isEditing ? 0 : -1} />
                                 </FormControl>
                                 {/*<FormDescription>This is your public display name.</FormDescription>*/}
                                 <FormMessage />
@@ -239,7 +239,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
                             <FormItem className={cn(!isEditing && "pointer-events-none")}>
                                 <FormLabel>Module Name</FormLabel>
                                 <FormControl>
-                                    <Input  placeholder="e.g. System Design" {...field} readOnly={!isEditing} tabIndex={isEditing ? 0 : -1}/>
+                                    <Input placeholder="e.g. System Design" {...field} readOnly={!isEditing} tabIndex={isEditing ? 0 : -1} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -254,7 +254,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
                                 <Popover open={isYearPopoverOpen} onOpenChange={setIsYearPopoverOpen}>
                                     <PopoverTrigger asChild>
                                         <FormControl>
-                                            <Button  size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} tabIndex={isEditing ? 0 : -1}>
+                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} tabIndex={isEditing ? 0 : -1}>
                                                 {field.value ? `${years.find((year: Year) => year.id === field.value)?.name}` : "Select year"}
                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>
