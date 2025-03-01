@@ -8,6 +8,7 @@ export type ReviewGroup = {
     year: string;
     group: string;
     modules: {
+        id: number;
         code: string;
         name: string;
         moduleLead: string;
@@ -16,8 +17,8 @@ export type ReviewGroup = {
         shortNameMT: string[];
     }[];
     shortConvener: string;
-    convenerId: number;
-    convener: string;
+    convener: number;
+    convenerName: string;
 };
 
 type ReviewGroupAPIResponse = {
@@ -71,6 +72,7 @@ export const ReviewGroupsProvider: React.FC<{ children: React.ReactNode }> = ({ 
             year: reviewGroup.year.name,
             group: reviewGroup.group,
             modules: reviewGroup.modules.map((module) => ({
+                id: module.module.id,
                 code: module.module.code,
                 name: module.module.name,
                 shortNameML: `${module.module.moduleLead.firstName[0]}. ${module.module.moduleLead.lastName}`,
@@ -79,8 +81,8 @@ export const ReviewGroupsProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 moduleTutors: module.module.moduleTutors.map((tutor) => `${tutor.user.firstName} ${tutor.user.lastName}`),
             })),
             shortConvener: `${reviewGroup.convener.firstName[0]}. ${reviewGroup.convener.lastName}`,
-            convenerId: reviewGroup.convener.id,
-            convener: `${reviewGroup.convener.firstName} ${reviewGroup.convener.lastName}`,
+            convener: reviewGroup.convener.id,
+            convenerName: `${reviewGroup.convener.firstName} ${reviewGroup.convener.lastName}`,
         }));
         setReviewGroups(resData);
     };

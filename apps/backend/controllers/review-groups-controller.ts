@@ -1,3 +1,4 @@
+import AppErrorCode from "../constants/app-error-code";
 import { NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
@@ -50,4 +51,59 @@ export const getReviewGroupsHandler = catchErrors(async (req, res) => {
 
     appAssert(reviewGroups.length, NOT_FOUND, "Review groups not found");
     return res.status(OK).json(reviewGroups);
+});
+
+export const createReviewGroupHandler = catchErrors(async (req, res) => {
+    const { yearId, moduleIds, convener } = req.body;
+
+    // Check if existing review groups contain the same modules
+
+    const modulesInExsistingReviewGroups = await prisma.reviewGroup.findMany({
+        where: {
+            modules: {
+                some: {
+                    moduleId: {
+                        in: moduleIds,
+                    },
+                },
+            },
+        },
+    });
+    appAssert(!modulesInExsistingReviewGroups.length, NOT_FOUND, "Modules already assigned in another review group", AppErrorCode.InvalidUsageOrAssignment);
+
+    // Get previour group character and increment it else start from A
+    const newestGroup = await prisma.reviewGroup.findFirst({
+        where: {
+            year: {
+                id: yearId,
+            },
+        },
+        orderBy: {
+            group: "desc",
+        },
+    });
+    const nextChar = newestGroup ? String.fromCharCode(newestGroup.group.charCodeAt(0) + 1) : "A";
+
+    const reviewGroup = await prisma.reviewGroup.create({
+        data: {
+            year: {
+                connect: {
+                    id: yearId,
+                },
+            },
+            group: nextChar,
+            modules: {
+                create: moduleIds.map((id: number) => ({
+                    module: { connect: { id } },
+                })),
+            },
+            convener: {
+                connect: {
+                    id: convener,
+                },
+            },
+        },
+    });
+
+    return res.status(OK).json(reviewGroup);
 });

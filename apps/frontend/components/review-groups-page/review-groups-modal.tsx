@@ -19,6 +19,7 @@ import { Alert, AlertDescription } from "../ui/alert";
 import { ModuleAPIResponse } from "@/components/modules-page/module-context";
 import ModulesMultiSelect from "@/components/review-groups-page/modules-multi-select";
 import { ModuleTutor } from "../modules-page/module-modal";
+import ModalAlert from "../modal-alert";
 
 export type ReviewGroupTutor = {
     id: number;
@@ -45,7 +46,7 @@ const formSchema = z.object({
     yearId: z.number({ required_error: "Please select a year" }).int(),
     //array of numbers of size at least 1
     moduleIds: z.array(z.number().int()).nonempty({ message: "Please select at least one module" }),
-    convenerId: z.number({ required_error: "Please select a convener" }).int(),
+    convener: z.number({ required_error: "Please select a convener" }).int(),
 });
 
 const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
@@ -57,6 +58,7 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
     const [isConvenerPopoverOpen, setIsConvenerPopoverOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(type === "add" ? true : false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [showError, setShowError] = useState(false);
 
     const formSchemaRefined = formSchema
         .refine(
@@ -67,7 +69,7 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
         )
         .refine(
             (data) => {
-                return reviewGroupTutors.find((reviewGroupTutor) => reviewGroupTutor.id === data.convenerId);
+                return reviewGroupTutors.find((reviewGroupTutor) => reviewGroupTutor.id === data.convener);
             },
             { message: "Selected convener must be a module tutor/lead of the selected modules" }
         );
@@ -107,20 +109,30 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
         return () => clearTimeout(timer);
     }, [showSuccess]);
 
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (showError) {
+            timer = setTimeout(() => {
+                setShowError(false);
+            }, 5000);
+        }
+        return () => clearTimeout(timer);
+    }, [showError]);
+
     const getFormSchema = () => {
         if (type === "add") {
             return {
                 yearId: undefined,
                 moduleIds: [],
-                convenerId: undefined,
+                convener: undefined,
             };
         } else if (type === "viewOrEdit") {
             const currentReviewGroup = reviewGroups.find((reviewGroup: ReviewGroup) => reviewGroup.id === reviewGroupId);
 
             return {
                 yearId: currentReviewGroup?.yearId,
-                moduleIds: currentReviewGroup?.modules,
-                convenerId: currentReviewGroup?.convenerId,
+                moduleIds: currentReviewGroup?.modules.map((module) => module.id),
+                convener: currentReviewGroup?.convener,
             };
         }
     };
@@ -190,22 +202,17 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const body = { id: reviewGroupId, code: values.reviewGroupCode, name: values.reviewGroupName, yearId: values.yearId, reviewGroupLeadId: values.reviewGroupTutorId, reviewGroupTutors: values.reviewGroupTutors };
+        const body = { yearId: values.yearId, moduleIds: values.moduleIds, convener: values.convener };
         let res;
 
         if (type === "viewOrEdit") {
-            res = await protectedFetch(`/reviewGroups/`, "PATCH", body);
+            res = await protectedFetch(`/review-groups/`, "PATCH", body);
         } else if (type === "add") {
-            res = await protectedFetch("/reviewGroups", "POST", body);
+            res = await protectedFetch("/review-groups", "POST", body);
         }
 
         if (res && res.status !== 200) {
-            if (res.status === 500 && res.data.errorCode === "P2002") {
-                form.setError("reviewGroupCode", {
-                    type: "manual",
-                    message: "ReviewGroup with the given ID already exists",
-                });
-            }
+            setShowError(true);
         } else {
             setShowSuccess(true);
             fetchReviewGroups();
@@ -215,12 +222,8 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
     return (
         <>
             <DialogTitle>{type === "add" ? "Create new review group" : isEditing ? "Edit reviewGroup information" : "View reviewGroup information"}</DialogTitle>
-            {showSuccess && (
-                <Alert className="bg-green-50 text-green-700 border-green-200">
-                    <CheckCircle2 className="h-4 w-4" />
-                    <AlertDescription>ReviewGroup has been added successfully.</AlertDescription>
-                </Alert>
-            )}
+            {showSuccess && <ModalAlert type="success" message="Review group has been created successfully" />}
+            {showError && <ModalAlert type="error" message="Something went wrong" />}
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <FormField
@@ -272,14 +275,14 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
                         render={({ field }) => (
                             <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
                                 <FormLabel>Modules</FormLabel>
-                                <ModulesMultiSelect data={modules.filter((module) => module.year.id === form.watch("yearId"))} field={{ ...field, value: field.value || [] }} isEditing={isEditing} selectedYearId={form.watch("yearId")}/>
+                                <ModulesMultiSelect data={modules.filter((module) => module.year.id === form.watch("yearId"))} field={{ ...field, value: field.value || [] }} isEditing={isEditing} selectedYearId={form.watch("yearId")} />
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
                     <FormField
                         control={form.control}
-                        name="convenerId"
+                        name="convener"
                         render={({ field }) => (
                             <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
                                 <FormLabel>Convener</FormLabel>
@@ -310,7 +313,7 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
                                                                     value={tutor.name}
                                                                     key={tutor.id}
                                                                     onSelect={() => {
-                                                                        form.setValue("convenerId", tutor.id);
+                                                                        form.setValue("convener", tutor.id);
                                                                         setIsConvenerPopoverOpen(false);
                                                                     }}
                                                                 >
