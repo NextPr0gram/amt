@@ -17,6 +17,7 @@ import { Module, useModules } from "@/components/modules-page/module-context";
 import { DialogClose, DialogTitle } from "../ui/dialog";
 import { Alert, AlertDescription } from "../ui/alert";
 import MultiSelect from "../multi-select";
+import ModalAlert from "../modal-alert";
 
 export type ModuleTutor = {
     id: number;
@@ -50,7 +51,7 @@ const formSchema = z
                 required_error: "Please select a year",
             })
             .int(),
-        moduleTutorId: z.number({ invalid_type_error: "Value must be an integer" }).int().optional(), // represents module lead id
+        moduleTutorId: z.number({ invalid_type_error: "Value must be an integer", message: "This field is required" }).int(), // represents module lead id
         // module tutors must be array of numbers and the modulettorid cannot be in the array
         moduleTutors: z.array(z.number({ invalid_type_error: "Values must be integers" })).optional(),
     })
@@ -71,6 +72,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
     const [isYearPopoverOpen, setIsYearPopoverOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(type === "add" ? true : false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [showError, setShowError] = useState(false);
 
     useEffect(() => {
         const fetchModuleTutors = async () => {
@@ -97,6 +99,16 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
         }
         return () => clearTimeout(timer);
     }, [showSuccess]);
+
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (showError) {
+            timer = setTimeout(() => {
+                setShowError(false);
+            }, 5000);
+        }
+        return () => clearTimeout(timer);
+    }, [showError]);
 
     const getFormSchema = () => {
         if (type === "add") {
@@ -171,7 +183,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
         } else if (type === "add") {
             return (
                 <div className="flex space-x-4">
-                    <Button size="sm" type="submit">
+                    <Button disabled={!isEditing} size="sm" type="submit">
                         Add
                     </Button>
                     <DialogClose asChild>
@@ -201,7 +213,11 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
                     message: "Module with the given ID already exists",
                 });
             }
+            setShowSuccess(false);
+            setShowError(true);
+            setIsEditing(true);
         } else {
+            setShowError(false);
             setShowSuccess(true);
             fetchModules();
             setIsEditing(false);
@@ -210,12 +226,8 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
     return (
         <>
             <DialogTitle>{type === "add" ? "Add new module" : isEditing ? "Edit module information" : "View module information"}</DialogTitle>
-            {showSuccess && (
-                <Alert className="bg-green-50 text-green-700 border-green-200">
-                    <CheckCircle2 className="h-4 w-4" />
-                    <AlertDescription>Module has been added successfully.</AlertDescription>
-                </Alert>
-            )}
+            {showSuccess && <ModalAlert type="success" message={type === "add" ? "Module added successfully" : "Module updated successfully"} />}
+            {showError && <ModalAlert type="error" message="Something went wrong" />}
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <FormField
