@@ -202,6 +202,13 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        if (reviewGroups.some((reviewGroup) => reviewGroup.modules.some((module) => values.moduleIds.includes(module.id)))) {
+            form.setError("moduleIds", {
+                type: "manual",
+                message: "Module/s already assigned to other review groups",
+            });
+            return;
+        }
         const body = { yearId: values.yearId, moduleIds: values.moduleIds, convener: values.convener };
         let res;
 
@@ -218,6 +225,13 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
             fetchReviewGroups();
             setIsEditing(false);
         }
+    };
+
+    const getUnsassignedModules = (year: number) => {
+        const modulesInSelectedYear = modules.filter((module) => module.year.id === year);
+        const modulesInReviewGroups = reviewGroups.flatMap((reviewGroup) => reviewGroup.modules);
+        const unassignedModules = modulesInSelectedYear.filter((module) => !modulesInReviewGroups.some((reviewGroupModule) => reviewGroupModule.id === module.id));
+        return unassignedModules;
     };
     return (
         <>
@@ -275,7 +289,7 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
                         render={({ field }) => (
                             <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
                                 <FormLabel>Modules</FormLabel>
-                                <ModulesMultiSelect data={modules.filter((module) => module.year.id === form.watch("yearId"))} field={{ ...field, value: field.value || [] }} isEditing={isEditing} selectedYearId={form.watch("yearId")} />
+                                <ModulesMultiSelect data={getUnsassignedModules(form.watch("yearId"))} field={{ ...field, value: field.value || [] }} isEditing={isEditing} selectedYearId={form.watch("yearId")} />
                                 <FormMessage />
                             </FormItem>
                         )}
