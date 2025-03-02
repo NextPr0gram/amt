@@ -241,30 +241,43 @@ async function main() {
         ],
     });
 
-    const AssessmentCategory = await prisma.assessmentCategory.createMany({
-        data: [
-            { name: "CA" },
-            { name: "Project" },
-            { name: "Coursework" },
-            { name: "Report" },
-            { name: "Lit. Review" },
-            { name: "Presentation" },
-            { name: "BB Assessment" },
-            { name: "Quiz" },
-            { name: "Examination" },
-            { name: "Portfolio" },
-            { name: "Refl. Learning" },
-            { name: "Res. Proposal" },
-            { name: "Practical" },
-        ],
+    const assessmentCategory = await prisma.assessmentCategory.createMany({
+        data: [{ name: "CA" }, { name: "Project" }, { name: "Coursework" }, { name: "Report" }, { name: "Lit. Review" }, { name: "Presentation" }, { name: "BB Assessment" }, { name: "Quiz" }, { name: "Examination" }, { name: "Portfolio" }, { name: "Refl. Learning" }, { name: "Res. Proposal" }, { name: "Practical" }],
     });
 
-    const AssessmentTypes = await prisma.assessmentType.createMany({
+    const assessmentTypes = await prisma.assessmentType.createMany({
+        data: [{ name: "Individual" }, { name: "Open-Book" }, { name: "Closed-Book" }, { name: "Group" }],
+    });
+
+    const assessments = await prisma.assessment.createMany({
         data: [
-            { name: "Individual" },
-            { name: "Open-Book" },
-            { name: "Closed-Book" },
-            { name: "Group" },
+            {
+                tp: "tp1",
+                moduleId: 1,
+                weight: 0.5,
+                assessmentTypeId: 1,
+                assessmentCategoryId: 7,
+                durationInMinutes: 30,
+                releaseDate: new Date(2025, 9, 15),
+                submissionDate: new Date(2025, 9, 20),
+            },
+            {
+                tp: "tp1",
+                moduleId: 1,
+                weight: 0.5,
+                assessmentTypeId: 1,
+                assessmentCategoryId: 9,
+                durationInMinutes: 120,
+            },
+            {
+                tp: "tp2",
+                moduleId: 5,
+                weight: 1,
+                assessmentTypeId: 3,
+                assessmentCategoryId: 1,
+                releaseDate: new Date(2026, 1, 1),
+                submissionDate: new Date(2026, 1, 20),
+            },
         ],
     });
 }

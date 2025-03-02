@@ -112,17 +112,22 @@ model ReviewGroupModule {
 
 model Assessment {
     id                   Int                @id @default(autoincrement())
-    tp                   String[]           @default(["tp1", "tp2"])
+    tp                   TpEnum             @default(tp1)
     moduleId             Int
     weight               Float
     assessmentTypeId     Int
     assessmentCategoryId Int
-    duration             DateTime
-    releaseDate          DateTime
-    submissionDate       DateTime
+    durationInMinutes    Int?
+    releaseDate          DateTime?
+    submissionDate       DateTime?
     module               Module             @relation(fields: [moduleId], references: [id])
     assessmentType       AssessmentType     @relation(fields: [assessmentTypeId], references: [id])
     AssessmentCategory   AssessmentCategory @relation(fields: [assessmentCategoryId], references: [id])
+}
+
+enum TpEnum {
+    tp1
+    tp2
 }
 
 model AssessmentType {
