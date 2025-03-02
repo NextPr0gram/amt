@@ -197,6 +197,13 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        if (modules.some((module: Module) => module.code === values.moduleCode)) {
+            form.setError("moduleCode", {
+                type: "manual",
+                message: "Module with the given code already exists",
+            });
+            return;
+        }
         const body = { id: moduleId, code: values.moduleCode, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId, moduleTutors: values.moduleTutors };
         let res;
 
@@ -207,12 +214,6 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
         }
 
         if (res && res.status !== 200) {
-            if (res.status === 500 && res.data.errorCode === "P2002") {
-                form.setError("moduleCode", {
-                    type: "manual",
-                    message: "Module with the given ID already exists",
-                });
-            }
             setShowSuccess(false);
             setShowError(true);
             setIsEditing(true);
