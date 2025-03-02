@@ -42,15 +42,16 @@ model Session {
 // Many modules have many module tutors
 // One module lead can lead many modules
 model Module {
-    id                 Int                  @id @default(autoincrement())
-    code               String               @unique
-    name               String
-    yearId             Int
-    year               Year                 @relation(fields: [yearId], references: [id])
-    moduleLeadId       Int?
-    moduleLead         User?                @relation(fields: [moduleLeadId], references: [id])
-    moduleTutors       ModuleTutor[]
-    ReviewGroupModules ReviewGroupModules[]
+    id                Int                 @id @default(autoincrement())
+    code              String              @unique
+    name              String
+    yearId            Int
+    year              Year                @relation(fields: [yearId], references: [id])
+    moduleLeadId      Int?
+    moduleLead        User?               @relation(fields: [moduleLeadId], references: [id])
+    moduleTutors      ModuleTutor[]
+    ReviewGroupModule ReviewGroupModule[]
+    Assessment        Assessment[]
 }
 
 model Year {
@@ -89,17 +90,17 @@ model UserRole {
 
 // need to migrage again
 model ReviewGroup {
-    id         Int                  @id @default(autoincrement())
+    id         Int                 @id @default(autoincrement())
     yearId     Int
     group      String
     convenerId Int
-    modules    ReviewGroupModules[]
-    convener   User                 @relation(fields: [convenerId], references: [id])
-    year       Year                 @relation(fields: [yearId], references: [id])
+    modules    ReviewGroupModule[]
+    convener   User                @relation(fields: [convenerId], references: [id])
+    year       Year                @relation(fields: [yearId], references: [id])
 }
 
 // Join table for ReviewGroup and Module
-model ReviewGroupModules {
+model ReviewGroupModule {
     reviewGroupId Int
     moduleId      Int
 
@@ -108,3 +109,70 @@ model ReviewGroupModules {
 
     @@id([reviewGroupId, moduleId])
 }
+
+model Assessment {
+    id                   Int                @id @default(autoincrement())
+    tp                   String[]           @default(["tp1", "tp2"])
+    moduleId             Int
+    weight               Float
+    assessmentTypeId     Int
+    assessmentCategoryId Int
+    duration             DateTime
+    releaseDate          DateTime
+    submissionDate       DateTime
+    module               Module             @relation(fields: [moduleId], references: [id])
+    assessmentType       AssessmentType     @relation(fields: [assessmentTypeId], references: [id])
+    AssessmentCategory   AssessmentCategory @relation(fields: [assessmentCategoryId], references: [id])
+}
+
+model AssessmentType {
+    id   Int    @id @default(autoincrement())
+    name String @unique
+
+    Assessment Assessment[]
+}
+
+model AssessmentCategory {
+    id   Int    @id @default(autoincrement())
+    name String @unique
+
+    Assessment Assessment[]
+}
+
+/**
+ * model Assessment {
+ * id                            Int                @id @default(autoincrement())
+ * tp                            String[]           @default(["tp1", "tp2"])
+ * moduleId                      Int
+ * weight                        Float
+ * assessmentTypeId              Int
+ * assessmentCategoryId          Int
+ * duration                      DateTime
+ * releaseDateFrequencyTypeId    Int
+ * submissionDateFrequencyTypeId Int
+ * module                        Module             @relation(fields: [moduleId], references: [id])
+ * assessmentType                AssessmentType     @relation(fields: [assessmentTypeId], references: [id])
+ * AssessmentCategory            AssessmentCategory @relation(fields: [assessmentCategoryId], references: [id])
+ * releaseDateFrequencyType      DateFrequencyType? @relation("releaseDateFrequencyType", fields: [releaseDateFrequencyTypeId], references: [id])
+ * submissionDateFrequencyType   DateFrequencyType? @relation("submissionDateFrequencyType", fields: [submissionDateFrequencyTypeId], references: [id])
+ * DateFrequencyType DateFrequencyType[]
+ * }
+ * model AssessmentType {
+ * id   Int    @id @default(autoincrement())
+ * name String @unique
+ * Assessment Assessment[]
+ * }
+ * // one-off or recurring
+ * model DateFrequencyType {
+ * id   Int    @id @default(autoincrement())
+ * name String @unique
+ * releaseDateAssessments    Assessment[] @relation("releaseDateFrequencyType")
+ * submissionDateAssessments Assessment[] @relation("submissionDateFrequencyType")
+ * Assessment Assessment[]
+ * }
+ * model AssessmentCategory {
+ * id   Int    @id @default(autoincrement())
+ * name String @unique
+ * Assessment Assessment[]
+ * }
+ */

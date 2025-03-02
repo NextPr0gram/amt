@@ -230,7 +230,7 @@ async function main() {
         ],
     });
 
-    const reviewGroupModules = await prisma.reviewGroupModules.createMany({
+    const reviewGroupModule = await prisma.reviewGroupModule.createMany({
         data: [
             { reviewGroupId: 1, moduleId: 1 },
             { reviewGroupId: 1, moduleId: 2 },
@@ -238,6 +238,33 @@ async function main() {
             { reviewGroupId: 2, moduleId: 4 },
             { reviewGroupId: 2, moduleId: 5 },
             { reviewGroupId: 2, moduleId: 6 },
+        ],
+    });
+
+    const AssessmentCategory = await prisma.assessmentCategory.createMany({
+        data: [
+            { name: "CA" },
+            { name: "Project" },
+            { name: "Coursework" },
+            { name: "Report" },
+            { name: "Lit. Review" },
+            { name: "Presentation" },
+            { name: "BB Assessment" },
+            { name: "Quiz" },
+            { name: "Examination" },
+            { name: "Portfolio" },
+            { name: "Refl. Learning" },
+            { name: "Res. Proposal" },
+            { name: "Practical" },
+        ],
+    });
+
+    const AssessmentTypes = await prisma.assessmentType.createMany({
+        data: [
+            { name: "Individual" },
+            { name: "Open-Book" },
+            { name: "Closed-Book" },
+            { name: "Group" },
         ],
     });
 }
