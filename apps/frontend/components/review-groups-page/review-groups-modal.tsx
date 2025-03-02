@@ -188,7 +188,7 @@ const ReviewGroupModal = ({ type, reviewGroupId }: ReviewGroupModalProps) => {
         } else if (type === "add") {
             return (
                 <div className="flex space-x-4">
-                    <Button size="sm" type="submit">
+                    <Button disabled={!isEditing} size="sm" type="submit">
                         Add
                     </Button>
                     <DialogClose asChild>

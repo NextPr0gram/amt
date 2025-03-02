@@ -24,7 +24,6 @@ interface MultiSelectProps {
 const ModulesMultiSelect = ({ data, field, isEditing, selectedYearId }: MultiSelectProps) => {
     const [open, setOpen] = React.useState(false);
     const selectedModules = data.filter((module) => field.value?.includes(module.id));
-    console.log(selectedModules);
 
     const handleUnselect = (id: number) => {
         field.onChange(field.value.filter((moduleId: number) => moduleId !== id));
