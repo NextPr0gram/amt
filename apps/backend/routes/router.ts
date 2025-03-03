@@ -6,6 +6,7 @@ import modulesRouter from "./protected/module-routes";
 import usersRouter from "./protected/users-routes";
 import yearsRouter from "./protected/years-routes";
 import reviewGroupsRouter from "./protected/review-groups-routes";
+import assessmentsRouter from "./protected/assessments-routes";
 
 const router = Router();
 
@@ -18,4 +19,5 @@ router.use("/users", authenticate, usersRouter); // All other users (module tuto
 router.use("/modules", authenticate, modulesRouter);
 router.use("/years", authenticate, yearsRouter);
 router.use("/review-groups", authenticate, reviewGroupsRouter);
+router.use("/assessments", authenticate, assessmentsRouter);
 export default router;
