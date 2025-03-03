@@ -1,9 +1,11 @@
 import { Router } from "express";
-import { getAssessmentsHandler } from "../../controllers/assessments-controller";
+import { getAssessmentCategoriesHandler, getAssessmentsHandler, getAssessmentTypesHandler } from "../../controllers/assessments-controller";
 
 const assessmentsRouter = Router();
 
 // Prefix: /assessments
 assessmentsRouter.get("/", getAssessmentsHandler);
+assessmentsRouter.get("/types", getAssessmentTypesHandler);
+assessmentsRouter.get("/categories", getAssessmentCategoriesHandler);
 
 export default assessmentsRouter;
