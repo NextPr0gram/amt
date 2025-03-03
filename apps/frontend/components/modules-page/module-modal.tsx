@@ -208,7 +208,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
         let res;
 
         if (type === "viewOrEdit") {
-            res = await protectedFetch(`/modules/`, "PATCH", body);
+            res = await protectedFetch(`/modules`, "PATCH", body);
         } else if (type === "add") {
             res = await protectedFetch("/modules", "POST", body);
         }
@@ -356,7 +356,6 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
                             </FormItem>
                         )}
                     />
-
                     {buttons()}
                 </form>
             </Form>

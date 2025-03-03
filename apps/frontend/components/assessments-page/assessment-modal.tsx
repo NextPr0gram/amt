@@ -20,11 +20,13 @@ import ModalAlert from "../modal-alert";
 import { Module } from "../modules-page/module-context";
 import { Calendar } from "../ui/calendar";
 import { format } from "date-fns";
+import { Assessment, useAssessments } from "./assessment-context";
+import { Value } from "@radix-ui/react-select";
 
 // module prop required if mode is edit
-interface ModuleModalProps {
+interface AssessmentModalProps {
     type: "add" | "viewOrEdit";
-    moduleId?: number;
+    assessmentId?: number;
 }
 
 interface AssessmentType {
@@ -40,13 +42,14 @@ const formSchema = z.object({
     moduleId: z.number().int(),
     typeId: z.number().int(),
     categoryId: z.number().int(),
-    weight: z.number().int(),
+    weight: z.number(),
     releaseDate: z.date(),
     submissionDate: z.date(),
     durationInMinutes: z.number().int(),
 });
 
-const AssessmentModal = ({ type, assessmentId }: ModuleModalProps) => {
+const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
+    const { fetchAssessments, assessments } = useAssessments();
     const [modules, setModules] = useState<Module[]>([]);
     const [assessmentTypes, setAssessmentTypes] = useState<AssessmentType[]>([]);
     const [assessmentCategories, setAssessmentCategories] = useState<AssessmentCategory[]>([]);
@@ -109,7 +112,7 @@ const AssessmentModal = ({ type, assessmentId }: ModuleModalProps) => {
                 durationInMinutes: undefined,
             };
         } else if (type === "viewOrEdit") {
-            const currentModule = modules.find((module: Module) => module.id === moduleId);
+            const currentAssessment = assessments.find((assessment: Assessment) => assessment.id === assessmentId);
 
             return {
                 moduleId: undefined,
@@ -188,20 +191,13 @@ const AssessmentModal = ({ type, assessmentId }: ModuleModalProps) => {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (modules.some((module: Module) => module.code === values.moduleCode)) {
-            form.setError("moduleCode", {
-                type: "manual",
-                message: "Module with the given code already exists",
-            });
-            return;
-        }
-        const body = { id: moduleId, code: values.moduleCode, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId, moduleTutors: values.moduleTutors };
+        const body = { id: 0, moduleId: values.moduleId, typeId: values.typeId, categoryId: values.categoryId, weight: values.weight, releaseDate: values.releaseDate, submissionDate: values.submissionDate, durationInMinutes: values.durationInMinutes };
         let res;
 
         if (type === "viewOrEdit") {
-            res = await protectedFetch(`/modules/`, "PATCH", body);
+            res = await protectedFetch(`/assessments`, "PATCH", body);
         } else if (type === "add") {
-            res = await protectedFetch("/modules", "POST", body);
+            res = await protectedFetch("/assessments", "POST", body);
         }
 
         if (res && res.status !== 200) {
@@ -211,7 +207,7 @@ const AssessmentModal = ({ type, assessmentId }: ModuleModalProps) => {
         } else {
             setShowError(false);
             setShowSuccess(true);
-            fetchModules();
+            fetchAssessments();
             setIsEditing(false);
         }
     };
@@ -354,6 +350,19 @@ const AssessmentModal = ({ type, assessmentId }: ModuleModalProps) => {
                             </FormItem>
                         )}
                     />
+                    <FormField
+                        control={form.control}
+                        name="weight"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Weight in % {field.value}</FormLabel>
+                                <FormControl>
+                                    <Input type="number" placeholder="e.g. 20" value={field.value * 100} onChange={(e) => form.setValue("weight", parseFloat(e.target.value) / 100)} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <div className="flex space-x-4">
                         <FormField
                             control={form.control}
@@ -402,6 +411,19 @@ const AssessmentModal = ({ type, assessmentId }: ModuleModalProps) => {
                             )}
                         />
                     </div>
+                    <FormField
+                        control={form.control}
+                        name="durationInMinutes"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Duration in Minutes (optional)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" placeholder="e.g. 120" value={field.value} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     {buttons()}
                 </form>
             </Form>

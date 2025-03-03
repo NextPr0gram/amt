@@ -16,8 +16,8 @@ export default function Page() {
             <SidebarInset>
                 <DateStage />
                 <AssessmentsProvider>
-                    <header className="flex h-16 shrink-0 items-center gap-2">
-                        <div className="flex items-center gap-2 px-4">
+                    <header className="flex h-16 shrink-0 items-center gap-2 px-4">
+                        <div className="flex items-center gap-2">
                             <Breadcrumb>
                                 <BreadcrumbList>
                                     <BreadcrumbItem className="hidden md:block">
