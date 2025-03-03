@@ -25,10 +25,19 @@ interface ModuleModalProps {
     moduleId?: number;
 }
 
+interface AssessmentType {
+    id: number;
+    name: string;
+}
+interface AssessmentCategory {
+    id: number;
+    name: string;
+}
+
 const formSchema = z.object({
     moduleId: z.number().int(),
-    type: z.number().int(),
-    category: z.number().int(),
+    typeId: z.number().int(),
+    categoryId: z.number().int(),
     weight: z.number().int(),
     releaseDate: z.string().optional(),
     submissionDate: z.string().optional(),
@@ -37,9 +46,11 @@ const formSchema = z.object({
 
 const AssessmentModal = ({ type, assessmentId }: ModuleModalProps) => {
     const [modules, setModules] = useState<Module[]>([]);
-    const [assessmentTypes, setAssessmentTypes] = useState([]);
-    const [assessmentCategories, setAssessmentCategories] = useState([]);
+    const [assessmentTypes, setAssessmentTypes] = useState<AssessmentType[]>([]);
+    const [assessmentCategories, setAssessmentCategories] = useState<AssessmentCategory[]>([]);
     const [isModulePopoverOpen, setIsModulePopoverOpen] = useState(false);
+    const [isTypePopoverOpen, setIsTypePopoverOpen] = useState(false);
+    const [isCategoryPopoverOpen, setIsCategoryPopoverOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(type === "add" ? true : false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [showError, setShowError] = useState(false);
@@ -49,7 +60,19 @@ const AssessmentModal = ({ type, assessmentId }: ModuleModalProps) => {
             const res = await protectedFetch("/modules", "GET");
             setModules(res.data);
         };
+
+        const fetchAssessmentTypes = async () => {
+            const res = await protectedFetch("/assessments/types", "GET");
+            setAssessmentTypes(res.data);
+        };
+
+        const fetchAssessmentCategories = async () => {
+            const res = await protectedFetch("/assessment/categories", "GET");
+            setAssessmentCategories(res.data);
+        };
         fetchModules();
+        fetchAssessmentTypes();
+        fetchAssessmentCategories();
     }, [setModules]);
 
     useEffect(() => {
@@ -230,6 +253,50 @@ const AssessmentModal = ({ type, assessmentId }: ModuleModalProps) => {
                                                             >
                                                                 {`${module.code} - ${module.name}`}
                                                                 <Check className={cn("ml-auto", module.id === field.value ? "opacity-100" : "opacity-0")} />
+                                                            </CommandItem>
+                                                        ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="typeId"
+                        render={({ field }) => (
+                            <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
+                                <FormLabel>Assessment Type</FormLabel>
+                                <Popover open={isTypePopoverOpen} onOpenChange={setIsTypePopoverOpen}>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} tabIndex={isEditing ? 0 : -1}>
+                                                {field.value ? `${assessmentTypes.find((type) => type.id === field.value)?.name}` : "Select type"}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 -mt-2">
+                                        <Command>
+                                            <CommandInput placeholder="Search module tutor..." />
+                                            <CommandList>
+                                                <CommandEmpty>No types found.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {isEditing &&
+                                                        assessmentTypes.map((type) => (
+                                                            <CommandItem
+                                                                key={type.id}
+                                                                onSelect={() => {
+                                                                    form.setValue("typeId", type.id);
+                                                                    setIsTypePopoverOpen(false);
+                                                                }}
+                                                                className="cursor-pointer"
+                                                            >
+                                                                {type.name}
+                                                                <Check className={cn("ml-auto", type.id === field.value ? "opacity-100" : "opacity-0")} />
                                                             </CommandItem>
                                                         ))}
                                                 </CommandGroup>
