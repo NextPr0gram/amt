@@ -4,31 +4,34 @@ import { protectedFetch } from "@/utils/protected-fetch";
 
 export type Assessment = {
     id: number;
-    code: string;
-    name: string;
-    year: string;
-    yearId: number;
-    lead: string;
-    leadId: number | undefined;
-    assessmentTutorIds: number[];
+    tp: "tp1" | "tp2";
+    moduleCode: string;
+    moduleName: string;
+    assessmentType: string;
+    assessmentCategory: string;
+    weight: number;
+    releaseDate?: string;
+    submissionDate?: string;
+    durationInMinutes?: number;
 };
 
 type AssessmentAPIResponse = {
     id: number;
-    code: string;
-    name: string;
-    year: {
-        id: number;
+    tp: "tp1" | "tp2";
+    module: {
+        code: string;
         name: string;
     };
-    assessmentLead: {
-        id: number;
-        firstName: string;
-        lastName: string;
+    assessmentType: {
+        name: string;
     };
-    assessmentTutors: {
-        userId: number;
-    }[];
+    assessmentCategory: {
+        name: string;
+    };
+    weight: number;
+    releaseDate: string;
+    submissionDate: string;
+    durationInMinutes: number;
 };
 
 type AssessmentsContextType = {
@@ -45,13 +48,15 @@ export const AssessmentsProvider: React.FC<{ children: React.ReactNode }> = ({ c
         const res = await protectedFetch("/assessments", "GET");
         const resData = res.data.map((assessment: AssessmentAPIResponse) => ({
             id: assessment.id,
-            code: assessment.code,
-            name: assessment.name,
-            year: assessment.year.name,
-            yearId: assessment.year.id,
-            lead: assessment.assessmentLead ? `${assessment.assessmentLead.firstName} ${assessment.assessmentLead.lastName}` : null,
-            leadId: assessment.assessmentLead.id,
-            assessmentTutorIds: assessment.assessmentTutors.map((tutor) => tutor.userId),
+            tp: assessment.tp,
+            moduleCode: assessment.module.code,
+            moduleName: assessment.module.name,
+            assessmentType: assessment.assessmentType.name,
+            assessmentCategory: assessment.assessmentCategory.name,
+            weight: assessment.weight,
+            releaseDate: assessment.releaseDate,
+            submissionDate: assessment.submissionDate,
+            durationInMinutes: assessment.durationInMinutes,
         }));
         setAssessments(resData);
     };

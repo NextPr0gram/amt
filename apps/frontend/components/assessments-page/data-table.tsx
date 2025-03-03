@@ -14,36 +14,46 @@ import AssessmentModal from "./assessment-modal";
 
 const columns: ColumnDef<Assessment>[] = [
     {
-        accessorKey: "code",
-        header: "Assessment Code",
+        accessorKey: "moduleCode",
+        header: "Module Code",
+    },
+    // when the screen width is less than md, the column will be hidden
+    {
+        accessorKey: "moduleName",
+        header: "Module name",
     },
     {
-        accessorKey: "name",
-        header: "Assessment Name",
+        accessorKey: "assessmentType",
+        header: "Type",
     },
     {
-        accessorKey: "year",
-        header: "Year",
-        filterFn: "arrIncludesSome",
+        accessorKey: "assessmentCategory",
+        header: "Category",
     },
     {
-        accessorKey: "lead",
-        header: "Assessment Lead",
-    },
-];
-
-const filterOptions = [
-    {
-        label: "Year 1",
-        value: "1",
+        accessorKey: "weight",
+        header: "Weight",
+        cell: (cell) => {
+            return `${(cell.getValue() as number) * 100}%`;
+        },
     },
     {
-        label: "Year 2",
-        value: "2",
+        accessorKey: "releaseDate",
+        header: "Release Date",
+        cell: (cell) => {
+            return cell.getValue() ? new Date(cell.getValue() as string).toLocaleDateString() : "";
+        },
     },
     {
-        label: "Year 3",
-        value: "3",
+        accessorKey: "submissionDate",
+        header: "Submission Date",
+        cell: (cell) => {
+            return new Date(cell.getValue() as string).toLocaleDateString();
+        },
+    },
+    {
+        accessorKey: "durationInMinutes",
+        header: "Duration (mins)",
     },
 ];
 
@@ -68,7 +78,6 @@ export function DataTable() {
 
     return (
         <div>
-            <DataTableToolbar table={table} filterColumn="year" filterTitle="Year" filterOptions={filterOptions} seachInputPlaceholder="Search assessment" />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -112,7 +121,6 @@ export function DataTable() {
                     </Dialog>
                 </Table>
             </div>
-            <DataTablePagination table={table} />
         </div>
     );
 }

@@ -1,6 +1,11 @@
 import { AppSidebar } from "@/components/app-sidebar";
+import { AssessmentsProvider } from "@/components/assessments-page/assessment-context";
+import AssessmentModal from "@/components/assessments-page/assessment-modal";
+import { DataTable } from "@/components/assessments-page/data-table";
 import { DateStage } from "@/components/date-stage";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
