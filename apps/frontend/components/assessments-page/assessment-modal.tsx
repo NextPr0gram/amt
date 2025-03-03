@@ -11,13 +11,15 @@ import { useEffect, useState } from "react";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, CheckCircle2, ChevronsUpDown } from "lucide-react";
+import { CalendarIcon, Check, CheckCircle2, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DialogClose, DialogTitle } from "../ui/dialog";
 import { Alert, AlertDescription } from "../ui/alert";
 import MultiSelect from "../multi-select";
 import ModalAlert from "../modal-alert";
 import { Module } from "../modules-page/module-context";
+import { Calendar } from "../ui/calendar";
+import { format } from "date-fns";
 
 // module prop required if mode is edit
 interface ModuleModalProps {
@@ -39,8 +41,8 @@ const formSchema = z.object({
     typeId: z.number().int(),
     categoryId: z.number().int(),
     weight: z.number().int(),
-    releaseDate: z.string().optional(),
-    submissionDate: z.string().optional(),
+    releaseDate: z.date(),
+    submissionDate: z.date(),
     durationInMinutes: z.number().int(),
 });
 
@@ -67,7 +69,7 @@ const AssessmentModal = ({ type, assessmentId }: ModuleModalProps) => {
         };
 
         const fetchAssessmentCategories = async () => {
-            const res = await protectedFetch("/assessment/categories", "GET");
+            const res = await protectedFetch("/assessments/categories", "GET");
             setAssessmentCategories(res.data);
         };
         fetchModules();
@@ -308,7 +310,98 @@ const AssessmentModal = ({ type, assessmentId }: ModuleModalProps) => {
                             </FormItem>
                         )}
                     />
-
+                    <FormField
+                        control={form.control}
+                        name="categoryId"
+                        render={({ field }) => (
+                            <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
+                                <FormLabel>Assessment Category</FormLabel>
+                                <Popover open={isCategoryPopoverOpen} onOpenChange={setIsCategoryPopoverOpen}>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} tabIndex={isEditing ? 0 : -1}>
+                                                {field.value ? `${assessmentCategories.find((type) => type.id === field.value)?.name}` : "Select category"}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 -mt-2">
+                                        <Command>
+                                            <CommandInput placeholder="Search module tutor..." />
+                                            <CommandList>
+                                                <CommandEmpty>No types found.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {isEditing &&
+                                                        assessmentCategories.map((type) => (
+                                                            <CommandItem
+                                                                key={type.id}
+                                                                onSelect={() => {
+                                                                    form.setValue("categoryId", type.id);
+                                                                    setIsTypePopoverOpen(false);
+                                                                }}
+                                                                className="cursor-pointer"
+                                                            >
+                                                                {type.name}
+                                                                <Check className={cn("ml-auto", type.id === field.value ? "opacity-100" : "opacity-0")} />
+                                                            </CommandItem>
+                                                        ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <div className="flex space-x-4">
+                        <FormField
+                            control={form.control}
+                            name="releaseDate"
+                            render={({ field }) => (
+                                <FormItem className="grow flex flex-col">
+                                    <FormLabel>Release Date (Optional)</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button variant={"outline"} className={cn(" pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date("1900-01-01")} initialFocus />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="submissionDate"
+                            render={({ field }) => (
+                                <FormItem className="grow flex flex-col">
+                                    <FormLabel>Submission Date (Optional)</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date("1900-01-01")} initialFocus />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                     {buttons()}
                 </form>
             </Form>

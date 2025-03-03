@@ -14,10 +14,16 @@ import AssessmentModal from "./assessment-modal";
 
 const columns: ColumnDef<Assessment>[] = [
     {
+        accessorKey: "tp",
+        header: "TP",
+        cell: (cell) => {
+            return cell.getValue() ? (cell.getValue() as string).toUpperCase() : "";
+        },
+    },
+    {
         accessorKey: "moduleCode",
         header: "Module Code",
     },
-    // when the screen width is less than md, the column will be hidden
     {
         accessorKey: "moduleName",
         header: "Module name",
