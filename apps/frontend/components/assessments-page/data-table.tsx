@@ -54,7 +54,7 @@ const columns: ColumnDef<Assessment>[] = [
         accessorKey: "submissionDate",
         header: "Submission Date",
         cell: (cell) => {
-            return new Date(cell.getValue() as string).toLocaleDateString();
+            return cell.getValue() ? new Date(cell.getValue() as string).toLocaleDateString() : "";
         },
     },
     {
