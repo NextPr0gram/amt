@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
@@ -54,4 +55,30 @@ export const getAssessmentCategoriesHandler = catchErrors(async (req, res) => {
     });
     appAssert(assessmentCategories, NOT_FOUND, "Assessment categories not found");
     return res.status(OK).json(assessmentCategories);
+});
+
+const assessmentSchema = z.object({
+    moduleId: z.number().int(),
+    typeId: z.number().int(),
+    categoryId: z.number().int(),
+    weight: z.number(),
+    releaseDate: z.date().optional(),
+    submissionDate: z.date().optional(),
+    durationInMinutes: z.number().int().optional(),
+});
+
+export const createAssessmentHandler = catchErrors(async (req, res) => {
+    const { moduleId, typeId, categoryId, weight, releaseDate, submissionDate, durationInMinutes } = assessmentSchema.parse(req.body);
+    const assessment = await prisma.assessment.create({
+        data: {
+            moduleId,
+            assessmentTypeId: typeId,
+            assessmentCategoryId: categoryId,
+            weight,
+            releaseDate,
+            submissionDate,
+            durationInMinutes,
+        },
+    });
+    return res.status(OK).json(assessment);
 });
