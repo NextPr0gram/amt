@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAssessmentCategoriesHandler, getAssessmentsHandler, getAssessmentTypesHandler } from "../../controllers/assessments-controller";
+import { createAssessmentHandler, getAssessmentCategoriesHandler, getAssessmentsHandler, getAssessmentTypesHandler } from "../../controllers/assessments-controller";
 
 const assessmentsRouter = Router();
 
@@ -7,5 +7,6 @@ const assessmentsRouter = Router();
 assessmentsRouter.get("/", getAssessmentsHandler);
 assessmentsRouter.get("/types", getAssessmentTypesHandler);
 assessmentsRouter.get("/categories", getAssessmentCategoriesHandler);
+assessmentsRouter.post("/", createAssessmentHandler);
 
 export default assessmentsRouter;
