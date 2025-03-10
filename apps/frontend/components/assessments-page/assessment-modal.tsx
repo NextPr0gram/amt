@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Check, CheckCircle2, ChevronsUpDown } from "lucide-react";
+import { CalendarIcon, Check, CheckCircle2, ChevronsUpDown, HelpCircleIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DialogClose, DialogTitle } from "../ui/dialog";
 import { Alert, AlertDescription } from "../ui/alert";
@@ -43,9 +43,9 @@ const formSchema = z.object({
     typeId: z.number().int(),
     categoryId: z.number().int(),
     weight: z.number(),
-    releaseDate: z.date(),
-    submissionDate: z.date(),
-    durationInMinutes: z.number().int(),
+    releaseDate: z.union([z.date(), z.string()]).optional(),
+    submissionDate: z.union([z.date(), z.string()]).optional(),
+    durationInMinutes: z.number().int().optional(),
 });
 
 const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
@@ -112,7 +112,7 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
                 durationInMinutes: undefined,
             };
         } else if (type === "viewOrEdit") {
-            const currentAssessment = assessments.find((assessment: Assessment) => assessment.id === assessmentId);
+            //const currentAssessment = assessments.find((assessment: Assessment) => assessment.id === assessmentId);
 
             return {
                 moduleId: undefined,
@@ -416,9 +416,9 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
                         name="durationInMinutes"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Duration in Minutes (optional)</FormLabel>
+                                <FormLabel>Duration in Minutes (optional) {field.value}</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="e.g. 120" value={field.value} />
+                                    <Input type="number" placeholder="e.g. 120" onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)}/>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
