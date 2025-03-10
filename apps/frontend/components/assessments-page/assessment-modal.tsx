@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { date, z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -191,7 +191,9 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const body = { id: 0, moduleId: values.moduleId, typeId: values.typeId, categoryId: values.categoryId, weight: values.weight, releaseDate: values.releaseDate, submissionDate: values.submissionDate, durationInMinutes: values.durationInMinutes };
+        const releaseDate = values.releaseDate instanceof Date ? values.releaseDate : undefined;
+        const submissionDate = values.submissionDate instanceof Date ? values.submissionDate : undefined;
+        const body = { id: 0, moduleId: values.moduleId, typeId: values.typeId, categoryId: values.categoryId, weight: values.weight, releaseDate, submissionDate, durationInMinutes: values.durationInMinutes };
         let res;
 
         if (type === "viewOrEdit") {
@@ -418,7 +420,7 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
                             <FormItem>
                                 <FormLabel>Duration in Minutes (optional) {field.value}</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="e.g. 120" onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)}/>
+                                    <Input type="number" placeholder="e.g. 120" onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
