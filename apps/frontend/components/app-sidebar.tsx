@@ -7,6 +7,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupConte
 import Link from "next/link";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { useEffect, useState } from "react";
+import Notification from "@/components/notification";
 
 // Menu items.
 const items = [
@@ -90,6 +91,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+            <Notification />
             <SidebarFooter>
                 <NavUser user={userData} />
             </SidebarFooter>

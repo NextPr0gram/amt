@@ -1,6 +1,8 @@
 import AppErrorCode from "../constants/app-error-code";
 import { NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/primsa-client";
+import { io } from "../server";
+import { broadcastNotification } from "../services/notification-service";
 import appAssert from "../utils/app-assert";
 import catchErrors from "../utils/catch-errors";
 
@@ -104,6 +106,7 @@ export const createReviewGroupHandler = catchErrors(async (req, res) => {
             },
         },
     });
+    broadcastNotification(io, `New review group created for year`);
 
     return res.status(OK).json(reviewGroup);
 });

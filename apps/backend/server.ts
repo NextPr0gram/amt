@@ -7,13 +7,28 @@ import { PORT } from "./constants/env";
 import errorHandler from "./middleware/error-handler";
 import router from "./routes/router";
 import logRequests from "./middleware/log-requests";
+import { Server } from "socket.io";
+import http from "http";
+import { setupWebSocket } from "./services/notification-service";
+
 const { BoxClient, BoxDeveloperTokenAuth } = require("box-typescript-sdk-gen");
 
 dotenv.config();
 
 // start the webserver
 const app = express();
+const server = http.createServer(app);
 prisma.$connect();
+
+export const io = new Server(server, {
+    cors: {
+        origin: process.env.APP_ORIGIN, // Allow frontend origin for WebSocket connections
+        credentials: true,
+    },
+});
+
+setupWebSocket(io);
+
 // Initialise middlewares
 app.use(express.json()); // Allows parsing of JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Allows parsing of URL-encoded request bodies
@@ -26,6 +41,6 @@ app.use("/api/v1/", logRequests, router);
 app.use(errorHandler);
 
 // Start the server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}`);
 });
