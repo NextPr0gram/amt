@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import ReviewGroupsModal from "@/components/review-groups-page/review-groups-modal";
 import { NotificationProvider } from "@/components/notification-toast-context";
-import { toast } from "sonner";
 
 export default function Page() {
     return (
@@ -32,7 +31,6 @@ export default function Page() {
                                     </BreadcrumbList>
                                 </Breadcrumb>
                             </div>
-                            
                             <Dialog>
                                 <DialogTrigger asChild>
                                     <Button size="sm" className="ml-auto">
