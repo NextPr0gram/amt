@@ -13,3 +13,16 @@ export const getUserHandler = catchErrors(async (req, res) => {
     appAssert(user, NOT_FOUND, "User not found");
     return res.status(OK).json(user);
 });
+
+export const getUserNotifications = catchErrors(async (req, res) => {
+    const notifications = await prisma.notification.findMany({
+        where: {
+            userId: req.userId,
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+    });
+
+    return res.status(OK).json(notifications);
+});

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { NavUserRound } from "@/components/nav-user";
 import { Button } from "@/components/ui/button";
 import { Command } from "lucide-react";
+import { DataTable } from "@/components/notifications-page/data-table";
 
 export const metadata: Metadata = {
     title: "Dashboard",
@@ -42,6 +43,7 @@ export default function Page() {
                     <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
                     <p className="text-muted-foreground">Manage your notifications.</p>
                 </div>
+                <DataTable />
             </div>
         </>
     );
