@@ -16,18 +16,19 @@ datasource db {
 }
 
 model User {
-    id            Int           @id @default(autoincrement())
-    email         String        @unique
+    id            Int            @id @default(autoincrement())
+    email         String         @unique
     password      String
     firstName     String
     lastName      String
-    createdAt     DateTime      @default(now())
-    updatedAt     DateTime      @updatedAt
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
     sessions      Session[] // establishes reverse relation to Session model (this is a feature in Prisma ORM, it is not a real column in the database)
     moduleTutorOf ModuleTutor[]
     Module        Module[]
     Role          UserRole[]
     ReviewGroup   ReviewGroup[]
+    Notification  Notification[]
 }
 
 model Session {
@@ -144,40 +145,12 @@ model AssessmentCategory {
     assessment Assessment[]
 }
 
-/**
- * model Assessment {
- * id                            Int                @id @default(autoincrement())
- * tp                            String[]           @default(["tp1", "tp2"])
- * moduleId                      Int
- * weight                        Float
- * assessmentTypeId              Int
- * assessmentCategoryId          Int
- * duration                      DateTime
- * releaseDateFrequencyTypeId    Int
- * submissionDateFrequencyTypeId Int
- * module                        Module             @relation(fields: [moduleId], references: [id])
- * assessmentType                AssessmentType     @relation(fields: [assessmentTypeId], references: [id])
- * AssessmentCategory            AssessmentCategory @relation(fields: [assessmentCategoryId], references: [id])
- * releaseDateFrequencyType      DateFrequencyType? @relation("releaseDateFrequencyType", fields: [releaseDateFrequencyTypeId], references: [id])
- * submissionDateFrequencyType   DateFrequencyType? @relation("submissionDateFrequencyType", fields: [submissionDateFrequencyTypeId], references: [id])
- * DateFrequencyType DateFrequencyType[]
- * }
- * model AssessmentType {
- * id   Int    @id @default(autoincrement())
- * name String @unique
- * Assessment Assessment[]
- * }
- * // one-off or recurring
- * model DateFrequencyType {
- * id   Int    @id @default(autoincrement())
- * name String @unique
- * releaseDateAssessments    Assessment[] @relation("releaseDateFrequencyType")
- * submissionDateAssessments Assessment[] @relation("submissionDateFrequencyType")
- * Assessment Assessment[]
- * }
- * model AssessmentCategory {
- * id   Int    @id @default(autoincrement())
- * name String @unique
- * Assessment Assessment[]
- * }
- */
+model Notification {
+    id        Int      @id @default(autoincrement())
+    userId    Int
+    title     String
+    message   String
+    read      Boolean  @default(false)
+    createdAt DateTime @default(now())
+    user      User     @relation(fields: [userId], references: [id])
+}
