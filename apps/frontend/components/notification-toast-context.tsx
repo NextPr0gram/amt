@@ -6,13 +6,7 @@ import React, { createContext, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const NotificationToastContext = createContext(null);
-type NotificationCategory = "general" | "module" | "review-group";
 
-const notificationCategoryMap = {
-    general: "General",
-    module: "Module",
-    "review-group": "Review group",
-};
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [userId, setUserId] = useState<number | null>(null);
 
@@ -43,16 +37,16 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     useEffect(() => {
         if (!socket) return;
 
-        socket.on("notification", (data: { message: string; type: string; category: string }) => {
+        socket.on("notification", (data: { message: string; type: string; title: string }) => {
             switch (data.type) {
                 case "info":
-                    toast(notificationCategoryMap[data.category as NotificationCategory], { icon: <Bell className="size-5 mx-2" />, description: data.message, duration: 15000 });
+                    toast(data.title, { icon: <Bell className="size-5 mx-2" />, description: data.message, duration: 15000 });
                     break;
                 case "warning":
-                    toast(notificationCategoryMap[data.category as NotificationCategory], { icon: <TriangleAlert className="size-5 mx-2" />, description: data.message, duration: 15000 });
+                    toast(data.title, { icon: <TriangleAlert className="size-5 mx-2" />, description: data.message, duration: 15000 });
                     break;
                 case "error":
-                    toast.error(notificationCategoryMap[data.category as NotificationCategory], { description: data.message, duration: 15000 });
+                    toast.error(data.title, { description: data.message, duration: 15000 });
                     break;
             }
         });

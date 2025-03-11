@@ -38,10 +38,9 @@ export const sendNotification = (io: Server, userId: string, message: string) =>
 };
 
 type NotificationType = "info" | "warning" | "error";
-type NotificationCategory = "general" | "module" | "review-group";
 
 // Broadcast notification to all users
-export const broadcastNotification = (io: Server, type: NotificationType, category: NotificationCategory, message: string) => {
-    io.emit("notification", { type, category, message });
+export const broadcastNotification = (io: Server, type: NotificationType, title: string, message: string) => {
+    io.emit("notification", { type, title, message });
     console.log(`Broadcast notification: ${message}`);
 };
