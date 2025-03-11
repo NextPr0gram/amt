@@ -106,7 +106,7 @@ export const createReviewGroupHandler = catchErrors(async (req, res) => {
             },
         },
     });
-    broadcastNotification(io, `New review group created for year`);
+    broadcastNotification(io, "info", "review-group", `New review group created for yearId: ${yearId}, moduleIds: ${moduleIds.join(", ")}, convener: ${convener}`);
 
     return res.status(OK).json(reviewGroup);
 });

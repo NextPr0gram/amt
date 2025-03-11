@@ -8,6 +8,7 @@ const useSocket = (userId: number | null) => {
     const [socket, setSocket] = useState<Socket | null>(null);
 
     useEffect(() => {
+        if (!userId) return;
         // Establish socket connection
         const socketIo = io(SOCKET_SERVER_URL, {
             transports: ["websocket"],

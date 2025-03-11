@@ -1,13 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { Command, Settings, Component, Users, UserRoundPen, BookOpenText } from "lucide-react";
+import { Command, Settings, Component, Users, UserRoundPen, BookOpenText, Info, Bell } from "lucide-react";
 import { NavUser } from "@/components/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { useEffect, useState } from "react";
 import Notification from "@/components/notification";
+import { toast } from "sonner";
+import { Button } from "./ui/button";
+import { cn } from "@/lib/utils";
 
 // Menu items.
 const items = [
@@ -91,7 +94,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
-            <Notification />
+            <Button variant="outline" onClick={() => toast.error("Toast title", { icon: <Bell className="size-5 mx-2" />, description: "toast description", descriptionClassName: cn("text-red-500") })}>
+                Toast
+            </Button>
             <SidebarFooter>
                 <NavUser user={userData} />
             </SidebarFooter>
