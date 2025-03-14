@@ -280,6 +280,106 @@ async function main() {
             },
         ],
     });
+
+    const tps = await prisma.tP.createMany({
+        data: [
+            {}, {}, {},
+        ]
+    })
+
+    const stages = await prisma.stage.createMany({
+        data: [
+            {}, {},
+        ]
+    })
+
+    const reviewTypes = await prisma.reviewType.createMany({
+        data: [
+            {
+                name: "internalReview"
+            },
+            {
+                name: "externalReview"
+            },
+            {
+                name: "noReview"
+            },
+        ]
+    })
+
+    const phaseTriggers = await prisma.phaseTrigger.createMany({
+        data: [
+            {
+                name: "date"
+            },
+            {
+                name: "box-folder-create"
+            },
+            {
+                name: "box-material-upload"
+            },
+        ]
+    })
+
+    const phases = await prisma.phase.createMany({
+        data: [
+            {
+                tPId: 1,
+                stageId: 1,
+                reviewTypeId: 3,
+                triggerId: 1
+            },
+            {
+                tPId: 1,
+                stageId: 1,
+                reviewTypeId: 1,
+                triggerId: 2
+            },
+            {
+                tPId: 1,
+                stageId: 1,
+                reviewTypeId: 2,
+                triggerId: 3
+            },
+            {
+                tPId: 1,
+                stageId: 2,
+                reviewTypeId: 3,
+                triggerId: 1
+            },
+            {
+                tPId: 2,
+                stageId: 1,
+                reviewTypeId: 3,
+                triggerId: 1
+            },
+            {
+                tPId: 2,
+                stageId: 1,
+                reviewTypeId: 1,
+                triggerId: 2
+            },
+            {
+                tPId: 2,
+                stageId: 1,
+                reviewTypeId: 2,
+                triggerId: 3
+            },
+            {
+                tPId: 2,
+                stageId: 2,
+                reviewTypeId: 3,
+                triggerId: 1
+            },
+            {
+                tPId: 3,
+                stageId: 2,
+                reviewTypeId: 3,
+                triggerId: 1
+            },
+        ]
+    })
+
 }
 main()
     .then(async () => {

@@ -9,6 +9,7 @@ import { DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Dialog } from "@radix-ui/react-dialog";
 import { protectedFetch } from "@/utils/protected-fetch";
+import { Divide } from "lucide-react";
 
 type Notification = {
     id: number;
@@ -29,6 +30,9 @@ const columns: ColumnDef<Notification>[] = [
                 </div>
             );
         },
+    },
+    {
+        accessorKey: "createdAt",
     },
 ];
 

@@ -154,3 +154,32 @@ model Notification {
     createdAt DateTime @default(now())
     user      User     @relation(fields: [userId], references: [id])
 }
+
+model TP {
+    id Int @id @default(autoincrement())
+}
+
+model Stage {
+    id Int @id @default(autoincrement())
+}
+model ReviewType {
+    id Int @id @default(autoincrement())
+    name String
+}
+model ModerationStatus {
+    id Int @id @default(autoincrement())
+    phaseId Int
+}
+
+model Phase {
+    id Int @id @default(autoincrement())
+    tPId Int
+    stageId Int
+    reviewTypeId Int
+    triggerId Int
+}
+
+model PhaseTrigger {
+    id Int @id @default(autoincrement())
+    name String
+}
