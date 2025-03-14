@@ -156,30 +156,49 @@ model Notification {
 }
 
 model TP {
-    id Int @id @default(autoincrement())
+    id   Int    @id @default(autoincrement())
+    name String
+
+    ModerationPhase ModerationPhase[]
 }
 
 model Stage {
-    id Int @id @default(autoincrement())
-}
-model ReviewType {
-    id Int @id @default(autoincrement())
+    id   Int    @id @default(autoincrement())
     name String
-}
-model ModerationStatus {
-    id Int @id @default(autoincrement())
-    phaseId Int
+
+    ModerationPhase ModerationPhase[]
 }
 
-model Phase {
-    id Int @id @default(autoincrement())
-    tPId Int
-    stageId Int
+model ReviewType {
+    id   Int    @id @default(autoincrement())
+    name String
+
+    ModerationPhase ModerationPhase[]
+}
+
+model ModerationStatus {
+    id                Int             @id @default(autoincrement())
+    moderationPhaseId Int
+    moderationPhase   ModerationPhase @relation(fields: [moderationPhaseId], references: [id])
+}
+
+model ModerationPhase {
+    id           Int          @id @default(autoincrement())
+    tPId         Int
+    stageId      Int
     reviewTypeId Int
-    triggerId Int
+    triggerId    Int
+    tP           TP           @relation(fields: [tPId], references: [id])
+    stage        Stage        @relation(fields: [stageId], references: [id])
+    reviewType   ReviewType   @relation(fields: [reviewTypeId], references: [id])
+    trigger      PhaseTrigger @relation(fields: [triggerId], references: [id])
+
+    ModerationStatus ModerationStatus[]
 }
 
 model PhaseTrigger {
-    id Int @id @default(autoincrement())
+    id   Int    @id @default(autoincrement())
     name String
+
+    ModerationPhase ModerationPhase[]
 }
