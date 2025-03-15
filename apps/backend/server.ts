@@ -9,7 +9,7 @@ import router from "./routes/router";
 import logRequests from "./middleware/log-requests";
 import { Server } from "socket.io";
 import http from "http";
-import { setupWebSocket } from "./services/notification-service";
+import { setupWebSocket } from "./services/websocket-service";
 
 const { BoxClient, BoxDeveloperTokenAuth } = require("box-typescript-sdk-gen");
 

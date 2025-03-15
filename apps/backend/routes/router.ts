@@ -7,6 +7,7 @@ import usersRouter from "./protected/users-routes";
 import yearsRouter from "./protected/years-routes";
 import reviewGroupsRouter from "./protected/review-groups-routes";
 import assessmentsRouter from "./protected/assessments-routes";
+import moderationRouter from "./protected/moderation-routes";
 
 const router = Router();
 
@@ -20,4 +21,5 @@ router.use("/modules", authenticate, modulesRouter);
 router.use("/years", authenticate, yearsRouter);
 router.use("/review-groups", authenticate, reviewGroupsRouter);
 router.use("/assessments", authenticate, assessmentsRouter);
+router.use("/moderation", authenticate, moderationRouter);
 export default router;
