@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ModulesProvider } from "@/components/modules-page/module-context";
 import ModuleModal from "../../../components/modules-page/module-modal";
-import { NotificationProvider } from "@/components/notification-toast-context";
+import { WebsocketProvider } from "@/components/websocket-context";
 
 export default function Page() {
     // https://ui.shadcn.com/docs/components/data-table#basic-table
@@ -15,8 +15,8 @@ export default function Page() {
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-                <DateStage />
-                <NotificationProvider>
+                <WebsocketProvider>
+                    <DateStage />
                     <ModulesProvider>
                         <header className="flex h-16 shrink-0 items-center gap-2 px-4">
                             <div className="flex items-center gap-2">
@@ -47,7 +47,7 @@ export default function Page() {
                             <DataTable />
                         </div>
                     </ModulesProvider>
-                </NotificationProvider>
+                </WebsocketProvider>
             </SidebarInset>
         </SidebarProvider>
     );

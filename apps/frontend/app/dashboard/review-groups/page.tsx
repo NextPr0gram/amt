@@ -7,15 +7,15 @@ import { ReviewGroupsProvider } from "@/components/review-groups-page/review-gro
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import ReviewGroupsModal from "@/components/review-groups-page/review-groups-modal";
-import { NotificationProvider } from "@/components/notification-toast-context";
+import { WebsocketProvider } from "@/components/websocket-context";
 
 export default function Page() {
     return (
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-                <DateStage />
-                <NotificationProvider>
+                <WebsocketProvider>
+                    <DateStage />
                     <ReviewGroupsProvider>
                         <header className="flex h-16 shrink-0 items-center gap-2 px-4">
                             <div className="flex items-center gap-2">
@@ -46,7 +46,7 @@ export default function Page() {
                             <DataTable />
                         </div>
                     </ReviewGroupsProvider>
-                </NotificationProvider>
+                </WebsocketProvider>
             </SidebarInset>
         </SidebarProvider>
     );

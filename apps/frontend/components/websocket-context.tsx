@@ -2,12 +2,17 @@
 import useSocket from "@/hooks/useSocket";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { Bell, TriangleAlert } from "lucide-react";
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { Socket } from "socket.io-client";
 import { toast } from "sonner";
 
-const NotificationToastContext = createContext(null);
+type websocketContextType = {
+    socket: Socket | null;
+};
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const WebsocketContext = createContext<websocketContextType | undefined>(undefined);
+
+export const WebsocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [userId, setUserId] = useState<number | null>(null);
 
     // First effect: fetch the user ID
@@ -29,8 +34,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         fetchUserId();
     }, []);
 
-    console.log("userId: ", userId);
-    // Create socket only when we have userId
     const socket = useSocket(userId);
 
     // Second effect: handle socket notifications
@@ -56,5 +59,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         };
     }, [socket]);
 
-    return <NotificationToastContext.Provider value={null}>{children}</NotificationToastContext.Provider>;
+    return <WebsocketContext.Provider value={{ socket }}>{children}</WebsocketContext.Provider>;
+};
+export const useWebsocket = () => {
+    const context = useContext(WebsocketContext);
+    if (!context) {
+        throw new Error("useWebsocket must be used within a WebsocketProvider");
+    }
+    return context;
 };

@@ -3,7 +3,7 @@ import { AssessmentsProvider } from "@/components/assessments-page/assessment-co
 import AssessmentModal from "@/components/assessments-page/assessment-modal";
 import { DataTable } from "@/components/assessments-page/data-table";
 import { DateStage } from "@/components/date-stage";
-import { NotificationProvider } from "@/components/notification-toast-context";
+import { WebsocketProvider } from "@/components/notification-toast-context";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -15,7 +15,7 @@ export default function Page() {
             <AppSidebar />
             <SidebarInset>
                 <DateStage />
-                <NotificationProvider>
+                <WebsocketProvider>
                     <AssessmentsProvider>
                         <header className="flex h-16 shrink-0 items-center gap-2 px-4">
                             <div className="flex items-center gap-2">
@@ -46,7 +46,7 @@ export default function Page() {
                             <DataTable />
                         </div>
                     </AssessmentsProvider>
-                </NotificationProvider>
+                </WebsocketProvider>
             </SidebarInset>
         </SidebarProvider>
     );
