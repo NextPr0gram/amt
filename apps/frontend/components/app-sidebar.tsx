@@ -11,6 +11,7 @@ import Notification from "@/components/notification";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
+import { flexRender } from "@tanstack/react-table";
 
 // Menu items.
 const items = [
@@ -94,9 +95,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
-            <Button variant="outline" onClick={() => toast.error("Toast title", { icon: <Bell className="size-5 mx-2" />, description: "toast description", descriptionClassName: cn("text-red-500") })}>
-                Toast
-            </Button>
+            <SidebarGroup>
+                <SidebarGroupLabel>Demo controls</SidebarGroupLabel>
+                <div className="space-y-2">
+                    <Button className="w-full" variant="outline" onClick={() => toast.error("Toast title", { icon: <Bell className="size-5 mx-2" />, description: "toast description", descriptionClassName: cn("text-red-500") })}>
+                        Toast
+                    </Button>
+                    <div className="flex space-x-2">
+                        <Button className="flex-1" variant="outline">
+                            Prv Phase
+                        </Button>
+                        <Button className="flex-1" variant="outline">
+                            Nxt Phase
+                        </Button>
+                    </div>
+                </div>
+            </SidebarGroup>
             <SidebarFooter>
                 <NavUser user={userData} />
             </SidebarFooter>
