@@ -7,7 +7,7 @@ import { ReviewGroupsProvider } from "@/components/review-groups-page/review-gro
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import ReviewGroupsModal from "@/components/review-groups-page/review-groups-modal";
-import { WebsocketProvider } from "@/components/websocket-context";
+import { WebsocketProvider } from "@/components/contexts/websocket-context";
 
 export default function Page() {
     return (

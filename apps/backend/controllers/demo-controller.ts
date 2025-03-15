@@ -3,6 +3,8 @@ import { NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
 import catchErrors from "../utils/catch-errors";
+import { broadcastNotification } from "../services/notification-service";
+import { updateClients } from "../services/moderation-status-service";
 
 export const prevPhaseHandler = catchErrors(async (req, res) => {
     const currentStatus = await prisma.moderationStatus.findUnique({
@@ -14,7 +16,7 @@ export const prevPhaseHandler = catchErrors(async (req, res) => {
     }
 
     let newPhaseId = currentStatus.moderationPhaseId - 1;
-    if (newPhaseId < 0) {
+    if (newPhaseId < 1) {
         newPhaseId = 1;
     }
     const changeToPrevPhase = await prisma.moderationStatus.update({
@@ -25,7 +27,10 @@ export const prevPhaseHandler = catchErrors(async (req, res) => {
             moderationPhaseId: newPhaseId,
         },
     });
-    return res.status(OK);
+
+    updateClients();
+
+    return res.status(OK).json(changeToPrevPhase);
 });
 
 export const nextPhaseHandler = catchErrors(async (req, res) => {
@@ -37,7 +42,6 @@ export const nextPhaseHandler = catchErrors(async (req, res) => {
     if (!currentStatus) {
         return res.status(NOT_FOUND).json({ error: "Moderation status not found" });
     }
-
     let newPhaseId = currentStatus.moderationPhaseId + 1;
     if (newPhaseId > maxPhaseId) {
         newPhaseId = 1;
@@ -51,6 +55,7 @@ export const nextPhaseHandler = catchErrors(async (req, res) => {
             moderationPhaseId: newPhaseId,
         },
     });
+    updateClients();
 
     return res.status(OK).json(changeToNextPhase);
 });

@@ -1,8 +1,8 @@
-import { Server } from "socket.io";
+import { io } from "../server";
 import { users } from "./websocket-service";
 
 // Send notification to a specific user
-export const sendNotification = (io: Server, userId: string, message: string) => {
+export const sendNotification = (userId: string, message: string) => {
     const socketId = users.get(userId);
     if (socketId) {
         io.to(socketId).emit("notification", { message });
@@ -15,7 +15,7 @@ export const sendNotification = (io: Server, userId: string, message: string) =>
 type NotificationType = "info" | "warning" | "error";
 
 // Broadcast notification to all users
-export const broadcastNotification = (io: Server, type: NotificationType, title: string, message: string) => {
+export const broadcastNotification = (type: NotificationType, title: string, message: string) => {
     io.emit("notification", { type, title, message });
     console.log(`Broadcast notification: ${message}`);
 };

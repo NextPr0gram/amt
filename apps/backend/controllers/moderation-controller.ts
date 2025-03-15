@@ -4,27 +4,31 @@ import appAssert from "../utils/app-assert";
 import catchErrors from "../utils/catch-errors";
 
 export const getModerationStatusHandler = catchErrors(async (req, res) => {
-    const moderationStatus = await prisma.moderationPhase.findFirst({
+    const moderationStatus = await prisma.moderationStatus.findFirst({
         where: {
             id: 1,
         },
         select: {
-            tP: {
+            moderationPhase: {
                 select: {
-                    id: true,
-                    name: true,
-                },
-            },
-            stage: {
-                select: {
-                    id: true,
-                    name: true,
-                },
-            },
-            reviewType: {
-                select: {
-                    id: true,
-                    name: true,
+                    tP: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                    stage: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                    reviewType: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
                 },
             },
         },
@@ -32,5 +36,5 @@ export const getModerationStatusHandler = catchErrors(async (req, res) => {
 
     appAssert(moderationStatus, NOT_FOUND, "Moderation phase not found");
 
-    return res.status(OK).json(moderationStatus);
+    return res.status(OK).json(moderationStatus.moderationPhase);
 });

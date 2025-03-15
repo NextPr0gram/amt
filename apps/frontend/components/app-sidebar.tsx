@@ -1,17 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { Command, Settings, Component, Users, UserRoundPen, BookOpenText, Info, Bell } from "lucide-react";
+import { Command, Settings, Component, Users, UserRoundPen, BookOpenText, Bell } from "lucide-react";
 import { NavUser } from "@/components/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { useEffect, useState } from "react";
-import Notification from "@/components/notification";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
-import { flexRender } from "@tanstack/react-table";
 
 // Menu items.
 const items = [
@@ -102,10 +100,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         Toast
                     </Button>
                     <div className="flex space-x-2">
-                        <Button className="flex-1" variant="outline">
+                        <Button onClick={() => protectedFetch("/demo/prev-phase", "POST")} className="flex-1" variant="outline">
                             Prv Phase
                         </Button>
-                        <Button className="flex-1" variant="outline">
+                        <Button onClick={() => protectedFetch("/demo/next-phase", "POST")} className="flex-1" variant="outline">
                             Nxt Phase
                         </Button>
                     </div>

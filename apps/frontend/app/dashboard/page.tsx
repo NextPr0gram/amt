@@ -1,9 +1,9 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { DateStage } from "@/components/date-stage";
-import { ModerationProvider } from "@/components/moderation-context";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { WebsocketProvider } from "@/components/websocket-context";
+import { WebsocketProvider } from "@/components/contexts/websocket-context";
+import { ModerationProvider } from "@/components/contexts/moderation-context";
 
 export default function Page() {
     return (

@@ -375,6 +375,12 @@ async function main() {
             },
         ],
     });
+
+    const moderationStatus = await prisma.moderationStatus.create({
+        data: {
+            moderationPhaseId: 1,
+        },
+    });
 }
 main()
     .then(async () => {

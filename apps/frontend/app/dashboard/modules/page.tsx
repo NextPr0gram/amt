@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ModulesProvider } from "@/components/modules-page/module-context";
 import ModuleModal from "../../../components/modules-page/module-modal";
-import { WebsocketProvider } from "@/components/websocket-context";
+import { WebsocketProvider } from "@/components/contexts/websocket-context";
 
 export default function Page() {
     // https://ui.shadcn.com/docs/components/data-table#basic-table
