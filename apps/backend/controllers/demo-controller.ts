@@ -6,6 +6,7 @@ import { createBoxFolders } from "../services/box-service";
 import { BOX_DEV_TOKEN } from "../constants/env";
 import appAssert from "../utils/app-assert";
 import { broadcastNotification } from "../services/notification-service";
+import AppErrorCode from "../constants/app-error-code";
 
 export const prevPhaseHandler = catchErrors(async (req, res) => {
     const currentStatus = await prisma.moderationStatus.findUnique({
@@ -64,8 +65,9 @@ export const nextPhaseHandler = catchErrors(async (req, res) => {
 export const createBoxFoldersHandler = catchErrors(async (req, res) => {
     const isBoxfolderCreated = await createBoxFolders(BOX_DEV_TOKEN)
 
-    appAssert(isBoxfolderCreated, INTERNAL_SERVER_ERROR, "Could not create box folders")
+    appAssert(isBoxfolderCreated, INTERNAL_SERVER_ERROR, "Could not create box folders", AppErrorCode.FaiedToCreateBoxFolders)
 
-    broadcastNotification("info", "Box folders created")
+    isBoxfolderCreated && broadcastNotification("info", "Box folders created successfully")
+
     return res.status(OK).json({ message: "box folders created" })
 })

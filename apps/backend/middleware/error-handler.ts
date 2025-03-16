@@ -5,6 +5,8 @@ import AppError from "../utils/app-error";
 import { clearAuthCookies, refreshPath } from "../utils/cookies";
 import { Prisma } from "@prisma/client";
 import PrismaErrorCode from "../constants/prisma-error-code";
+import AppErrorCode from "../constants/app-error-code";
+import { broadcastNotification } from "../services/notification-service";
 
 const handleZodError = (res: Response, error: z.ZodError) => {
     const errors = error.issues.map((err) => ({
@@ -15,6 +17,9 @@ const handleZodError = (res: Response, error: z.ZodError) => {
 };
 
 const handleAppError = (res: Response, error: AppError) => {
+    if (error.errorCode === AppErrorCode.FaiedToCreateBoxFolders) {
+        broadcastNotification("error", "Box Error", "Something went wrong while creating folders in Box")
+    }
     return res.status(error.statusCode).json({ message: error.message, errorCode: error.errorCode });
 };
 

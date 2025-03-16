@@ -1,20 +1,47 @@
+
 const { BoxClient, BoxDeveloperTokenAuth } = require("box-typescript-sdk-gen");
 
-export const createBoxFolders = async (token) => {
-    let auth = new BoxDeveloperTokenAuth({ token });
-    let client = new BoxClient({ auth });
-    let entries = (await client.folders.getFolderItems('0')).entries;
-    entries.forEach((entry) => console.log(entry));
+const createFoldersRecursively = async (
+    parentId: string,
+    folderStructure: Record<string, any>,
+    client: BoxClient
+): Promise<boolean> => {
+    try {
+        for (const [folderName, subfolders] of Object.entries(folderStructure)) {
+            const folder = await client.folders.createFolder({
+                name: folderName,
+                parent: { id: parentId },
+            });
 
-    // Create 2 folders
-    await client.folders.createFolder({
-        name: 'folder-created-by-backend-one',
-        parent: { id: '0' } satisfies CreateFolderRequestBodyParentField,
-    } satisfies CreateFolderRequestBody);
+            if (typeof subfolders === 'object') {
+                await createFoldersRecursively(folder.id, subfolders, client);
+            }
+        }
+        return true;
+    } catch (error) {
+        console.error('Error creating folders:', error);
+        return false;
+    }
+};
 
-    await client.folders.createFolder({
-        name: 'folder-created-by-backend-two',
-        parent: { id: '0' } satisfies CreateFolderRequestBodyParentField,
-    } satisfies CreateFolderRequestBody);
-    return true
+
+
+export const createBoxFolders = async (token: string): Promise<boolean> => {
+    const auth = new BoxDeveloperTokenAuth({ token });
+    const client = new BoxClient({ auth });
+    const folderStructure = {
+        folder1: {
+            subfolder1: "subfolder1",
+            subfolder2: "subfolder2"
+        },
+        folder2: {
+            subfolder1: "subfolder1",
+            subfolder2: "subfolder2",
+            subfolder3: {
+                subfolder1: "subfolder1",
+                subfolder2: "subfolder2"
+            }
+        },
+    };
+    return await createFoldersRecursively('0', folderStructure, client);
 }
