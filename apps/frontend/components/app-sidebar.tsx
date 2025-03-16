@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Command, Settings, Component, Users, UserRoundPen, BookOpenText, Bell } from "lucide-react";
+import { Command, Settings, Component, Users, UserRoundPen, BookOpenText, Bell, Loader2 } from "lucide-react";
 import { NavUser } from "@/components/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import Link from "next/link";
@@ -41,6 +41,7 @@ const items = [
 ];
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const [userData, setUserData] = useState({ name: "", email: "", avatar: "" });
+    const [createBoxFoldersBtnLoading, setCreateBoxFoldersBtnLoading] = useState(false)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -53,6 +54,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         };
         fetchData();
     }, []);
+
+    const createBoxFolders = async () => {
+        setCreateBoxFoldersBtnLoading(true);
+        await protectedFetch("/demo/create-box-folders", "POST").finally(() => setCreateBoxFoldersBtnLoading(false));
+    };
 
     console.log(userData);
     return (
@@ -107,8 +113,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             Nxt Phase
                         </Button>
                     </div>
-                    <Button onClick={() => protectedFetch("/demo/create-box-folders", "POST")} className="w-full" variant="outline">
-                        Create box folders
+                    <Button onClick={createBoxFolders} className="w-full" variant="outline" disabled={createBoxFoldersBtnLoading}>
+                        {createBoxFoldersBtnLoading ? <><Loader2 className="animate-spin size-5 ml-1" />Create box folders</> : "Create box folders"}
                     </Button>
                 </div>
             </SidebarGroup>
