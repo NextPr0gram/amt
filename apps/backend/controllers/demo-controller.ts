@@ -1,10 +1,11 @@
-import { z } from "zod";
-import { NOT_FOUND, OK } from "../constants/http";
+import { INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/primsa-client";
-import appAssert from "../utils/app-assert";
 import catchErrors from "../utils/catch-errors";
-import { broadcastNotification } from "../services/notification-service";
 import { updateClients } from "../services/moderation-status-service";
+import { createBoxFolders } from "../services/box-service";
+import { BOX_DEV_TOKEN } from "../constants/env";
+import appAssert from "../utils/app-assert";
+import { broadcastNotification } from "../services/notification-service";
 
 export const prevPhaseHandler = catchErrors(async (req, res) => {
     const currentStatus = await prisma.moderationStatus.findUnique({
@@ -59,3 +60,12 @@ export const nextPhaseHandler = catchErrors(async (req, res) => {
 
     return res.status(OK).json(changeToNextPhase);
 });
+
+export const createBoxFoldersHandler = catchErrors(async (req, res) => {
+    const isBoxfolderCreated = await createBoxFolders(BOX_DEV_TOKEN)
+
+    appAssert(isBoxfolderCreated, INTERNAL_SERVER_ERROR, "Could not create box folders")
+
+    broadcastNotification("info", "Box folders created")
+    return res.status(OK).json({ message: "box folders created" })
+})

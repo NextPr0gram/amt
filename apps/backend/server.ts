@@ -11,7 +11,6 @@ import { Server } from "socket.io";
 import http from "http";
 import { setupWebSocket } from "./services/websocket-service";
 
-const { BoxClient, BoxDeveloperTokenAuth } = require("box-typescript-sdk-gen");
 
 dotenv.config();
 

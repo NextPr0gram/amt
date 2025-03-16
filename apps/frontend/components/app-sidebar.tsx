@@ -107,6 +107,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             Nxt Phase
                         </Button>
                     </div>
+                    <Button onClick={() => protectedFetch("/demo/create-box-folders", "POST")} className="w-full" variant="outline">
+                        Create box folders
+                    </Button>
                 </div>
             </SidebarGroup>
             <SidebarFooter>

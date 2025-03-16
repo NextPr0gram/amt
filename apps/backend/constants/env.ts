@@ -12,3 +12,4 @@ export const PORT = getEnv("PORT");
 export const JWT_SECRET = getEnv("JWT_SECRET");
 export const JWT_REFRESH_SECRET = getEnv("JWT_REFRESH_SECRET");
 export const APP_ORIGIN = getEnv("APP_ORIGIN");
+export const BOX_DEV_TOKEN = getEnv("BOX_DEV_TOKEN")

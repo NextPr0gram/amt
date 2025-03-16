@@ -15,7 +15,8 @@ export const sendNotification = (userId: string, message: string) => {
 type NotificationType = "info" | "warning" | "error";
 
 // Broadcast notification to all users
-export const broadcastNotification = (type: NotificationType, title: string, message: string) => {
+export const broadcastNotification = (type: NotificationType, title: string, message?: string) => {
+    message === undefined ? "" : message
     io.emit("notification", { type, title, message });
-    console.log(`Broadcast notification: ${message}`);
+    console.log(`Broadcast notification: title: ${title} message: ${message === "" ? "none" : message}`);
 };

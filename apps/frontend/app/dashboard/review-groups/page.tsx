@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import ReviewGroupsModal from "@/components/review-groups-page/review-groups-modal";
 import { WebsocketProvider } from "@/components/contexts/websocket-context";
+import { ModerationProvider } from "@/components/contexts/moderation-context";
 
 export default function Page() {
     return (
@@ -15,37 +16,39 @@ export default function Page() {
             <AppSidebar />
             <SidebarInset>
                 <WebsocketProvider>
-                    <DateStage />
-                    <ReviewGroupsProvider>
-                        <header className="flex h-16 shrink-0 items-center gap-2 px-4">
-                            <div className="flex items-center gap-2">
-                                <Breadcrumb>
-                                    <BreadcrumbList>
-                                        <BreadcrumbItem className="hidden md:block">
-                                            <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                                        </BreadcrumbItem>
-                                        <BreadcrumbSeparator className="hidden md:block" />
-                                        <BreadcrumbItem>
-                                            <BreadcrumbPage>Review groups</BreadcrumbPage>
-                                        </BreadcrumbItem>
-                                    </BreadcrumbList>
-                                </Breadcrumb>
+                    <ModerationProvider>
+                        <DateStage />
+                        <ReviewGroupsProvider>
+                            <header className="flex h-16 shrink-0 items-center gap-2 px-4">
+                                <div className="flex items-center gap-2">
+                                    <Breadcrumb>
+                                        <BreadcrumbList>
+                                            <BreadcrumbItem className="hidden md:block">
+                                                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                                            </BreadcrumbItem>
+                                            <BreadcrumbSeparator className="hidden md:block" />
+                                            <BreadcrumbItem>
+                                                <BreadcrumbPage>Review groups</BreadcrumbPage>
+                                            </BreadcrumbItem>
+                                        </BreadcrumbList>
+                                    </Breadcrumb>
+                                </div>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button size="sm" className="ml-auto">
+                                            Create review group
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <ReviewGroupsModal type="add" />
+                                    </DialogContent>
+                                </Dialog>
+                            </header>
+                            <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+                                <DataTable />
                             </div>
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button size="sm" className="ml-auto">
-                                        Create review group
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <ReviewGroupsModal type="add" />
-                                </DialogContent>
-                            </Dialog>
-                        </header>
-                        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                            <DataTable />
-                        </div>
-                    </ReviewGroupsProvider>
+                        </ReviewGroupsProvider>
+                    </ModerationProvider>
                 </WebsocketProvider>
             </SidebarInset>
         </SidebarProvider>
