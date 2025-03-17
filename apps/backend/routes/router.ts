@@ -9,11 +9,14 @@ import reviewGroupsRouter from "./protected/review-groups-routes";
 import assessmentsRouter from "./protected/assessments-routes";
 import moderationRouter from "./protected/moderation-routes";
 import demoRouter from "./protected/demo-routes";
+import boxRouter from "./protected/box-routes";
+import { boxCallbackHandler } from "../controllers/box-controller";
 
 const router = Router();
 
 // Prefix: /
 router.use("/auth", authRouter);
+router.get("/box/callback", boxCallbackHandler);
 
 // Protected routes
 router.use("/user", authenticate, userRouter); // Current user
@@ -23,5 +26,6 @@ router.use("/years", authenticate, yearsRouter);
 router.use("/review-groups", authenticate, reviewGroupsRouter);
 router.use("/assessments", authenticate, assessmentsRouter);
 router.use("/moderation", authenticate, moderationRouter);
+router.use("/box", authenticate, boxRouter);
 router.use("/demo", authenticate, demoRouter);
 export default router;

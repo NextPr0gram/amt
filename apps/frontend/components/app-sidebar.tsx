@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
+import SidebarCard from "./sidebar-card";
 
 // Menu items.
 const items = [
@@ -99,26 +100,29 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
-            <SidebarGroup>
-                <SidebarGroupLabel>Demo controls</SidebarGroupLabel>
-                <div className="space-y-2">
-                    <Button className="w-full" variant="outline" onClick={() => toast.error("Toast title", { icon: <Bell className="size-5 mx-2" />, description: "toast description", descriptionClassName: cn("text-red-500") })}>
-                        Toast
-                    </Button>
-                    <div className="flex space-x-2">
-                        <Button onClick={() => protectedFetch("/demo/prev-phase", "POST")} className="flex-1" variant="outline">
-                            Prv Phase
+            <SidebarFooter>
+                <SidebarGroup>
+                    <SidebarGroupLabel>Demo controls</SidebarGroupLabel>
+                    <div className="space-y-2 ">
+                        <Button className="w-full" variant="outline" onClick={() => toast.error("Toast title", { icon: <Bell className="size-5 mx-2" />, description: "toast description", descriptionClassName: cn("text-red-500") })}>
+                            Toast
                         </Button>
-                        <Button onClick={() => protectedFetch("/demo/next-phase", "POST")} className="flex-1" variant="outline">
-                            Nxt Phase
+                        <div className="flex space-x-2">
+                            <Button onClick={() => protectedFetch("/demo/prev-phase", "POST")} className="flex-1" variant="outline">
+                                Prv Phase
+                            </Button>
+                            <Button onClick={() => protectedFetch("/demo/next-phase", "POST")} className="flex-1" variant="outline">
+                                Nxt Phase
+                            </Button>
+                        </div>
+                        <Button onClick={createBoxFolders} className="w-full" variant="outline" disabled={createBoxFoldersBtnLoading}>
+                            {createBoxFoldersBtnLoading ? <><Loader2 className="animate-spin size-5 ml-1" />Create box folders</> : "Create box folders"}
                         </Button>
                     </div>
-                    <Button onClick={createBoxFolders} className="w-full" variant="outline" disabled={createBoxFoldersBtnLoading}>
-                        {createBoxFoldersBtnLoading ? <><Loader2 className="animate-spin size-5 ml-1" />Create box folders</> : "Create box folders"}
-                    </Button>
+                </SidebarGroup>
+                <div className="p-1">
+                    <SidebarCard />
                 </div>
-            </SidebarGroup>
-            <SidebarFooter>
                 <NavUser user={userData} />
             </SidebarFooter>
         </Sidebar>
