@@ -15,3 +15,4 @@ export const APP_ORIGIN = getEnv("APP_ORIGIN");
 export const BOX_DEV_TOKEN = getEnv("BOX_DEV_TOKEN")
 export const BOX_CLIENT_ID = getEnv("BOX_CLIENT_ID")
 export const BOX_CLIENT_SECRET = getEnv("BOX_CLIENT_SECRET")
+export const STATE_SECRET = getEnv("STATE_SECRET")

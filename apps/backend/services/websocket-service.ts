@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
 
 // userId -> socketId mapping
-export const users = new Map<string, string>();
+export const users = new Map<number, string>();
 
 export const setupWebSocket = (io: Server) => {
     io.on("connection", (socket: Socket) => {

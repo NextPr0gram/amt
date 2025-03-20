@@ -2,7 +2,7 @@ import { io } from "../server";
 import { users } from "./websocket-service";
 
 // Send notification to a specific user
-export const sendNotification = (userId: string, message: string) => {
+export const sendNotification = (userId: number, type: NotificationType, title: string, message?: string) => {
     const socketId = users.get(userId);
     if (socketId) {
         io.to(socketId).emit("notification", { message });

@@ -1,5 +1,5 @@
 import jwt, { SignOptions, VerifyOptions } from "jsonwebtoken";
-import { JWT_REFRESH_SECRET, JWT_SECRET } from "../constants/env";
+import { JWT_REFRESH_SECRET, JWT_SECRET, STATE_SECRET } from "../constants/env";
 import type { User, Session } from "@prisma/client";
 
 export type RefreshTokenPayload = {
@@ -44,3 +44,17 @@ export const verifyToken = <TPayLoad extends object = AccessTokenPayload>(token:
         };
     }
 };
+
+export const getUserIdFromToken = (accessToken: string) => {
+    const { payload } = verifyToken(accessToken)
+    return payload?.userId
+}
+
+export const generateStateToken = (userId: number): string => {
+    return jwt.sign({ userId }, STATE_SECRET, { expiresIn: '5m' });
+};
+
+export const getStateFromToken = (token: string) => {
+    const payload = jwt.verify(token, STATE_SECRET) as { userId: number }
+    return payload.userId
+}

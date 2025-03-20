@@ -21,6 +21,7 @@ model User {
     password      String
     firstName     String
     lastName      String
+    boxRefreshToken String?
     createdAt     DateTime       @default(now())
     updatedAt     DateTime       @updatedAt
     sessions      Session[] // establishes reverse relation to Session model (this is a feature in Prisma ORM, it is not a real column in the database)

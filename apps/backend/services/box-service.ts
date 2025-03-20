@@ -1,5 +1,12 @@
+import { Record } from "@prisma/client/runtime/library";
 import { BOX_CLIENT_ID, BOX_CLIENT_SECRET } from "../constants/env";
+import { generateStateToken } from "../utils/jwt";
+import prisma from "../prisma/primsa-client";
+import appAssert from "../utils/app-assert";
+import { INTERNAL_SERVER_ERROR } from "../constants/http";
 const { BoxClient, BoxDeveloperTokenAuth, BoxOAuth, OAuthConfig } = require("box-typescript-sdk-gen");
+
+const boxAccessTokens = new Map<number, object>();
 
 const oauthConfig = new OAuthConfig({
     clientId: BOX_CLIENT_ID,
@@ -9,21 +16,37 @@ const oauthConfig = new OAuthConfig({
 const oauth = new BoxOAuth({ config: oauthConfig });
 
 // Get the Box Authorization URL
-export const getAuthorizeUrl = () => {
+export const getAuthorizeUrl = (userId: number) => {
+    const state = generateStateToken(userId)
     return oauth.getAuthorizeUrl({
         redirectUri: "http://localhost:5000/api/v1/box/callback",
         responseType: "code",
         clientId: BOX_CLIENT_ID,
+        state,
     });
 };
 
 // Exchange auth code for access token
-export const getClient = async (authorizationCode: string): Promise<BoxClient> => {
+export const getClient = async (authorizationCode: string) => {
     const tokenInfo = await oauth?.getTokensAuthorizationCodeGrant(authorizationCode)
     return new BoxClient({
         accessToken: tokenInfo.access_token,
         refreshToken: tokenInfo.refresh_token,
     });
+};
+
+
+export const connectBox = async (userId: number, authorizationCode: string) => {
+    const tokens = await oauth?.getTokensAuthorizationCodeGrant(authorizationCode)
+    const accessTokenInfo = { accessToken: tokens.accessToken, expiresIn: new Date(Date.now() + tokens.expiresIn * 1000) }
+    boxAccessTokens.set(userId, accessTokenInfo)
+    const boxRefreshToken = await prisma.user.update({
+        where: { id: userId },
+        data: { boxRefreshToken: tokens.refreshToken },
+    });
+    appAssert(boxRefreshToken, INTERNAL_SERVER_ERROR, "Failed to store Box refresh token in database")
+
+    return true
 };
 
 const createFoldersRecursively = async (
@@ -69,13 +92,4 @@ export const createBoxFolders = async (token: string): Promise<boolean> => {
         },
     };
     return await createFoldersRecursively('0', folderStructure, client);
-}
-
-export const connectBox = async () => {
-    const sdk = new BoxSDK({
-    });
-    const authorizeUrl = sdk.getAuthorizeURL({
-        response_type: "code"
-    })
-    return authorizeUrl
 }
