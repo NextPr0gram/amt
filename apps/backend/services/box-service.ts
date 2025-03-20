@@ -1,11 +1,10 @@
-import { Record } from "@prisma/client/runtime/library";
 import { BOX_CLIENT_ID, BOX_CLIENT_SECRET } from "../constants/env";
 import { generateStateToken } from "../utils/jwt";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
 import { INTERNAL_SERVER_ERROR } from "../constants/http";
-const { BoxClient, BoxDeveloperTokenAuth, BoxOAuth, OAuthConfig } = require("box-typescript-sdk-gen");
-
+const { BoxClient } = require('box-typescript-sdk-gen/lib/client.generated.js');
+import { BoxDeveloperTokenAuth, BoxOAuth, OAuthConfig } from "box-typescript-sdk-gen"
 const boxAccessTokens = new Map<number, object>();
 
 const oauthConfig = new OAuthConfig({
@@ -26,16 +25,10 @@ export const getAuthorizeUrl = (userId: number) => {
     });
 };
 
-// Exchange auth code for access token
-export const getClient = async (authorizationCode: string) => {
-    const tokenInfo = await oauth?.getTokensAuthorizationCodeGrant(authorizationCode)
-    return new BoxClient({
-        accessToken: tokenInfo.access_token,
-        refreshToken: tokenInfo.refresh_token,
-    });
-};
 
 
+
+// Exchange auth code for tokens
 export const connectBox = async (userId: number, authorizationCode: string) => {
     const tokens = await oauth?.getTokensAuthorizationCodeGrant(authorizationCode)
     const accessTokenInfo = { accessToken: tokens.accessToken, expiresIn: new Date(Date.now() + tokens.expiresIn * 1000) }
@@ -49,32 +42,10 @@ export const connectBox = async (userId: number, authorizationCode: string) => {
     return true
 };
 
-const createFoldersRecursively = async (
-    parentId: string,
-    folderStructure: Record<string, any>,
-    client: BoxClient
-): Promise<boolean> => {
-    try {
-        for (const [folderName, subfolders] of Object.entries(folderStructure)) {
-            const folder = await client.folders.createFolder({
-                name: folderName,
-                parent: { id: parentId },
-            });
-
-            if (typeof subfolders === 'object') {
-                await createFoldersRecursively(folder.id, subfolders, client);
-            }
-        }
-        return true;
-    } catch (error) {
-        console.error('Error creating folders:', error);
-        return false;
-    }
-};
 
 
 
-export const createBoxFolders = async (token: string): Promise<boolean> => {
+export const createBoxFolders = async (token: string) => {
     const auth = new BoxDeveloperTokenAuth({ token });
     const client = new BoxClient({ auth });
     const folderStructure = {
@@ -90,6 +61,28 @@ export const createBoxFolders = async (token: string): Promise<boolean> => {
                 subfolder2: "subfolder2"
             }
         },
+    };
+    const createFoldersRecursively = async (
+        parentId: string,
+        folderStructure: Record<string, any>,
+        client: typeof BoxClient
+    ) => {
+        try {
+            for (const [folderName, subfolders] of Object.entries(folderStructure)) {
+                const folder = await client.folders.createFolder({
+                    name: folderName,
+                    parent: { id: parentId },
+                });
+
+                if (typeof subfolders === 'object') {
+                    await createFoldersRecursively(folder.id, subfolders, client);
+                }
+            }
+            return true;
+        } catch (error) {
+            console.error('Error creating folders:', error);
+            return false;
+        }
     };
     return await createFoldersRecursively('0', folderStructure, client);
 }
