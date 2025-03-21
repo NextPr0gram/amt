@@ -27,16 +27,25 @@ export const refreshTokenSignOptions: SignOptionsAndSecret = {
     secret: JWT_REFRESH_SECRET,
 };
 
-export const signToken = (payload: AccessTokenPayload | RefreshTokenPayload, options?: SignOptionsAndSecret) => {
+export const signToken = (
+    payload: AccessTokenPayload | RefreshTokenPayload,
+    options?: SignOptionsAndSecret,
+) => {
     const { secret, ...signOpts } = options || accessTokenSignOptions;
     return jwt.sign(payload, secret, { ...defaults, ...signOpts });
 };
 
-export const verifyToken = <TPayLoad extends object = AccessTokenPayload>(token: string, options?: VerifyOptions & { secret: string }) => {
+export const verifyToken = <TPayLoad extends object = AccessTokenPayload>(
+    token: string,
+    options?: VerifyOptions & { secret: string },
+) => {
     const { secret = JWT_SECRET, ...verifyOpts } = options || {};
 
     try {
-        const payload = jwt.verify(token, secret, { ...defaults, ...verifyOpts }) as TPayLoad;
+        const payload = jwt.verify(token, secret, {
+            ...defaults,
+            ...verifyOpts,
+        }) as TPayLoad;
         return { payload };
     } catch (error: any) {
         return {
@@ -46,15 +55,15 @@ export const verifyToken = <TPayLoad extends object = AccessTokenPayload>(token:
 };
 
 export const getUserIdFromToken = (accessToken: string) => {
-    const { payload } = verifyToken(accessToken)
-    return payload?.userId
-}
+    const { payload } = verifyToken(accessToken);
+    return payload?.userId;
+};
 
 export const generateStateToken = (userId: number): string => {
-    return jwt.sign({ userId }, STATE_SECRET, { expiresIn: '5m' });
+    return jwt.sign({ userId }, STATE_SECRET, { expiresIn: "5m" });
 };
 
 export const getStateFromToken = (token: string) => {
-    const payload = jwt.verify(token, STATE_SECRET) as { userId: number }
-    return payload.userId
-}
+    const payload = jwt.verify(token, STATE_SECRET) as { userId: number };
+    return payload.userId;
+};

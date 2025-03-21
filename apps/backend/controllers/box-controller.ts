@@ -1,9 +1,11 @@
-import { INTERNAL_SERVER_ERROR, OK } from "../constants/http";
+import { INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from "../constants/http";
+import prisma from "../prisma/primsa-client";
 import { connectBox, getAuthorizeUrl } from "../services/box-service";
 import {
     broadcastNotification,
     sendNotification,
 } from "../services/notification-service";
+import { getUserIdFromRequest } from "../services/user-service";
 import appAssert from "../utils/app-assert";
 import catchErrors from "../utils/catch-errors";
 import { getStateFromToken, getUserIdFromToken } from "../utils/jwt";
@@ -31,4 +33,18 @@ export const boxCallbackHandler = catchErrors(async (req, res) => {
     );
     sendNotification(userId, "info", "Box connected successfully!");
     return res.status(OK).redirect("http://localhost:3000/dashboard");
+});
+
+export const checkBoxConnectedHandler = catchErrors(async (req, res) => {
+    const userId = await getUserIdFromRequest(req);
+    const boxRefreshToken = await prisma.user.findUnique({
+        select: {
+            boxRefreshToken: true,
+        },
+        where: {
+            id: userId,
+        },
+    });
+    appAssert(boxRefreshToken, NOT_FOUND, "Box refresh token not found");
+    return res.sendStatus(OK);
 });
