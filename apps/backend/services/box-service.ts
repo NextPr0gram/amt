@@ -6,6 +6,7 @@ import { INTERNAL_SERVER_ERROR, NOT_FOUND } from "../constants/http";
 const { BoxClient } = require("box-typescript-sdk-gen/lib/client.generated.js");
 import { BoxOAuth, OAuthConfig } from "box-typescript-sdk-gen";
 import { warn } from "node:console";
+import AppErrorCode from "../constants/app-error-code";
 
 // In-memory cache for access tokens
 const boxAccessTokens = new Map();
@@ -118,7 +119,13 @@ const refreshBoxAccessToken = async (userId: number, refreshToken: string) => {
         body,
     });
 
-    appAssert(res.ok, INTERNAL_SERVER_ERROR, "Could not refresh token");
+    appAssert(
+        res.status,
+        INTERNAL_SERVER_ERROR,
+        "Could not refresh token",
+        AppErrorCode.FailedToRefreshBoxToken,
+        { userId },
+    );
 
     const data = await res.json();
 
@@ -133,9 +140,8 @@ const refreshBoxAccessToken = async (userId: number, refreshToken: string) => {
 
 const getBoxAccessToken = async (userId: number) => {
     let token = boxAccessTokens.get(userId);
-    appAssert(token, NOT_FOUND, "No access token found for user");
 
-    if (Date.now() > token.expiresIn) {
+    if (!token || Date.now() > token.expiresIn) {
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: { boxRefreshToken: true },

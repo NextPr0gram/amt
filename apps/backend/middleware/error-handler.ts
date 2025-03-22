@@ -7,6 +7,8 @@ import { Prisma } from "@prisma/client";
 import PrismaErrorCode from "../constants/prisma-error-code";
 import AppErrorCode from "../constants/app-error-code";
 import { broadcastNotification } from "../services/notification-service";
+import prisma from "../prisma/primsa-client";
+import appAssert from "../utils/app-assert";
 
 const handleZodError = (res: Response, error: z.ZodError) => {
     const errors = error.issues.map((err) => ({
@@ -18,15 +20,41 @@ const handleZodError = (res: Response, error: z.ZodError) => {
 
 const handleAppError = (res: Response, error: AppError) => {
     if (error.errorCode === AppErrorCode.FaiedToCreateBoxFolders) {
-        broadcastNotification("error", "Box Error", "Something went wrong while creating folders in Box")
+        broadcastNotification(
+            "error",
+            "Box Error",
+            "Something went wrong while creating folders in Box",
+        );
+    } else if (error.errorCode === AppErrorCode.FailedToRefreshBoxToken) {
+        const userId = error.opts?.userId;
+        const deleteBoxRefreshTokenFromUser = async () => {
+            await prisma.user.update({
+                where: {
+                    id: userId,
+                },
+                data: {
+                    boxRefreshToken: null,
+                },
+            });
+        };
+        appAssert(
+            deleteBoxRefreshTokenFromUser,
+            INTERNAL_SERVER_ERROR,
+            "Failed to remove box refresh token from user",
+        );
     }
-    return res.status(error.statusCode).json({ message: error.message, errorCode: error.errorCode });
+    return res
+        .status(error.statusCode)
+        .json({ message: error.message, errorCode: error.errorCode });
 };
 
 const handlePrismaError = (res: Response, error: Error) => {
     const err = error as Prisma.PrismaClientKnownRequestError;
     if (err.code === PrismaErrorCode.UniqueConstraintViolation) {
-        return res.status(INTERNAL_SERVER_ERROR).json({ message: "Module with given module code already exists", errorCode: PrismaErrorCode.UniqueConstraintViolation });
+        return res.status(INTERNAL_SERVER_ERROR).json({
+            message: "Module with given module code already exists",
+            errorCode: PrismaErrorCode.UniqueConstraintViolation,
+        });
     }
 };
 
