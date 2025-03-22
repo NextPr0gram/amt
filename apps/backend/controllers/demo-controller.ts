@@ -7,6 +7,7 @@ import { BOX_DEV_TOKEN } from "../constants/env";
 import appAssert from "../utils/app-assert";
 import { broadcastNotification } from "../services/notification-service";
 import AppErrorCode from "../constants/app-error-code";
+import { getUserIdFromRequest } from "../services/user-service";
 
 export const prevPhaseHandler = catchErrors(async (req, res) => {
     const currentStatus = await prisma.moderationStatus.findUnique({
@@ -14,7 +15,9 @@ export const prevPhaseHandler = catchErrors(async (req, res) => {
     });
 
     if (!currentStatus) {
-        return res.status(NOT_FOUND).json({ error: "Moderation status not found" });
+        return res
+            .status(NOT_FOUND)
+            .json({ error: "Moderation status not found" });
     }
 
     let newPhaseId = currentStatus.moderationPhaseId - 1;
@@ -42,7 +45,9 @@ export const nextPhaseHandler = catchErrors(async (req, res) => {
     });
 
     if (!currentStatus) {
-        return res.status(NOT_FOUND).json({ error: "Moderation status not found" });
+        return res
+            .status(NOT_FOUND)
+            .json({ error: "Moderation status not found" });
     }
     let newPhaseId = currentStatus.moderationPhaseId + 1;
     if (newPhaseId > maxPhaseId) {
@@ -63,11 +68,18 @@ export const nextPhaseHandler = catchErrors(async (req, res) => {
 });
 
 export const createBoxFoldersHandler = catchErrors(async (req, res) => {
-    const isBoxfolderCreated = await createBoxFolders(BOX_DEV_TOKEN)
+    const userId = await getUserIdFromRequest(req);
+    const isBoxfolderCreated = await createBoxFolders(userId);
 
-    appAssert(isBoxfolderCreated, INTERNAL_SERVER_ERROR, "Could not create box folders", AppErrorCode.FaiedToCreateBoxFolders)
+    appAssert(
+        isBoxfolderCreated,
+        INTERNAL_SERVER_ERROR,
+        "Could not create box folders",
+        AppErrorCode.FaiedToCreateBoxFolders,
+    );
 
-    isBoxfolderCreated && broadcastNotification("info", "Box folders created successfully")
+    isBoxfolderCreated &&
+        broadcastNotification("info", "Box folders created successfully");
 
-    return res.status(OK).json({ message: "box folders created" })
-})
+    return res.status(OK).json({ message: "box folders created" });
+});
