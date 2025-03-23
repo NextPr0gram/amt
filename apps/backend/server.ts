@@ -11,6 +11,7 @@ import { Server } from "socket.io";
 import http from "http";
 import { setupWebSocket } from "./services/websocket-service";
 import { processModerationStatus } from "./services/moderation-process-service";
+import { logMsg, logType } from "./utils/logger";
 
 dotenv.config();
 
@@ -45,5 +46,5 @@ app.use(errorHandler);
 
 // Start the server
 server.listen(PORT, () => {
-    console.log(`Example app listening on port ${PORT}`);
+    logMsg(logType.SERVER, `Example app listening on port ${PORT}`);
 });

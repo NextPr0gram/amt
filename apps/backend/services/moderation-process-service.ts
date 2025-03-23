@@ -72,16 +72,16 @@ resit, stage 2, no reivew
 ]
 */
 import prisma from "../prisma/primsa-client";
+import { logMsg, logType } from "../utils/logger";
 
 const POLL_INTERVAL = 1000;
 
 export const processModerationStatus = async () => {
-    console.log("[MODERATION SERVICE] Starting processStatuss...");
+    logMsg(logType.MODERATION, "Starting processStatus...");
     let currentStatus = await getCurrentStatusFromDB();
-    console.log("[MODERATION SERVICE] Initial status from DB:", currentStatus);
+    logMsg(logType.MODERATION, `Initial status from DB: ${currentStatus}`);
 
     while (currentStatus) {
-        console.log("[MODERATION SERVICE] Processing status:", currentStatus);
         switch (currentStatus.id) {
             case 1:
                 handleStatusOne(currentStatus);
@@ -119,38 +119,32 @@ export const processModerationStatus = async () => {
 
         updateProcessState(currentStatus);
 
-        console.log("[MODERATION SERVICE] Waiting for status change...");
+        logMsg(logType.MODERATION, "Waiting for status change...");
         currentStatus = await pollForStatusChange(currentStatus);
-        console.log(
-            "[MODERATION SERVICE] Detected new status from DB:",
-            currentStatus,
+        logMsg(
+            logType.MODERATION,
+            `Fetched new status from DB: ${currentStatus}`,
         );
         await new Promise((resolve) => setImmediate(resolve));
     }
-    console.log(
-        "[MODERATION SERVICE] No more statuss to process. Exiting processStatuss.",
+    logMsg(
+        logType.MODERATION,
+        "No more statuss to process. Exiting processStatuss.",
     );
 };
 
 const pollForStatusChange = async (currentStatus: any) => {
-    console.log("[MODERATION SERVICE] Entering pollForStatusChange...");
+    logMsg(logType.MODERATION, "Entering pollForStatusChange...");
     while (true) {
-        console.log(
-            "[MODERATION SERVICE] Polling database for status update...",
-        );
+        logMsg(logType.MODERATION, "Polling database for status update...");
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
         const updatedStatus = await getCurrentStatusFromDB();
-        console.log(
-            "[MODERATION SERVICE] Fetched updated status:",
-            updatedStatus,
-        );
+        logMsg(logType.MODERATION, "Fetched updated status:", updatedStatus);
         if (hasStatusChanged(currentStatus, updatedStatus)) {
-            console.log("[MODERATION SERVICE] Change detected in status.");
+            logMsg(logType.MODERATION, "Change detected in status.");
             return updatedStatus;
         }
-        console.log(
-            "[MODERATION SERVICE] No change detected, continuing to poll...",
-        );
+        logMsg(logType.MODERATION, "No change detected, continuing to poll...");
     }
 };
 
@@ -162,7 +156,7 @@ export const hasStatusChanged = (
 };
 
 const getCurrentStatusFromDB = async () => {
-    console.log("[MODERATION SERVICE] Retrieving current status from DB...");
+    logMsg(logType.MODERATION, "Retrieving current status from DB...");
     /*     model ModerationStatus {
     id           Int          @id @default(autoincrement())
     tPId         Int
@@ -186,71 +180,44 @@ const getCurrentStatusFromDB = async () => {
 };
 
 const handleStatusOne = (statusData: any) => {
-    console.log(
-        "[MODERATION SERVICE] Processing Status 1 with data:",
-        statusData,
-    );
+    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
 };
 
 const handleStatusTwo = (statusData: any) => {
-    console.log(
-        "[MODERATION SERVICE] Processing Status 2 with data:",
-        statusData,
-    );
+    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
 };
 
 const handleStatusThree = (statusData: any) => {
-    console.log(
-        "[MODERATION SERVICE] Processing Status 2 with data:",
-        statusData,
-    );
+    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
 };
 
 const handleStatusFour = (statusData: any) => {
-    console.log(
-        "[MODERATION SERVICE] Processing Status 2 with data:",
-        statusData,
-    );
+    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
 };
 
 const handleStatusFive = (statusData: any) => {
-    console.log(
-        "[MODERATION SERVICE] Processing Status 2 with data:",
-        statusData,
-    );
+    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
 };
 
 const handleStatusSix = (statusData: any) => {
-    console.log(
-        "[MODERATION SERVICE] Processing Status 2 with data:",
-        statusData,
-    );
+    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
 };
 
 const handleStatusSeven = (statusData: any) => {
-    console.log(
-        "[MODERATION SERVICE] Processing Status 2 with data:",
-        statusData,
-    );
+    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
 };
 
 const handleStatusEight = (statusData: any) => {
-    console.log(
-        "[MODERATION SERVICE] Processing Status 2 with data:",
-        statusData,
-    );
+    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
 };
 
 const handleStatusNine = (statusData: any) => {
-    console.log(
-        "[MODERATION SERVICE] Processing Status 2 with data:",
-        statusData,
-    );
+    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
 };
 
 const updateProcessState = (statusData: any) => {
-    console.log(
-        "[MODERATION SERVICE] Status processed, updating process state for:",
-        statusData,
+    logMsg(
+        logType.MODERATION,
+        `Status processed, updating process state for status: ${statusData.id}`,
     );
 };

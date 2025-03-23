@@ -1,7 +1,8 @@
 import { RequestHandler } from "express";
+import { logMsg, logType } from "../utils/logger";
 
 const logRequests: RequestHandler = (req, res, next) => {
-    console.log(req.method, req.path);
+    logMsg(logType.HTTP, `${req.method} ${req.path}`);
     next();
 };
 
