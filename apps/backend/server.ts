@@ -10,14 +10,18 @@ import logRequests from "./middleware/log-requests";
 import { Server } from "socket.io";
 import http from "http";
 import { setupWebSocket } from "./services/websocket-service";
-
+import { processModerationStatus } from "./services/moderation-process-service";
 
 dotenv.config();
 
 // start the webserver
 const app = express();
 const server = http.createServer(app);
-prisma.$connect();
+prisma.$connect().then(() => {
+    processModerationStatus().catch((error) =>
+        console.error("Error processing stages:", error),
+    );
+});
 
 export const io = new Server(server, {
     cors: {
