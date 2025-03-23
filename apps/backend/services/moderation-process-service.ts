@@ -1,5 +1,12 @@
 /*
 data: [
+none
+{
+    tPId: 4,
+    stageId: 3,
+    reviewTypeId: 3,
+    triggerId: 1,
+},
 tp 1, stage 1, no review
     {
         tPId: 1,
@@ -110,6 +117,9 @@ export const processModerationStatus = async () => {
             case 9:
                 handleStatusNine(currentStatus);
                 break;
+            case 10:
+                handleStatusTen(currentStatus);
+                break;
             default:
                 console.error(
                     `Unknown statusId encountered: ${currentStatus.id}`,
@@ -139,7 +149,7 @@ const pollForStatusChange = async (currentStatus: any) => {
         logMsg(logType.MODERATION, "Polling database for status update...");
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
         const updatedStatus = await getCurrentStatusFromDB();
-        logMsg(logType.MODERATION, "Fetched updated status:", updatedStatus);
+        logMsg(logType.MODERATION, `Fetched updated status: ${updatedStatus}`);
         if (hasStatusChanged(currentStatus, updatedStatus)) {
             logMsg(logType.MODERATION, "Change detected in status.");
             return updatedStatus;
@@ -215,6 +225,9 @@ const handleStatusNine = (statusData: any) => {
     logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
 };
 
+const handleStatusTen = (statusData: any) => {
+    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
+};
 const updateProcessState = (statusData: any) => {
     logMsg(
         logType.MODERATION,

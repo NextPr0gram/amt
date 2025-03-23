@@ -11,48 +11,239 @@ const getRandomInt = (max: number) => {
 async function main() {
     const createUsers = await prisma.user.createMany({
         data: [
-            { email: "n.powell@aston.ac.uk", firstName: "Nick", lastName: "Powell", password: await generateRandomPassword() },
-            { email: "a.giagkos@aston.ac.uk", firstName: "Alexandros", lastName: "Giagkos", password: await generateRandomPassword() },
-            { email: "hongxia.wang@aston.ac.uk", firstName: "Hongxia (Helen)", lastName: "Wang", password: await generateRandomPassword() },
-            { email: "a.j.beaumont@aston.ac.uk", firstName: "Tony", lastName: "Beaumont", password: await generateRandomPassword() },
-            { email: "r.lee@aston.ac.uk", firstName: "Richard", lastName: "Lee", password: await generateRandomPassword() },
-            { email: "r.benson@aston.ac.uk", firstName: "Roy", lastName: "Benson", password: await generateRandomPassword() },
-            { email: "a.htait@aston.ac.uk", firstName: "Amal", lastName: "Htait", password: await generateRandomPassword() },
-            { email: "m.robertson@aston.ac.uk", firstName: "Megan", lastName: "Robertson", password: await generateRandomPassword() },
-            { email: "i.masood@aston.ac.uk", firstName: "Isma", lastName: "Masood", password: await generateRandomPassword() },
-            { email: "l.hakobyan@aston.ac.uk", firstName: "Lilit", lastName: "Hakobyan", password: await generateRandomPassword() },
-            { email: "s.dar@aston.ac.uk", firstName: "Mohit", lastName: "Dar", password: await generateRandomPassword() },
-            { email: "p.weber@aston.ac.uk", firstName: "Philip", lastName: "Weber", password: await generateRandomPassword() },
-            { email: "z.dai@aston.ac.uk", firstName: "Zhuangzhuang.", lastName: "Dai", password: await generateRandomPassword() },
-            { email: "n.naik@aston.ac.uk", firstName: "Nitin", lastName: "Naik", password: await generateRandomPassword() },
-            { email: "d.roy@aston.ac.uk", firstName: "Debaleen", lastName: "Roy", password: await generateRandomPassword() },
-            { email: "h.khan@aston.ac.uk", firstName: "Muhammad", lastName: "Khan", password: await generateRandomPassword() },
-            { email: "k.fatema@aston.ac.uk", firstName: "Kaniz", lastName: "Fatema", password: await generateRandomPassword() },
-            { email: "f.campelo@aston.ac.uk", firstName: "Fabio", lastName: "Campelo", password: await generateRandomPassword() },
-            { email: "r.jose@aston.ac.uk", firstName: "Rajive", lastName: "Jose", password: await generateRandomPassword() },
-            { email: "t.webber@aston.ac.uk", firstName: "Thais", lastName: "Webber", password: await generateRandomPassword() },
-            { email: "r.czekster@aston.ac.uk", firstName: "Ricardo", lastName: "Czekster", password: await generateRandomPassword() },
-            { email: "p.grace@aston.ac.uk", firstName: "Paul", lastName: "Grace", password: await generateRandomPassword() },
-            { email: "u.bernardet@aston.ac.uk", firstName: "Ulysses", lastName: "Bernardet", password: await generateRandomPassword() },
-            { email: "m.rudorfer@aston.ac.uk", firstName: "Martin", lastName: "Rudorfer", password: await generateRandomPassword() },
-            { email: "t.ranasinghe@aston.ac.uk", firstName: "Tharindu", lastName: "Ranasinghe", password: await generateRandomPassword() },
-            { email: "a.ekart@aston.ac.uk", firstName: "Aniko", lastName: "Ekart", password: await generateRandomPassword() },
-            { email: "m.bickley@aston.ac.uk", firstName: "Matthew", lastName: "Bickley", password: await generateRandomPassword() },
-            { email: "a.sowriraghavan@aston.ac.uk", firstName: "Abinaya", lastName: "Sowriraghavan", password: await generateRandomPassword() },
-            { email: "j.lumsden@aston.ac.uk", firstName: "Joanna", lastName: "Lumsden", password: await generateRandomPassword() },
-            { email: "l.manso@aston.ac.uk", firstName: "Luis", lastName: "Manso", password: await generateRandomPassword() },
-            { email: "j.borg@aston.ac.uk", firstName: "James", lastName: "Borg", password: await generateRandomPassword() },
-            { email: "j.neirotti@aston.ac.uk", firstName: "Juan", lastName: "Neirotti", password: await generateRandomPassword() },
-            { email: "h.goldingay@aston.ac.uk", firstName: "Harry", lastName: "Goldingay", password: await generateRandomPassword() },
-            { email: "m.hadi@aston.ac.uk", firstName: "Mohammed", lastName: "Hadi", password: await generateRandomPassword() },
-            { email: "l.escott@aston.ac.uk", firstName: "Liam", lastName: "Escott", password: await generateRandomPassword() },
-            { email: "m.childs@aston.ac.uk", firstName: "Mary", lastName: "Childs", password: await generateRandomPassword() },
-            { email: "e.wanner@aston.ac.uk", firstName: "Elizabeth", lastName: "Wanner", password: await generateRandomPassword() },
+            {
+                email: "n.powell@aston.ac.uk",
+                firstName: "Nick",
+                lastName: "Powell",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "a.giagkos@aston.ac.uk",
+                firstName: "Alexandros",
+                lastName: "Giagkos",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "hongxia.wang@aston.ac.uk",
+                firstName: "Hongxia (Helen)",
+                lastName: "Wang",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "a.j.beaumont@aston.ac.uk",
+                firstName: "Tony",
+                lastName: "Beaumont",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "r.lee@aston.ac.uk",
+                firstName: "Richard",
+                lastName: "Lee",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "r.benson@aston.ac.uk",
+                firstName: "Roy",
+                lastName: "Benson",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "a.htait@aston.ac.uk",
+                firstName: "Amal",
+                lastName: "Htait",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "m.robertson@aston.ac.uk",
+                firstName: "Megan",
+                lastName: "Robertson",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "i.masood@aston.ac.uk",
+                firstName: "Isma",
+                lastName: "Masood",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "l.hakobyan@aston.ac.uk",
+                firstName: "Lilit",
+                lastName: "Hakobyan",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "s.dar@aston.ac.uk",
+                firstName: "Mohit",
+                lastName: "Dar",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "p.weber@aston.ac.uk",
+                firstName: "Philip",
+                lastName: "Weber",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "z.dai@aston.ac.uk",
+                firstName: "Zhuangzhuang.",
+                lastName: "Dai",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "n.naik@aston.ac.uk",
+                firstName: "Nitin",
+                lastName: "Naik",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "d.roy@aston.ac.uk",
+                firstName: "Debaleen",
+                lastName: "Roy",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "h.khan@aston.ac.uk",
+                firstName: "Muhammad",
+                lastName: "Khan",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "k.fatema@aston.ac.uk",
+                firstName: "Kaniz",
+                lastName: "Fatema",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "f.campelo@aston.ac.uk",
+                firstName: "Fabio",
+                lastName: "Campelo",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "r.jose@aston.ac.uk",
+                firstName: "Rajive",
+                lastName: "Jose",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "t.webber@aston.ac.uk",
+                firstName: "Thais",
+                lastName: "Webber",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "r.czekster@aston.ac.uk",
+                firstName: "Ricardo",
+                lastName: "Czekster",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "p.grace@aston.ac.uk",
+                firstName: "Paul",
+                lastName: "Grace",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "u.bernardet@aston.ac.uk",
+                firstName: "Ulysses",
+                lastName: "Bernardet",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "m.rudorfer@aston.ac.uk",
+                firstName: "Martin",
+                lastName: "Rudorfer",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "t.ranasinghe@aston.ac.uk",
+                firstName: "Tharindu",
+                lastName: "Ranasinghe",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "a.ekart@aston.ac.uk",
+                firstName: "Aniko",
+                lastName: "Ekart",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "m.bickley@aston.ac.uk",
+                firstName: "Matthew",
+                lastName: "Bickley",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "a.sowriraghavan@aston.ac.uk",
+                firstName: "Abinaya",
+                lastName: "Sowriraghavan",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "j.lumsden@aston.ac.uk",
+                firstName: "Joanna",
+                lastName: "Lumsden",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "l.manso@aston.ac.uk",
+                firstName: "Luis",
+                lastName: "Manso",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "j.borg@aston.ac.uk",
+                firstName: "James",
+                lastName: "Borg",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "j.neirotti@aston.ac.uk",
+                firstName: "Juan",
+                lastName: "Neirotti",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "h.goldingay@aston.ac.uk",
+                firstName: "Harry",
+                lastName: "Goldingay",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "m.hadi@aston.ac.uk",
+                firstName: "Mohammed",
+                lastName: "Hadi",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "l.escott@aston.ac.uk",
+                firstName: "Liam",
+                lastName: "Escott",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "m.childs@aston.ac.uk",
+                firstName: "Mary",
+                lastName: "Childs",
+                password: await generateRandomPassword(),
+            },
+            {
+                email: "e.wanner@aston.ac.uk",
+                firstName: "Elizabeth",
+                lastName: "Wanner",
+                password: await generateRandomPassword(),
+            },
         ],
     });
 
     const createRoles = await prisma.role.createMany({
-        data: [{ name: "Assessment Lead" }, { name: "Module Lead" }, { name: "Module Tutor" }, { name: "Office Staff" }, { name: "External Revier" }],
+        data: [
+            { name: "Assessment Lead" },
+            { name: "Module Lead" },
+            { name: "Module Tutor" },
+            { name: "Office Staff" },
+            { name: "External Revier" },
+        ],
     });
 
     const AssignRoles = await prisma.userRole.createMany({
@@ -105,7 +296,12 @@ async function main() {
         ],
     });
     const createYears = await prisma.year.createMany({
-        data: [{ name: "Year 1" }, { name: "Year 2" }, { name: "Year 3" }, { name: "Postgraduate" }],
+        data: [
+            { name: "Year 1" },
+            { name: "Year 2" },
+            { name: "Year 3" },
+            { name: "Postgraduate" },
+        ],
     });
     const createModules = await prisma.module.createMany({
         data: [
@@ -242,11 +438,30 @@ async function main() {
     });
 
     const assessmentCategory = await prisma.assessmentCategory.createMany({
-        data: [{ name: "CA" }, { name: "Project" }, { name: "Coursework" }, { name: "Report" }, { name: "Lit. Review" }, { name: "Presentation" }, { name: "BB Assessment" }, { name: "Quiz" }, { name: "Examination" }, { name: "Portfolio" }, { name: "Refl. Learning" }, { name: "Res. Proposal" }, { name: "Practical" }],
+        data: [
+            { name: "CA" },
+            { name: "Project" },
+            { name: "Coursework" },
+            { name: "Report" },
+            { name: "Lit. Review" },
+            { name: "Presentation" },
+            { name: "BB Assessment" },
+            { name: "Quiz" },
+            { name: "Examination" },
+            { name: "Portfolio" },
+            { name: "Refl. Learning" },
+            { name: "Res. Proposal" },
+            { name: "Practical" },
+        ],
     });
 
     const assessmentTypes = await prisma.assessmentType.createMany({
-        data: [{ name: "Individual" }, { name: "Open-Book" }, { name: "Closed-Book" }, { name: "Group" }],
+        data: [
+            { name: "Individual" },
+            { name: "Open-Book" },
+            { name: "Closed-Book" },
+            { name: "Group" },
+        ],
     });
 
     const assessments = await prisma.assessment.createMany({
@@ -282,11 +497,16 @@ async function main() {
     });
 
     const tps = await prisma.tP.createMany({
-        data: [{ name: "TP 1" }, { name: "TP 2" }, { name: "Resit" }],
+        data: [
+            { name: "TP 1" },
+            { name: "TP 2" },
+            { name: "Resit" },
+            { name: "none" },
+        ],
     });
 
     const stages = await prisma.stage.createMany({
-        data: [{ name: "Stage 1" }, { name: "Stage 2" }],
+        data: [{ name: "Stage 1" }, { name: "Stage 2" }, { name: "none" }],
     });
 
     const reviewTypes = await prisma.reviewType.createMany({
@@ -319,6 +539,12 @@ async function main() {
 
     const moderationPhases = await prisma.moderationPhase.createMany({
         data: [
+            {
+                tPId: 4,
+                stageId: 3,
+                reviewTypeId: 3,
+                triggerId: 1,
+            },
             {
                 tPId: 1,
                 stageId: 1,
