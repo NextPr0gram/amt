@@ -1,91 +1,26 @@
-/*
-data: [
-none
-{
-    tPId: 4,
-    stageId: 3,
-    reviewTypeId: 3,
-    triggerId: 1,
-},
-tp 1, stage 1, no review
-    {
-        tPId: 1,
-        stageId: 1,
-        reviewTypeId: 3,
-        triggerId: 1
-    },
-
-tp 1, stage 1 , internal review
-    {
-        tPId: 1,
-        stageId: 1,
-        reviewTypeId: 1,
-        triggerId: 2
-    },
-    
-tp 1, stage 1, external review
-    {
-        tPId: 1,
-        stageId: 1,
-        reviewTypeId: 2,
-        triggerId: 3
-    },
-
-tp 1, stage 2, no review
-    {
-        tPId: 1,
-        stageId: 2,
-        reviewTypeId: 3,
-        triggerId: 1
-    },
-
-tp 2, stage 1, no review
-    {
-        tPId: 2,
-        stageId: 1,
-        reviewTypeId: 3,
-        triggerId: 1
-    },
-
-tp 2, stage 1, internal review
-    {
-        tPId: 2,
-        stageId: 1,
-        reviewTypeId: 1,
-        triggerId: 2
-    },
-
-tp 2, stage 1, external review
-    {
-        tPId: 2,
-        stageId: 1,
-        reviewTypeId: 2,
-        triggerId: 3
-    },
-tp 2, stage 2, no review
-    {
-        tPId: 2,
-        stageId: 2,
-        reviewTypeId: 3,
-        triggerId: 1
-    },
-resit, stage 2, no reivew
-    {
-        tPId: 3,
-        stageId: 2,
-        reviewTypeId: 3,
-        triggerId: 1
-    },
-]
-*/
 import prisma from "../prisma/primsa-client";
+import { safeExecute } from "../utils/catch-errors";
 import { logMsg, logType } from "../utils/logger";
+import { createBoxFolders } from "./box-service";
 import { advanceModerationStatus } from "./moderation-status-service";
+import {
+    broadcastNotification,
+    sendNotification,
+} from "./notification-service";
 
 const POLL_INTERVAL = 1000;
+let isCannotCreateBoxFolderNotificationSent = false;
 
 export const processModerationStatus = async () => {
     logMsg(logType.MODERATION, "Starting processStatus...");
+    const resetModerationStatus = await prisma.moderationStatus.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            moderationPhaseId: 1,
+        },
+    });
 
     while (true) {
         try {
@@ -177,22 +112,49 @@ const isPastDate = (date: Date) => {
 
 // Outside moderation
 const handleModerationPhaseOne = async (statusData: any) => {
-    logMsg(
-        logType.MODERATION,
-        `Processing Status ${statusData.moderationPhaseId}`,
-    );
-    const date = new Date("2025-03-24T01:56:00Z");
-    if (isPastDate(date)) {
-        await advanceModerationStatus();
+    try {
+        logMsg(
+            logType.MODERATION,
+            `Processing Status ${statusData.moderationPhaseId}`,
+        );
+        const date = new Date("2025-03-24T01:56:00Z");
+
+        if (isPastDate(date)) {
+            await advanceModerationStatus();
+        }
+    } catch (error) {
+        logMsg(logType.ERROR, "custom error");
     }
 };
 
 // tp 1, stage 1
 const handleModerationPhaseTwo = async (statusData: any) => {
-    logMsg(
-        logType.MODERATION,
-        `Processing Status ${statusData.moderationPhaseId}`,
-    );
+    try {
+        logMsg(
+            logType.MODERATION,
+            `Processing Status ${statusData.moderationPhaseId}`,
+        );
+        // get userid of the user who's role is assessment lead
+        const userId = 38;
+        const isboxFoldersCreated = await safeExecute(
+            () => createBoxFolders(userId),
+            "Failed to create box folders",
+        );
+
+        if (!isboxFoldersCreated) {
+            if (!isCannotCreateBoxFolderNotificationSent) {
+                sendNotification(
+                    userId,
+                    "error",
+                    "Could not create folders in box",
+                    "Box may not be connected to AMT, please connect Box to amt",
+                );
+                isCannotCreateBoxFolderNotificationSent = true;
+            }
+        }
+    } catch (error: any) {
+        logMsg(logType.ERROR, error.message);
+    }
 };
 
 // tp 1, stage 1, internal review
