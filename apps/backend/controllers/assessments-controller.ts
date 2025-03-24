@@ -2,7 +2,7 @@ import { z } from "zod";
 import { NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
-import catchErrors from "../utils/catch-errors";
+import { catchErrors } from "../utils/catch-errors";
 
 export const getAssessmentsHandler = catchErrors(async (req, res) => {
     const assessments = await prisma.assessment.findMany({

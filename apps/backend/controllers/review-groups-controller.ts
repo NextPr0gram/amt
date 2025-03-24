@@ -3,7 +3,7 @@ import { NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import { broadcastNotification } from "../services/notification-service";
 import appAssert from "../utils/app-assert";
-import catchErrors from "../utils/catch-errors";
+import { catchErrors } from "../utils/catch-errors";
 
 export const getReviewGroupsHandler = catchErrors(async (req, res) => {
     const reviewGroups = await prisma.reviewGroup.findMany({

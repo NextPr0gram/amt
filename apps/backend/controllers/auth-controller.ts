@@ -1,4 +1,4 @@
-import catchErrors from "../utils/catch-errors";
+import { catchErrors } from "../utils/catch-errors";
 import { z } from "zod";
 import { createAccount, loginUser, refreshUserAccessToken, validate } from "../services/auth-service";
 import { CREATED, OK, UNAUTHORIZED } from "../constants/http";

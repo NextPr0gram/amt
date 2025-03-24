@@ -2,7 +2,7 @@ import { z } from "zod";
 import { NOT_FOUND, OK, UNPROCESSABLE_CONTENT } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
-import catchErrors from "../utils/catch-errors";
+import { catchErrors } from "../utils/catch-errors";
 
 const moduleSchema = z.object({
     code: z

@@ -1,13 +1,10 @@
 import { INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import { connectBox, getAuthorizeUrl } from "../services/box-service";
-import {
-    broadcastNotification,
-    sendNotification,
-} from "../services/notification-service";
+import { broadcastNotification, sendNotification } from "../services/notification-service";
 import { getUserIdFromRequest } from "../services/user-service";
 import appAssert from "../utils/app-assert";
-import catchErrors from "../utils/catch-errors";
+import { catchErrors } from "../utils/catch-errors";
 import { getStateFromToken, getUserIdFromToken } from "../utils/jwt";
 
 // Connect AMT to Box
@@ -26,11 +23,7 @@ export const boxCallbackHandler = catchErrors(async (req, res) => {
     const userId = getStateFromToken(stateToken);
     appAssert(userId, INTERNAL_SERVER_ERROR, "Could not get user from state");
     const isConnectToBoxSuccessful = await connectBox(userId, authCode);
-    appAssert(
-        isConnectToBoxSuccessful,
-        INTERNAL_SERVER_ERROR,
-        "Failed to connect to box",
-    );
+    appAssert(isConnectToBoxSuccessful, INTERNAL_SERVER_ERROR, "Failed to connect to box");
     sendNotification(userId, "info", "Box connected successfully!");
     return res.status(OK).redirect("http://localhost:3000/dashboard");
 });

@@ -1,11 +1,7 @@
 import { INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/primsa-client";
-import catchErrors from "../utils/catch-errors";
-import {
-    advanceModerationStatus,
-    moveToPreviousModerationStatus,
-    updateClients,
-} from "../services/moderation-status-service";
+import { catchErrors } from "../utils/catch-errors";
+import { advanceModerationStatus, moveToPreviousModerationStatus, updateClients } from "../services/moderation-status-service";
 import { createBoxFolders } from "../services/box-service";
 import { BOX_DEV_TOKEN } from "../constants/env";
 import appAssert from "../utils/app-assert";
@@ -27,15 +23,9 @@ export const createBoxFoldersHandler = catchErrors(async (req, res) => {
     const userId = await getUserIdFromRequest(req);
     const isBoxfolderCreated = await createBoxFolders(userId);
 
-    appAssert(
-        isBoxfolderCreated,
-        INTERNAL_SERVER_ERROR,
-        "Could not create box folders",
-        AppErrorCode.FaiedToCreateBoxFolders,
-    );
+    appAssert(isBoxfolderCreated, INTERNAL_SERVER_ERROR, "Could not create box folders", AppErrorCode.FaiedToCreateBoxFolders);
 
-    isBoxfolderCreated &&
-        broadcastNotification("info", "Box folders created successfully");
+    isBoxfolderCreated && broadcastNotification("info", "Box folders created successfully");
 
     return res.status(OK).json({ message: "box folders created" });
 });
