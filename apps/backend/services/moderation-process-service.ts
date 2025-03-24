@@ -80,6 +80,7 @@ resit, stage 2, no reivew
 */
 import prisma from "../prisma/primsa-client";
 import { logMsg, logType } from "../utils/logger";
+import { advanceModerationStatus } from "./moderation-status-service";
 
 const POLL_INTERVAL = 1000;
 
@@ -88,7 +89,7 @@ export const processModerationStatus = async () => {
 
     while (true) {
         try {
-            let currentStatus = await getCurrentStatusFromDB();
+            const currentStatus = await getCurrentStatusFromDB();
             logMsg(
                 logType.MODERATION,
                 `Fetched status from DB: ${currentStatus}`,
@@ -102,9 +103,9 @@ export const processModerationStatus = async () => {
                 continue;
             }
 
-            switch (currentStatus.id) {
+            switch (currentStatus.moderationPhaseId) {
                 case 1:
-                    handleStatusOne(currentStatus);
+                    await handleStatusOne(currentStatus);
                     break;
                 case 2:
                     handleStatusTwo(currentStatus);
@@ -136,13 +137,14 @@ export const processModerationStatus = async () => {
                 default:
                     logMsg(
                         logType.MODERATION,
-                        `Unknown statusId: ${currentStatus.id}`,
+                        `Unknown moderationPhaseId: ${currentStatus.moderationPhaseId}`,
                     );
             }
 
             updateProcessState(currentStatus);
             logMsg(logType.MODERATION, "Waiting for status change...");
-            currentStatus = await pollForStatusChange(currentStatus);
+            // currentStatus = await pollForStatusChange(currentStatus);
+            await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
         } catch (error: any) {
             logMsg(
                 logType.ERROR,
@@ -185,24 +187,11 @@ export const hasStatusChanged = (
 };
 
 const getCurrentStatusFromDB = async () => {
-    /*     model ModerationStatus {
-    id           Int          @id @default(autoincrement())
-    tPId         Int
-    stageId      Int
-    reviewTypeId Int
-    triggerId    Int
-    tP           TP           @relation(fields: [tPId], references: [id])
-    stage        Stage        @relation(fields: [stageId], references: [id])
-    reviewType   ReviewType   @relation(fields: [reviewTypeId], references: [id])
-    trigger      StatusTrigger @relation(fields: [triggerId], references: [id])
-
-    ModerationStatus ModerationStatus[]
-} */
     logMsg(logType.MODERATION, "Retrieving current status from DB...");
     try {
         const moderationStatus = await prisma.moderationStatus.findFirst({
             select: {
-                id: true,
+                moderationPhaseId: true,
             },
         });
         return moderationStatus || null;
@@ -215,8 +204,16 @@ const getCurrentStatusFromDB = async () => {
     }
 };
 
-const handleStatusOne = (statusData: any) => {
+const isPastDate = (date: Date) => {
+    return Date.now() > date.getTime();
+};
+
+const handleStatusOne = async (statusData: any) => {
     logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
+    const date = new Date("2025-03-24T01:56:00Z");
+    if (isPastDate(date)) {
+        await advanceModerationStatus();
+    }
 };
 
 const handleStatusTwo = (statusData: any) => {
