@@ -11,7 +11,7 @@ export const sendNotification = (
 ) => {
     const socketId = users.get(userId);
     if (socketId) {
-        io.to(socketId).emit("notification", { message });
+        io.to(socketId).emit("notification", { type, title, message });
         logMsg(
             logType.WEBSOCKET,
             `Notification sent to user ${userId}: ${message}`,
