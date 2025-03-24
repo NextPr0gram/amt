@@ -105,34 +105,34 @@ export const processModerationStatus = async () => {
 
             switch (currentStatus.moderationPhaseId) {
                 case 1:
-                    await handleStatusOne(currentStatus);
+                    await handleModerationPhaseOne(currentStatus);
                     break;
                 case 2:
-                    handleStatusTwo(currentStatus);
+                    await handleModerationPhaseTwo(currentStatus);
                     break;
                 case 3:
-                    handleStatusThree(currentStatus);
+                    await handleModerationPhaseThree(currentStatus);
                     break;
                 case 4:
-                    handleStatusFour(currentStatus);
+                    await handleModerationPhaseFour(currentStatus);
                     break;
                 case 5:
-                    handleStatusFive(currentStatus);
+                    await handleModerationPhaseFive(currentStatus);
                     break;
                 case 6:
-                    handleStatusSix(currentStatus);
+                    await handleModerationPhaseSix(currentStatus);
                     break;
                 case 7:
-                    handleStatusSeven(currentStatus);
+                    await handleModerationPhaseSeven(currentStatus);
                     break;
                 case 8:
-                    handleStatusEight(currentStatus);
+                    await handleModerationPhaseEight(currentStatus);
                     break;
                 case 9:
-                    handleStatusNine(currentStatus);
+                    await handleModerationPhaseNine(currentStatus);
                     break;
                 case 10:
-                    handleStatusTen(currentStatus);
+                    await handleModerationPhaseTen(currentStatus);
                     break;
                 default:
                     logMsg(
@@ -143,7 +143,6 @@ export const processModerationStatus = async () => {
 
             updateProcessState(currentStatus);
             logMsg(logType.MODERATION, "Waiting for status change...");
-            // currentStatus = await pollForStatusChange(currentStatus);
             await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
         } catch (error: any) {
             logMsg(
@@ -152,38 +151,6 @@ export const processModerationStatus = async () => {
             );
         }
     }
-};
-
-const pollForStatusChange = async (currentStatus: any) => {
-    logMsg(logType.MODERATION, "Entering pollForStatusChange...");
-    while (true) {
-        try {
-            logMsg(logType.MODERATION, "Polling database for status update...");
-            await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
-            const updatedStatus = await getCurrentStatusFromDB();
-
-            if (hasStatusChanged(currentStatus, updatedStatus)) {
-                logMsg(logType.MODERATION, "Change detected in status.");
-                return updatedStatus;
-            }
-            logMsg(
-                logType.MODERATION,
-                "No change detected, continuing to poll...",
-            );
-        } catch (error: any) {
-            logMsg(
-                logType.ERROR,
-                `Error in pollForStatusChange: ${error.message}`,
-            );
-        }
-    }
-};
-
-export const hasStatusChanged = (
-    currentStatus: any,
-    updatedStatus: any,
-): boolean => {
-    return currentStatus.id !== updatedStatus.is;
 };
 
 const getCurrentStatusFromDB = async () => {
@@ -208,52 +175,92 @@ const isPastDate = (date: Date) => {
     return Date.now() > date.getTime();
 };
 
-const handleStatusOne = async (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
+// Outside moderation
+const handleModerationPhaseOne = async (statusData: any) => {
+    logMsg(
+        logType.MODERATION,
+        `Processing Status ${statusData.moderationPhaseId}`,
+    );
     const date = new Date("2025-03-24T01:56:00Z");
     if (isPastDate(date)) {
         await advanceModerationStatus();
     }
 };
 
-const handleStatusTwo = (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
-};
-
-const handleStatusThree = (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
-};
-
-const handleStatusFour = (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
-};
-
-const handleStatusFive = (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
-};
-
-const handleStatusSix = (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
-};
-
-const handleStatusSeven = (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
-};
-
-const handleStatusEight = (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
-};
-
-const handleStatusNine = (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
-};
-
-const handleStatusTen = (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.id}`);
-};
-const updateProcessState = (statusData: any) => {
+// tp 1, stage 1
+const handleModerationPhaseTwo = async (statusData: any) => {
     logMsg(
         logType.MODERATION,
-        `Status processed, updating process state for status: ${statusData.id}`,
+        `Processing Status ${statusData.moderationPhaseId}`,
+    );
+};
+
+// tp 1, stage 1, internal review
+const handleModerationPhaseThree = async (statusData: any) => {
+    logMsg(
+        logType.MODERATION,
+        `Processing Status ${statusData.moderationPhaseId}`,
+    );
+};
+
+// tp 1, stage 1, external review
+const handleModerationPhaseFour = async (statusData: any) => {
+    logMsg(
+        logType.MODERATION,
+        `Processing Status ${statusData.moderationPhaseId}`,
+    );
+};
+
+// tp 1, stage 2
+const handleModerationPhaseFive = async (statusData: any) => {
+    logMsg(
+        logType.MODERATION,
+        `Processing Status ${statusData.moderationPhaseId}`,
+    );
+};
+
+// tp 2, stage 1
+const handleModerationPhaseSix = async (statusData: any) => {
+    logMsg(
+        logType.MODERATION,
+        `Processing Status ${statusData.moderationPhaseId}`,
+    );
+};
+
+// tp 2, stage 1, internal review
+const handleModerationPhaseSeven = async (statusData: any) => {
+    logMsg(
+        logType.MODERATION,
+        `Processing Status ${statusData.moderationPhaseId}`,
+    );
+};
+
+// tp 2, stage 1, external review
+const handleModerationPhaseEight = async (statusData: any) => {
+    logMsg(
+        logType.MODERATION,
+        `Processing Status ${statusData.moderationPhaseId}`,
+    );
+};
+
+// tp 2, stage 2
+const handleModerationPhaseNine = async (statusData: any) => {
+    logMsg(
+        logType.MODERATION,
+        `Processing Status ${statusData.moderationPhaseId}`,
+    );
+};
+
+// resit, stage 2
+const handleModerationPhaseTen = async (statusData: any) => {
+    logMsg(
+        logType.MODERATION,
+        `Processing Status ${statusData.moderationPhaseId}`,
+    );
+};
+const updateProcessState = async (statusData: any) => {
+    logMsg(
+        logType.MODERATION,
+        `Status processed, updating process state for status: ${statusData.moderationPhaseId}`,
     );
 };
