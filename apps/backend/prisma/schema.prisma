@@ -49,6 +49,7 @@ model Module {
     name              String
     yearId            Int
     year              Year                @relation(fields: [yearId], references: [id])
+    tp                   TpEnum             @default(tp1)
     moduleLeadId      Int?
     moduleLead        User?               @relation(fields: [moduleLeadId], references: [id])
     moduleTutors      ModuleTutor[]

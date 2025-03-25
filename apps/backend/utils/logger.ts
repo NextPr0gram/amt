@@ -4,6 +4,7 @@ export const enum logType {
     WEBSOCKET = "[WEBSOCKET]",
     ERROR = "[ERROR]",
     SERVER = "[SERVER]",
+    BOX = "[BOX]",
 }
 
 export const logMsg = (type: logType, msg: string) => {

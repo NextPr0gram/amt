@@ -151,6 +151,8 @@ const handleModerationPhaseTwo = async (statusData: any) => {
                 );
                 isCannotCreateBoxFolderNotificationSent = true;
             }
+        } else {
+            await advanceModerationStatus();
         }
     } catch (error: any) {
         logMsg(logType.ERROR, error.message);
