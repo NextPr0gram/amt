@@ -31,40 +31,40 @@ export const sendNotification = async (
     title: string,
     message?: string,
 ) => {
+    // Add notification to database
+    const notificationTypeId = notificationTypes.find(
+        (nt) => nt.name === type,
+    )?.id;
+
+    const createNotification = await prisma.notification.create({
+        data: {
+            title,
+            message,
+            notificationType: {
+                connect: { id: notificationTypeId }, // Connect existing notification type
+            },
+            userNotification: {
+                create: {
+                    userId,
+                },
+            },
+        },
+        include: {
+            userNotification: true,
+            notificationType: true,
+        },
+    });
+    appAssert(
+        createNotification,
+        INTERNAL_SERVER_ERROR,
+        "Could not create notifications in database",
+    );
+
     const socketId = users.get(userId);
     if (socketId) {
         // Flush any queued notifications first
         flushNotificationQueue(userId, socketId);
 
-        // Add notification to database
-        const notificationTypeId = notificationTypes.find(
-            (nt) => nt.name === type,
-        )?.id;
-        const createNotification = await prisma.notification.create({
-            data: {
-                title,
-                message,
-                notificationType: {
-                    connect: { id: notificationTypeId }, // Connect existing notification type
-                },
-                userNotification: {
-                    create: {
-                        user: {
-                            connect: { id: userId }, // Connect existing user
-                        },
-                    },
-                },
-            },
-            include: {
-                userNotification: true,
-                notificationType: true,
-            },
-        });
-        appAssert(
-            createNotification,
-            INTERNAL_SERVER_ERROR,
-            "Could not create notifications in database",
-        );
         io.to(socketId).emit("notification", { type, title, message });
         logMsg(
             logType.WEBSOCKET,

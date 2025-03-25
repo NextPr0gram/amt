@@ -1,11 +1,12 @@
 "use client";
-import { SyntheticEvent, useState } from "react";
+import { SyntheticEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { protectedFetch } from "@/utils/protected-fetch";
 
 export function LoginForm() {
     const [email, setEmail] = useState("");
@@ -28,6 +29,17 @@ export function LoginForm() {
 
         router.push("/dashboard");
     };
+    const fetchValidation = async () => {
+        const res = await protectedFetch("/moderation/status", "GET");
+        if (res.status === 200) {
+            router.push("/dashboard")
+        }
+    }
+
+    useEffect(() => {
+        fetchValidation()
+
+    }, [])
 
     return (
         <Card className="mx-auto max-w-sm">
@@ -51,7 +63,7 @@ export function LoginForm() {
                         <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
                     {error && <p className="text-red-500">{error}</p>}
-                    <Button size="sm"type="submit" className="w-full">
+                    <Button size="sm" type="submit" className="w-full">
                         Login
                     </Button>
                 </form>

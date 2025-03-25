@@ -2,7 +2,12 @@ import { BOX_CLIENT_ID, BOX_CLIENT_SECRET } from "../constants/env";
 import { generateStateToken } from "../utils/jwt";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
-import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from "../constants/http";
+import {
+    BAD_REQUEST,
+    INTERNAL_SERVER_ERROR,
+    NOT_FOUND,
+    OK,
+} from "../constants/http";
 const { BoxClient } = require("box-typescript-sdk-gen/lib/client.generated.js");
 import { BoxOAuth, OAuthConfig } from "box-typescript-sdk-gen";
 import { log, warn } from "node:console";
@@ -65,11 +70,19 @@ export const connectBox = async (userId: number, authCode: string) => {
         body,
     });
 
-    appAssert(res.ok, INTERNAL_SERVER_ERROR, "Could not exchange authorization code for tokens");
+    appAssert(
+        res.ok,
+        INTERNAL_SERVER_ERROR,
+        "Could not exchange authorization code for tokens",
+    );
 
     const data = await res.json();
 
-    appAssert(data.access_token, INTERNAL_SERVER_ERROR, "No access token returned");
+    appAssert(
+        data.access_token,
+        INTERNAL_SERVER_ERROR,
+        "No access token returned",
+    );
 
     // Expiry date -10 minutes
     const expiresInDate = Date.now() + (data.expires_in - 600) * 1000;
@@ -86,7 +99,11 @@ export const connectBox = async (userId: number, authCode: string) => {
             boxRefreshToken: data.refresh_token,
         },
     });
-    appAssert(storeBoxRefreshToken, INTERNAL_SERVER_ERROR, "Something went wrong while trying to store the Box refresh token");
+    appAssert(
+        storeBoxRefreshToken,
+        INTERNAL_SERVER_ERROR,
+        "Something went wrong while trying to store the Box refresh token",
+    );
 
     return data.access_token;
 };
@@ -109,7 +126,13 @@ const refreshBoxAccessToken = async (userId: number, refreshToken: string) => {
         body,
     });
 
-    appAssert(res.status, INTERNAL_SERVER_ERROR, "Could not refresh token", AppErrorCode.FailedToRefreshBoxToken, { userId });
+    appAssert(
+        res.status,
+        INTERNAL_SERVER_ERROR,
+        "Could not refresh token",
+        AppErrorCode.FailedToRefreshBoxToken,
+        { userId },
+    );
 
     const data = await res.json();
 
@@ -128,7 +151,11 @@ const refreshBoxAccessToken = async (userId: number, refreshToken: string) => {
             boxRefreshToken: data.refresh_token,
         },
     });
-    appAssert(storeBoxRefreshToken, INTERNAL_SERVER_ERROR, "Something went wrong while trying to store the Box refresh token");
+    appAssert(
+        storeBoxRefreshToken,
+        INTERNAL_SERVER_ERROR,
+        "Something went wrong while trying to store the Box refresh token",
+    );
 };
 
 const getBoxAccessToken = async (userId: number) => {
@@ -140,7 +167,11 @@ const getBoxAccessToken = async (userId: number) => {
             select: { boxRefreshToken: true },
         });
 
-        appAssert(user?.boxRefreshToken, INTERNAL_SERVER_ERROR, "Refresh token not found");
+        appAssert(
+            user?.boxRefreshToken,
+            INTERNAL_SERVER_ERROR,
+            "Refresh token not found",
+        );
 
         await refreshBoxAccessToken(userId, user.boxRefreshToken);
         token = boxAccessTokens.get(userId);
@@ -191,13 +222,22 @@ export const createBoxFolders = async (userId: number) => {
     };
     // Function to map modules into the structure
     function mapModules(modules: moduleType[]) {
-        return modules.reduce((acc: Record<string, { Assessments: {}; "Moderation forms": {} }>, module: moduleType) => {
-            acc[`${module.code} - ${module.name}`] = {
-                Assessments: {},
-                "Moderation forms": {},
-            };
-            return acc;
-        }, {});
+        return modules.reduce(
+            (
+                acc: Record<
+                    string,
+                    { Assessments: {}; "Moderation forms": {} }
+                >,
+                module: moduleType,
+            ) => {
+                acc[`${module.code} - ${module.name}`] = {
+                    Assessments: {},
+                    "Moderation forms": {},
+                };
+                return acc;
+            },
+            {},
+        );
     }
 
     const folderStructure = {
@@ -221,7 +261,10 @@ export const createBoxFolders = async (userId: number) => {
         },
     };
 
-    const createFoldersRecursively = async (parentId: string, structure: object) => {
+    const createFoldersRecursively = async (
+        parentId: string,
+        structure: object,
+    ) => {
         try {
             for (const [folderName, subfolders] of Object.entries(structure)) {
                 // Create folder using Box API
@@ -237,10 +280,17 @@ export const createBoxFolders = async (userId: number) => {
                     }),
                 });
 
-                appAssert(res.status, INTERNAL_SERVER_ERROR, `Failed to create folder: ${folderName}`);
+                appAssert(
+                    res.status,
+                    INTERNAL_SERVER_ERROR,
+                    `Failed to create folder: ${folderName}`,
+                );
 
                 const data = await res.json();
-                logMsg(logType.BOX, `Created folder: ${data.name} (ID: ${data.id})`);
+                logMsg(
+                    logType.BOX,
+                    `Created folder: ${data.name} (ID: ${data.id})`,
+                );
 
                 // Recursively create subfolders if they exist
                 if (subfolders && Object.keys(subfolders).length > 0) {
@@ -254,7 +304,9 @@ export const createBoxFolders = async (userId: number) => {
         }
     };
 
-    const boxFoldersCreated = await createFoldersRecursively("0", folderStructure);
-    await sendNotification(userId, "info", "Box folders created");
+    const boxFoldersCreated = await createFoldersRecursively(
+        "0",
+        folderStructure,
+    );
     return boxFoldersCreated;
 };
