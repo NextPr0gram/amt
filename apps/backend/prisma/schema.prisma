@@ -26,10 +26,10 @@ model User {
     updatedAt     DateTime       @updatedAt
     sessions      Session[] // establishes reverse relation to Session model (this is a feature in Prisma ORM, it is not a real column in the database)
     moduleTutorOf ModuleTutor[]
-    Module        Module[]
-    Role          UserRole[]
-    ReviewGroup   ReviewGroup[]
-    Notification  Notification[]
+    module        Module[]
+    role          UserRole[]
+    reviewGroup   ReviewGroup[]
+    userNotification UserNotification[]
 }
 
 model Session {
@@ -53,15 +53,15 @@ model Module {
     moduleLeadId      Int?
     moduleLead        User?               @relation(fields: [moduleLeadId], references: [id])
     moduleTutors      ModuleTutor[]
-    ReviewGroupModule ReviewGroupModule[]
-    Assessment        Assessment[]
+    reviewGroupModule ReviewGroupModule[]
+    assessment        Assessment[]
 }
 
 model Year {
     id          Int           @id @default(autoincrement())
     name        String
-    Module      Module[]
-    ReviewGroup ReviewGroup[]
+    module      Module[]
+    reviewGroup ReviewGroup[]
 }
 
 model ModuleTutor {
@@ -149,33 +149,45 @@ model AssessmentCategory {
 
 model Notification {
     id        Int      @id @default(autoincrement())
-    userId    Int
     title     String
-    message   String
-    read      Boolean  @default(false)
+    message   String?
     createdAt DateTime @default(now())
-    user      User     @relation(fields: [userId], references: [id])
+    notificationTypeId Int
+    userNotification UserNotification[]
+    notificationType      NotificationType     @relation(fields: [notificationTypeId], references: [id])
 }
 
+model UserNotification {
+    id        Int      @id @default(autoincrement())
+    userId Int
+    notificationId Int
+    user      User     @relation(fields: [userId], references: [id])
+    notification      Notification     @relation(fields: [notificationId], references: [id])
+}
+model NotificationType {
+    id        Int      @id @default(autoincrement())
+    name String
+    notification Notification[]
+}
 model TP {
     id   Int    @id @default(autoincrement())
     name String
 
-    ModerationPhase ModerationPhase[]
+    moderationPhase ModerationPhase[]
 }
 
 model Stage {
     id   Int    @id @default(autoincrement())
     name String
 
-    ModerationPhase ModerationPhase[]
+    moderationPhase ModerationPhase[]
 }
 
 model ReviewType {
     id   Int    @id @default(autoincrement())
     name String
 
-    ModerationPhase ModerationPhase[]
+    moderationPhase ModerationPhase[]
 }
 
 model ModerationStatus {
@@ -195,12 +207,12 @@ model ModerationPhase {
     reviewType   ReviewType   @relation(fields: [reviewTypeId], references: [id])
     trigger      PhaseTrigger @relation(fields: [triggerId], references: [id])
 
-    ModerationStatus ModerationStatus[]
+    moderationStatus ModerationStatus[]
 }
 
 model PhaseTrigger {
     id   Int    @id @default(autoincrement())
     name String
 
-    ModerationPhase ModerationPhase[]
+    moderationPhase ModerationPhase[]
 }

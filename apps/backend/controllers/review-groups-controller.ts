@@ -106,21 +106,7 @@ export const createReviewGroupHandler = catchErrors(async (req, res) => {
         },
     });
 
-    // create notifications for all users
-    const allUsers = await prisma.user.findMany({
-        select: {
-            id: true,
-        },
-    });
-    const notifications = await prisma.notification.createMany({
-        data: allUsers.map((user) => ({
-            userId: user.id,
-            title: "Review group",
-            message: `New review group created for yearId: ${yearId}, moduleIds: ${moduleIds.join(", ")}, convener: ${convener}`,
-            read: false,
-        })),
-    });
-    broadcastNotification("info", "Review group", `New review group created for yearId: ${yearId}, moduleIds: ${moduleIds.join(", ")}, convener: ${convener}`);
+    await broadcastNotification("info", "Review group", `New review group created for yearId: ${yearId}, moduleIds: ${moduleIds.join(", ")}, convener: ${convener}`);
 
     return res.status(OK).json(reviewGroup);
 });

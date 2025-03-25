@@ -18,13 +18,9 @@ const handleZodError = (res: Response, error: z.ZodError) => {
     res.status(BAD_REQUEST).json({ message: formattedMessage });
 };
 
-const handleAppError = (res: Response, error: AppError) => {
+const handleAppError = async (res: Response, error: AppError) => {
     if (error.errorCode === AppErrorCode.FaiedToCreateBoxFolders) {
-        broadcastNotification(
-            "error",
-            "Box Error",
-            "Something went wrong while creating folders in Box",
-        );
+        await broadcastNotification("error", "Box Error", "Something went wrong while creating folders in Box");
     } else if (error.errorCode === AppErrorCode.FailedToRefreshBoxToken) {
         const userId = error.opts?.userId;
         const deleteBoxRefreshTokenFromUser = async () => {
@@ -37,15 +33,9 @@ const handleAppError = (res: Response, error: AppError) => {
                 },
             });
         };
-        appAssert(
-            deleteBoxRefreshTokenFromUser,
-            INTERNAL_SERVER_ERROR,
-            "Failed to remove box refresh token from user",
-        );
+        appAssert(deleteBoxRefreshTokenFromUser, INTERNAL_SERVER_ERROR, "Failed to remove box refresh token from user");
     }
-    return res
-        .status(error.statusCode)
-        .json({ message: error.message, errorCode: error.errorCode });
+    return res.status(error.statusCode).json({ message: error.message, errorCode: error.errorCode });
 };
 
 const handlePrismaError = (res: Response, error: Error) => {
@@ -58,7 +48,7 @@ const handlePrismaError = (res: Response, error: Error) => {
     }
 };
 
-const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
+const errorHandler: ErrorRequestHandler = async (error, req, res, next) => {
     console.error(`PATH ${req.path}`, error);
 
     if (req.path === refreshPath) {

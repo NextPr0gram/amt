@@ -24,7 +24,7 @@ export const boxCallbackHandler = catchErrors(async (req, res) => {
     appAssert(userId, INTERNAL_SERVER_ERROR, "Could not get user from state");
     const isConnectToBoxSuccessful = await connectBox(userId, authCode);
     appAssert(isConnectToBoxSuccessful, INTERNAL_SERVER_ERROR, "Failed to connect to box");
-    sendNotification(userId, "info", "Box connected successfully!");
+    await sendNotification(userId, "info", "Box connected successfully!");
     return res.status(OK).redirect("http://localhost:3000/dashboard");
 });
 

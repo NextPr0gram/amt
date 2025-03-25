@@ -25,7 +25,7 @@ export const createBoxFoldersHandler = catchErrors(async (req, res) => {
 
     appAssert(isBoxfolderCreated, INTERNAL_SERVER_ERROR, "Could not create box folders", AppErrorCode.FaiedToCreateBoxFolders);
 
-    isBoxfolderCreated && broadcastNotification("info", "Box folders created successfully");
+    isBoxfolderCreated && (await broadcastNotification("info", "Box folders created successfully"));
 
     return res.status(OK).json({ message: "box folders created" });
 });

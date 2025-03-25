@@ -9,7 +9,7 @@ export const getModuleTutorsHandler = catchErrors(async (req, res) => {
             id: true,
             firstName: true,
             lastName: true,
-            Role: {
+            role: {
                 select: {
                     role: {
                         select: {

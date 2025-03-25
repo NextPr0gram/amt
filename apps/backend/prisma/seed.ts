@@ -623,6 +623,9 @@ async function main() {
             moderationPhaseId: 1,
         },
     });
+    const notificationTypes = await prisma.notificationType.createMany({
+        data: [{ name: "info" }, { name: "warning" }, { name: "error" }],
+    });
 }
 main()
     .then(async () => {

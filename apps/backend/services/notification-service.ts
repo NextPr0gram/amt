@@ -1,5 +1,7 @@
+import { INTERNAL_SERVER_ERROR, NOT_FOUND } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import { io } from "../server";
+import appAssert from "../utils/app-assert";
 import { logMsg, logType } from "../utils/logger";
 import { users } from "./websocket-service";
 
@@ -7,6 +9,14 @@ import { users } from "./websocket-service";
 const notificationQueue: Map<number, NotificationData[]> = new Map();
 
 type NotificationType = "info" | "warning" | "error";
+let notificationTypes: { id: number; name: string }[] = [];
+
+const loadNotificationTypes = async () => {
+    const result = await prisma.notificationType.findMany();
+    notificationTypes = result;
+};
+
+loadNotificationTypes();
 
 type NotificationData = {
     type: NotificationType;
@@ -15,7 +25,7 @@ type NotificationData = {
 };
 
 // Send notification to a specific user
-export const sendNotification = (
+export const sendNotification = async (
     userId: number,
     type: NotificationType,
     title: string,
@@ -25,6 +35,36 @@ export const sendNotification = (
     if (socketId) {
         // Flush any queued notifications first
         flushNotificationQueue(userId, socketId);
+
+        // Add notification to database
+        const notificationTypeId = notificationTypes.find(
+            (nt) => nt.name === type,
+        )?.id;
+        const createNotification = await prisma.notification.create({
+            data: {
+                title,
+                message,
+                notificationType: {
+                    connect: { id: notificationTypeId }, // Connect existing notification type
+                },
+                userNotification: {
+                    create: {
+                        user: {
+                            connect: { id: userId }, // Connect existing user
+                        },
+                    },
+                },
+            },
+            include: {
+                userNotification: true,
+                notificationType: true,
+            },
+        });
+        appAssert(
+            createNotification,
+            INTERNAL_SERVER_ERROR,
+            "Could not create notifications in database",
+        );
         io.to(socketId).emit("notification", { type, title, message });
         logMsg(
             logType.WEBSOCKET,
@@ -42,47 +82,68 @@ export const sendNotification = (
 };
 
 // Broadcast notification to all registered users
-export const broadcastNotification = (
+export const broadcastNotification = async (
     type: NotificationType,
     title: string,
     message?: string,
 ) => {
-    return prisma.user
-        .findMany({
-            select: { id: true },
-        })
-        .then((userIds) => {
-            const registeredUserIds = userIds.map((user) => user.id);
-            registeredUserIds.forEach((userId) => {
-                const socketId = users.get(userId);
-                if (socketId) {
-                    flushNotificationQueue(userId, socketId);
-                    io.to(socketId).emit("notification", {
-                        type,
-                        title,
-                        message,
-                    });
-                    logMsg(
-                        logType.WEBSOCKET,
-                        `Broadcast notification sent to user ${userId}: title ${title}, message: ${message || "none"}`,
-                    );
-                } else {
-                    const queued = notificationQueue.get(userId) || [];
-                    queued.push({ type, title, message });
-                    notificationQueue.set(userId, queued);
-                    logMsg(
-                        logType.WEBSOCKET,
-                        `User ${userId} offline, broadcast notification queued`,
-                    );
-                }
+    const usersInDb = await prisma.user.findMany({
+        select: { id: true },
+    });
+    appAssert(usersInDb, NOT_FOUND, "Could not retrieve users");
+    const registeredUserIds = usersInDb.map((user) => user.id);
+    const notificationTypeId = notificationTypes.find(
+        (nt) => nt.name === type,
+    )?.id;
+    const createNotification = await prisma.notification.create({
+        data: {
+            title,
+            message,
+            notificationType: {
+                connect: { id: notificationTypeId }, // Connect existing notification type
+            },
+            userNotification: {
+                create: registeredUserIds.map((userId) => ({
+                    user: {
+                        connect: { id: userId }, // Connect each user in registeredUserIds
+                    },
+                })),
+            },
+        },
+        include: {
+            userNotification: true,
+            notificationType: true,
+        },
+    });
+    appAssert(
+        createNotification,
+        INTERNAL_SERVER_ERROR,
+        "Could not create notifications in database",
+    );
+
+    registeredUserIds.forEach(async (userId) => {
+        const socketId = users.get(userId);
+        if (socketId) {
+            flushNotificationQueue(userId, socketId);
+            io.to(socketId).emit("notification", {
+                type,
+                title,
+                message,
             });
-        })
-        .catch((error) => {
             logMsg(
                 logType.WEBSOCKET,
-                `Error broadcasting notifications: ${error}`,
+                `Broadcast notification sent to user ${userId}: title ${title}, message: ${message || "none"}`,
             );
-        });
+        } else {
+            const queued = notificationQueue.get(userId) || [];
+            queued.push({ type, title, message });
+            notificationQueue.set(userId, queued);
+            logMsg(
+                logType.WEBSOCKET,
+                `User ${userId} offline, broadcast notification queued`,
+            );
+        }
+    });
 };
 
 /**
