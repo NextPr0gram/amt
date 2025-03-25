@@ -9,30 +9,69 @@ import { DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Dialog } from "@radix-ui/react-dialog";
 import { protectedFetch } from "@/utils/protected-fetch";
-import { Divide } from "lucide-react";
+import { Bell, Divide, TriangleAlert } from "lucide-react";
 
 type Notification = {
     id: number;
+    type: "info" | "warning" | "error";
     title: string;
     message: string;
-    read: boolean;
     createdAt: string;
 };
 
+type NotificationAPIResponse = {
+    notification: {
+        id: number,
+        title: string,
+        message: string,
+        notificationType: {
+            name: string,
+        },
+        createdAt: Date
+    }
+}
+
+
 const columns: ColumnDef<Notification>[] = [
     {
-        accessorKey: "id",
+        accessorKey: "Type",
+        cell: ({ row }) => {
+            const data = row.original; // Assuming the notification data is in row.original
+            switch (data.type) {
+                case "info":
+                    return <Bell className="size-5 mx-2" />; // Return the JSX here
+                case "warning":
+                    return <TriangleAlert className="size-5 mx-2" />; // Return the JSX here
+                case "error":
+                    return <div>Error</div>; // Return a message or JSX for error type
+                default:
+                    return null; // Return null if the type is unrecognized
+            }
+        },
+    },
+    {
+        accessorKey: "Title",
         cell: ({ row }) => {
             return (
                 <div>
-                    <div>{row.original.title}</div>
-                    <div>{row.original.message}</div>
+                    {row.original.title}
+                </div>
+            );
+        },
+    },
+    {
+        accessorKey: "Message",
+        cell: ({ row }) => {
+            return (
+                <div>
+                    {row.original.message || "-"}
                 </div>
             );
         },
     },
     {
         accessorKey: "createdAt",
+        header: "Time"
     },
 ];
 
@@ -42,7 +81,20 @@ export function DataTable() {
     useEffect(() => {
         const fetchNotifications = async () => {
             const res = await protectedFetch("/user/notifications", "GET");
-            setNotifications(res.data);
+            const notifications: Notification[] = res.data.map((notification: NotificationAPIResponse) => ({
+                id: notification.notification.id,
+                title: notification.notification.title,
+                message: notification.notification.message,
+                createdAt: new Intl.DateTimeFormat('en-GB', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                }).format(new Date(notification.notification.createdAt)),
+            }));
+            setNotifications(notifications);
         };
         fetchNotifications();
     }, []);
@@ -78,14 +130,6 @@ export function DataTable() {
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                         ))}
-
-                                        <TableCell>
-                                            <DialogTrigger asChild>
-                                                <Button variant={"link"} size="sm" className="ml-auto" onClick={() => setSelectedNotification(row.original.id)}>
-                                                    View
-                                                </Button>
-                                            </DialogTrigger>
-                                        </TableCell>
                                     </TableRow>
                                 ))
                             ) : (
