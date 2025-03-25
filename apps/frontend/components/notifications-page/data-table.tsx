@@ -31,21 +31,20 @@ type NotificationAPIResponse = {
     }
 }
 
-
 const columns: ColumnDef<Notification>[] = [
     {
         accessorKey: "Type",
         cell: ({ row }) => {
-            const data = row.original; // Assuming the notification data is in row.original
+            const data = row.original;
             switch (data.type) {
                 case "info":
-                    return <Bell className="size-5 mx-2" />; // Return the JSX here
+                    return <Bell className="size-5 mx-2" />;
                 case "warning":
-                    return <TriangleAlert className="size-5 mx-2" />; // Return the JSX here
+                    return <TriangleAlert className="size-5 mx-2" />;
                 case "error":
-                    return <div>Error</div>; // Return a message or JSX for error type
+                    return <div>Error</div>;
                 default:
-                    return null; // Return null if the type is unrecognized
+                    return null;
             }
         },
     },
@@ -58,8 +57,7 @@ const columns: ColumnDef<Notification>[] = [
                 </div>
             );
         },
-    },
-    {
+    }, {
         accessorKey: "Message",
         cell: ({ row }) => {
             return (
@@ -83,6 +81,7 @@ export function DataTable() {
             const res = await protectedFetch("/user/notifications", "GET");
             const notifications: Notification[] = res.data.map((notification: NotificationAPIResponse) => ({
                 id: notification.notification.id,
+                type: notification.notification.notificationType.name,
                 title: notification.notification.title,
                 message: notification.notification.message,
                 createdAt: new Intl.DateTimeFormat('en-GB', {
