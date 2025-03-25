@@ -51,6 +51,7 @@ const formSchema = z
                 required_error: "Please select a year",
             })
             .int(),
+        tp: z.union([z.literal("tp1"), z.literal("tp2")]),
         moduleTutorId: z.number({ invalid_type_error: "Value must be an integer", message: "This field is required" }).int(), // represents module lead id
         // module tutors must be array of numbers and the modulettorid cannot be in the array
         moduleTutors: z.array(z.number({ invalid_type_error: "Values must be integers" })).optional(),
@@ -70,6 +71,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
     const [years, setyears] = useState<Year[]>([]);
     const [isModuleTutorPopoverOpen, setIsModuleTutorPopoverOpen] = useState(false);
     const [isYearPopoverOpen, setIsYearPopoverOpen] = useState(false);
+    const [isTpPopoverOpen, setIsTpPopoverOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(type === "add" ? true : false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [showError, setShowError] = useState(false);
@@ -114,6 +116,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
         if (type === "add") {
             return {
                 moduleCode: "",
+                tp: undefined,
                 moduleName: "",
                 yearId: undefined,
                 moduleTutorId: undefined,
@@ -124,6 +127,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
 
             return {
                 moduleCode: currentModule?.code || "",
+                tp: currentModule?.tp || "",
                 moduleName: currentModule?.name || "",
                 yearId: currentModule?.yearId || undefined,
                 moduleTutorId: currentModule?.leadId || undefined,
@@ -204,7 +208,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
             });
             return;
         }
-        const body = { id: moduleId, code: values.moduleCode, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId, moduleTutors: values.moduleTutors };
+        const body = { id: moduleId, code: values.moduleCode, tp: values.tp, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId, moduleTutors: values.moduleTutors };
         let res;
 
         if (type === "viewOrEdit") {
@@ -276,7 +280,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
                                     <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 -mt-2">
                                         <Command>
                                             <CommandList>
-                                                <CommandEmpty>No module tutors found.</CommandEmpty>
+                                                <CommandEmpty>No year.</CommandEmpty>
                                                 <CommandGroup>
                                                     {isEditing &&
                                                         years.map((year: Year) => (
@@ -292,6 +296,59 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
                                                                 <Check className={cn("ml-auto", year.id === field.value ? "opacity-100" : "opacity-0")} />
                                                             </CommandItem>
                                                         ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="tp"
+                        render={({ field }) => (
+                            <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
+                                <FormLabel>Year</FormLabel>
+                                <Popover open={isTpPopoverOpen} onOpenChange={setIsTpPopoverOpen}>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                role="combobox"
+                                                className={cn("justify-between font-normal", !field.value && "text-muted-foreground")}
+                                                tabIndex={isEditing ? 0 : -1}
+                                            >
+                                                {field.value ? `TP ${field.value.replace("tp", "")}` : "Select TP"}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 -mt-2">
+                                        <Command>
+                                            <CommandList>
+                                                <CommandEmpty>No TP available.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {isEditing && (
+                                                        <>
+                                                            {["tp1", "tp2"].map((tp) => (
+                                                                <CommandItem
+                                                                    key={tp}
+                                                                    value={tp}
+                                                                    onSelect={() => {
+                                                                        form.setValue("tp", tp as "tp1" | "tp2");
+                                                                        setIsTpPopoverOpen(false);
+                                                                    }}
+                                                                >
+                                                                    {tp.toUpperCase()} {/* Display TP 1, TP 2 */}
+                                                                    <Check className={cn("ml-auto", field.value === tp ? "opacity-100" : "opacity-0")} />
+                                                                </CommandItem>
+                                                            ))}
+                                                        </>
+                                                    )}
                                                 </CommandGroup>
                                             </CommandList>
                                         </Command>

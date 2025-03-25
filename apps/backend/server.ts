@@ -19,9 +19,10 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 prisma.$connect().then(() => {
-    processModerationStatus().catch((error) =>
-        console.error("Error processing stages:", error),
-    );
+    // processModerationStatus().catch((error) =>
+    //     console.error("Error processing stages:", error),
+    // );
+    return;
 });
 
 export const io = new Server(server, {
