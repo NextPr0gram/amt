@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 type User = {
     name: string;
@@ -85,21 +86,10 @@ const DropDownContent = ({ user, isMobile }: { user: User; isMobile?: boolean })
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem>
-                    <Sparkles />
-                    Upgrade to Pro
-                </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-                <DropdownMenuItem>
                     <BadgeCheck />
                     Account
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                    <CreditCard />
-                    Billing
-                </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/notifications")}>
                     <Bell />
                     Notifications
                 </DropdownMenuItem>
