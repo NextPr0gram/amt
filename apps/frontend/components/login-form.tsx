@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { protectedFetch } from "@/utils/protected-fetch";
+import Cookies from "js-cookie";
 
 export function LoginForm() {
     const [email, setEmail] = useState("");
@@ -18,29 +19,41 @@ export function LoginForm() {
         e.preventDefault();
         setError("");
 
-        await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/login", {
+        const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            credentials: "include", // This allows the storing of cookies in our browser
+            credentials: "include", // Store cookies
             body: JSON.stringify({ email, password }),
         });
 
-        router.push("/dashboard");
-    };
-    const fetchValidation = async () => {
-        const res = await protectedFetch("/moderation/status", "GET");
-        if (res.status === 200) {
-            router.push("/dashboard")
+        if (response.ok) {
+            router.push("/dashboard");
+        } else {
+            setError("Invalid credentials");
         }
-    }
+    };
 
     useEffect(() => {
-        fetchValidation()
 
-    }, [])
+        const checkIfLoggedIn = async () => {
 
+            const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/validate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include", // Store cookies
+            });
+
+            if (response.ok) {
+                router.push("/dashboard");
+            }
+        }
+        checkIfLoggedIn()
+
+    }, []);
     return (
         <Card className="mx-auto max-w-sm">
             <CardHeader>
