@@ -305,6 +305,7 @@ async function main() {
             { userId: 37, roleId: 3 },
         ],
     });
+
     const createYears = await prisma.year.createMany({
         data: [
             { name: "Year 1" },
@@ -319,114 +320,127 @@ async function main() {
                 code: "CS1IAD",
                 name: "Internet Applications and Databases",
                 yearId: 1,
-                tpId: 1,
                 moduleLeadId: 1,
             },
             {
                 code: "CS1OOP",
                 name: "Object-Oriented Programming",
                 yearId: 1,
-                tpId: 1,
                 moduleLeadId: 2,
             },
             {
                 code: "CS1PSA",
                 name: "Programming and Software Architecture",
                 yearId: 1,
-                tpId: 1,
                 moduleLeadId: 3,
             },
             {
                 code: "CS2HCI",
                 name: "Human-Computer Interaction",
                 yearId: 2,
-                tpId: 1,
                 moduleLeadId: 4,
             },
             {
                 code: "CS2IS",
                 name: "Information Security",
                 yearId: 2,
-                tpId: 1,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS2IDS",
                 name: "Introduction to Distributed Systems",
                 yearId: 2,
-                tpId: 1,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS2OS",
                 name: "Operating Systems",
                 yearId: 2,
-                tpId: 1,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS2PLC",
                 name: "Programming Language Concepts",
                 yearId: 2,
-                tpId: 1,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS3IVP",
                 name: "Image and Video Processing",
                 yearId: 3,
-                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS3ADG",
                 name: "Advanced Database Systems and GIS",
                 yearId: 3,
-                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS3DM",
                 name: "Data Mining",
                 yearId: 3,
-                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS3ECS",
                 name: "Enterprise Computing Strategies",
                 yearId: 3,
-                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS3CA",
                 name: "Computer Animation",
                 yearId: 3,
-                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS3GD",
                 name: "Game Development",
                 yearId: 3,
-                tpId: 2,
                 moduleLeadId: 6,
             },
             {
                 code: "CS4AI",
                 name: "Artificial Intelligence",
                 yearId: 4,
-                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS4QC",
                 name: "Quantum Computing",
                 yearId: 4,
-                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
+            {
+                code: "CS3IP",
+                name: "Individual Project",
+                yearId: 3,
+                moduleLeadId: 8,
+            },
+        ],
+    });
+
+    await prisma.moduleTP.createMany({
+        data: [
+            { moduleId: 1, tpId: 1 }, // CS1IAD
+            { moduleId: 2, tpId: 1 }, // CS1OOP
+            { moduleId: 3, tpId: 1 }, // CS1PSA
+            { moduleId: 4, tpId: 1 }, // CS2HCI
+            { moduleId: 5, tpId: 1 }, // CS2IS
+            { moduleId: 6, tpId: 1 }, // CS2IDS
+            { moduleId: 7, tpId: 1 }, // CS2OS
+            { moduleId: 8, tpId: 1 }, // CS2PLC
+            { moduleId: 9, tpId: 2 }, // CS3IVP
+            { moduleId: 10, tpId: 2 }, // CS3ADG
+            { moduleId: 11, tpId: 2 }, // CS3DM
+            { moduleId: 12, tpId: 2 }, // CS3ECS
+            { moduleId: 13, tpId: 2 }, // CS3CA
+            { moduleId: 14, tpId: 2 }, // CS3GD
+            { moduleId: 15, tpId: 2 }, // CS4AI
+            { moduleId: 16, tpId: 2 }, // CS4QC
+            { moduleId: 17, tpId: 1 }, // CS3IP
+            { moduleId: 17, tpId: 2 }, // CS3IP
         ],
     });
 
@@ -499,8 +513,6 @@ async function main() {
                 assessmentTypeId: 1,
                 assessmentCategoryId: 7,
                 durationInMinutes: 30,
-                releaseDate: new Date(2025, 9, 15),
-                submissionDate: new Date(2025, 9, 20),
             },
             {
                 tpId: 1,
@@ -516,8 +528,6 @@ async function main() {
                 weight: 1,
                 assessmentTypeId: 3,
                 assessmentCategoryId: 1,
-                releaseDate: new Date(2026, 1, 1),
-                submissionDate: new Date(2026, 1, 20),
             },
         ],
     });

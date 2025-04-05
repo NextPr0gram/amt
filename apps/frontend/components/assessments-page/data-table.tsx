@@ -44,20 +44,6 @@ const columns: ColumnDef<Assessment>[] = [
         },
     },
     {
-        accessorKey: "releaseDate",
-        header: "Release Date",
-        cell: (cell) => {
-            return cell.getValue() ? new Date(cell.getValue() as string).toLocaleDateString() : "";
-        },
-    },
-    {
-        accessorKey: "submissionDate",
-        header: "Submission Date",
-        cell: (cell) => {
-            return cell.getValue() ? new Date(cell.getValue() as string).toLocaleDateString() : "";
-        },
-    },
-    {
         accessorKey: "durationInMinutes",
         header: "Duration (mins)",
     },

@@ -29,8 +29,6 @@ type AssessmentAPIResponse = {
         name: string;
     };
     weight: number;
-    releaseDate: string;
-    submissionDate: string;
     durationInMinutes: number;
 };
 
@@ -54,8 +52,6 @@ export const AssessmentsProvider: React.FC<{ children: React.ReactNode }> = ({ c
             assessmentType: assessment.assessmentType.name,
             assessmentCategory: assessment.assessmentCategory.name,
             weight: assessment.weight,
-            releaseDate: assessment.releaseDate,
-            submissionDate: assessment.submissionDate,
             durationInMinutes: assessment.durationInMinutes,
         }));
         setAssessments(resData);

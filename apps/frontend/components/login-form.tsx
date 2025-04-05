@@ -46,22 +46,18 @@ export function LoginForm() {
     useEffect(() => {
         const checkIfLoggedIn = async () => {
             setLoading(true); // Set loading to true during validation check
-            try {
-                const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/validate", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    credentials: "include", // Store cookies
-                });
+            const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/validate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include", // Store cookies
+            });
 
-                if (response.ok) {
-                    router.push("/dashboard");
-                } else {
-                    setLoading(false); // Only set loading to false if user is not logged in
-                }
-            } catch (err) {
-                setLoading(false);
+            if (response.ok) {
+                router.push("/dashboard");
+            } else {
+                setLoading(false); // Only set loading to false if user is not logged in
             }
         };
 

@@ -16,6 +16,11 @@ const columns: ColumnDef<Module>[] = [
     {
         accessorKey: "tp",
         header: "TP",
+        cell: ({ row }) => (row.original.tp.join(", ")),
+        filterFn: (row, columnId, filterValue) => {
+            const tpArray = row.getValue<string[]>(columnId);
+            return filterValue.some((value: string) => tpArray.includes(value));
+        },
     },
     {
         accessorKey: "code",

@@ -357,62 +357,14 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
                         name="weight"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Weight in % {field.value}</FormLabel>
+                                <FormLabel>Weight in %</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="e.g. 20" value={field.value * 100} onChange={(e) => form.setValue("weight", parseFloat(e.target.value) / 100)} />
+                                    <Input type="number" placeholder="e.g. 20" value={(field.value ?? 0) * 100} onChange={(e) => form.setValue("weight", parseFloat(e.target.value) / 100)} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-                    <div className="flex space-x-4">
-                        <FormField
-                            control={form.control}
-                            name="releaseDate"
-                            render={({ field }) => (
-                                <FormItem className="grow flex flex-col">
-                                    <FormLabel>Release Date (Optional)</FormLabel>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <FormControl>
-                                                <Button variant={"outline"} className={cn(" pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                </Button>
-                                            </FormControl>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date("1900-01-01")} initialFocus />
-                                        </PopoverContent>
-                                    </Popover>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="submissionDate"
-                            render={({ field }) => (
-                                <FormItem className="grow flex flex-col">
-                                    <FormLabel>Submission Date (Optional)</FormLabel>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <FormControl>
-                                                <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                </Button>
-                                            </FormControl>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date("1900-01-01")} initialFocus />
-                                        </PopoverContent>
-                                    </Popover>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
                     <FormField
                         control={form.control}
                         name="durationInMinutes"

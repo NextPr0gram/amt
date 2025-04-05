@@ -26,8 +26,6 @@ export const getAssessmentsHandler = catchErrors(async (req, res) => {
                 },
             },
             weight: true,
-            releaseDate: true,
-            submissionDate: true,
             durationInMinutes: true,
         },
     });
@@ -73,16 +71,8 @@ const assessmentSchema = z.object({
 });
 
 export const createAssessmentHandler = catchErrors(async (req, res) => {
-    const {
-        tpId,
-        moduleId,
-        typeId,
-        categoryId,
-        weight,
-        releaseDate,
-        submissionDate,
-        durationInMinutes,
-    } = assessmentSchema.parse(req.body);
+    const { tpId, moduleId, typeId, categoryId, weight, durationInMinutes } =
+        assessmentSchema.parse(req.body);
     const assessment = await prisma.assessment.create({
         data: {
             tpId,
@@ -90,8 +80,6 @@ export const createAssessmentHandler = catchErrors(async (req, res) => {
             assessmentTypeId: typeId,
             assessmentCategoryId: categoryId,
             weight,
-            releaseDate,
-            submissionDate,
             durationInMinutes,
         },
     });

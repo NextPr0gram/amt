@@ -44,18 +44,28 @@ model Session {
 // Many modules have many module tutors
 // One module lead can lead many modules
 model Module {
-    id                Int                 @id @default(autoincrement())
-    code              String              @unique
-    name              String
-    yearId            Int
-    year              Year                @relation(fields: [yearId], references: [id])
-    tpId              Int
-    tp                TP                  @relation(fields: [tpId], references: [id])
-    moduleLeadId      Int?
-    moduleLead        User?               @relation(fields: [moduleLeadId], references: [id])
-    moduleTutors      ModuleTutor[]
-    reviewGroupModule ReviewGroupModule[]
-    assessment        Assessment[]
+  id                Int                 @id @default(autoincrement())
+  code              String              @unique
+  name              String
+  yearId            Int
+  year              Year                @relation(fields: [yearId], references: [id])
+  moduleLeadId      Int?
+  moduleLead        User?               @relation(fields: [moduleLeadId], references: [id])
+  moduleTutors      ModuleTutor[]
+  reviewGroupModule ReviewGroupModule[]
+  assessment        Assessment[]
+  academicYearAssessment AcademicYearAssessment[]
+  tps               ModuleTP[]
+}
+
+model ModuleTP {
+  moduleId Int
+  tpId     Int
+
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  tp     TP     @relation(fields: [tpId], references: [id], onDelete: Cascade)
+
+  @@id([moduleId, tpId]) // Composite primary key
 }
 
 model Year {
@@ -124,11 +134,29 @@ model Assessment {
     assessmentTypeId     Int
     assessmentCategoryId Int
     durationInMinutes    Int?
+    module               Module             @relation(fields: [moduleId], references: [id])
+    assessmentType       AssessmentType     @relation(fields: [assessmentTypeId], references: [id])
+    assessmentCategory   AssessmentCategory @relation(fields: [assessmentCategoryId], references: [id])
+}
+
+model AcademicYearAssessment {
+    id                   Int                @id @default(autoincrement())
+    tpId                 Int
+    tp                   TP                 @relation(fields: [tpId], references: [id])
+    moduleId             Int
+    weight               Float
+    assessmentTypeId     Int
+    assessmentCategoryId Int
+    durationInMinutes    Int?
     releaseDate          DateTime?
     submissionDate       DateTime?
     module               Module             @relation(fields: [moduleId], references: [id])
     assessmentType       AssessmentType     @relation(fields: [assessmentTypeId], references: [id])
     assessmentCategory   AssessmentCategory @relation(fields: [assessmentCategoryId], references: [id])
+}
+model AcademicYear {
+    id                   Int                @id @default(autoincrement())
+    year Int
 }
 
 model AssessmentType {
@@ -136,6 +164,7 @@ model AssessmentType {
     name String @unique
 
     assessment Assessment[]
+    academicYearAssessment AcademicYearAssessment[]
 }
 
 model AssessmentCategory {
@@ -143,6 +172,7 @@ model AssessmentCategory {
     name String @unique
 
     assessment Assessment[]
+    academicYearAssessment AcademicYearAssessment[]
 }
 
 model Notification {
@@ -174,8 +204,9 @@ model TP {
     name String
 
     moderationPhase ModerationPhase[]
-    module          Module[]
     assessment      Assessment[]
+    academicYearAssessment AcademicYearAssessment[]
+modules                ModuleTP[]
 }
 
 model Stage {

@@ -26,9 +26,13 @@ export const getModulesHandler = catchErrors(async (req, res) => {
         select: {
             id: true,
             code: true,
-            tp: {
+            tps: {
                 select: {
-                    name: true,
+                    tp: {
+                        select: {
+                            name: true,
+                        },
+                    },
                 },
             },
             name: true,
