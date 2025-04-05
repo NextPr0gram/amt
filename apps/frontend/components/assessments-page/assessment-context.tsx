@@ -17,7 +17,9 @@ export type Assessment = {
 
 type AssessmentAPIResponse = {
     id: number;
-    tp: "tp1" | "tp2";
+    tp: {
+        name: string;
+    }
     module: {
         code: string;
         name: string;
@@ -46,7 +48,7 @@ export const AssessmentsProvider: React.FC<{ children: React.ReactNode }> = ({ c
         const res = await protectedFetch("/assessments", "GET");
         const resData = res.data.map((assessment: AssessmentAPIResponse) => ({
             id: assessment.id,
-            tp: assessment.tp,
+            tp: assessment.tp.name,
             moduleCode: assessment.module.code,
             moduleName: assessment.module.name,
             assessmentType: assessment.assessmentType.name,

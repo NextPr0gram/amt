@@ -8,7 +8,11 @@ export const getAssessmentsHandler = catchErrors(async (req, res) => {
     const assessments = await prisma.assessment.findMany({
         select: {
             id: true,
-            tpId: true,
+            tp: {
+                select: {
+                    name: true,
+                },
+            },
             module: {
                 select: {
                     code: true,

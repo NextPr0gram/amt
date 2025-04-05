@@ -16,9 +16,6 @@ const columns: ColumnDef<Assessment>[] = [
     {
         accessorKey: "tp",
         header: "TP",
-        cell: (cell) => {
-            return cell.getValue() ? (cell.getValue() as string).toUpperCase() : "";
-        },
     },
     {
         accessorKey: "moduleCode",
