@@ -4,13 +4,13 @@ import { flexRender, getCoreRowModel, getFacetedRowModel, getFacetedUniqueValues
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ColumnDef } from "@tanstack/react-table";
 import { Module, useModules } from "@/components/modules-page/module-context";
-import { DataTableToolbar } from "../data-table/data-table-toolbar";
 import { useState } from "react";
 import { DataTablePagination } from "../data-table/data-table-pagination";
 import { DialogContent, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Dialog } from "@radix-ui/react-dialog";
 import ModuleModal from "./module-modal";
+import { DataTableToolbar } from "./modules-page-toolbar";
 
 const columns: ColumnDef<Module>[] = [
     {
@@ -36,7 +36,22 @@ const columns: ColumnDef<Module>[] = [
     },
 ];
 
-const filterOptions = [
+const tpFilterOptions = [
+    {
+        label: "TP 1",
+        value: "TP 1",
+    },
+    {
+        label: "TP 2",
+        value: "TP 2",
+    },
+    {
+        label: "TP 3",
+        value: "TP 3",
+    },
+];
+
+const yearFilterOptions = [
     {
         label: "Year 1",
         value: "1",
@@ -50,7 +65,6 @@ const filterOptions = [
         value: "3",
     },
 ];
-
 export function DataTable() {
     const { modules } = useModules();
     const [globalFilter, setGlobalFilter] = useState([]);
@@ -72,7 +86,7 @@ export function DataTable() {
 
     return (
         <div>
-            <DataTableToolbar table={table} filterColumn="year" filterTitle="Year" filterOptions={filterOptions} seachInputPlaceholder="Search module" />
+            <DataTableToolbar table={table} tpFilterColumn="tp" tpFilterTitle="TP" tpFilterOptions={tpFilterOptions} yearFilterColumn="year" YearFilterTitle="Year" yearFilterOptions={yearFilterOptions} seachInputPlaceholder="Search module" />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>

@@ -15,11 +15,6 @@ import SidebarCard from "./sidebar-card";
 // Menu items.
 const items = [
     {
-        title: "Modules",
-        url: "/dashboard/modules",
-        icon: Component,
-    },
-    {
         title: "Review Groups",
         url: "/dashboard/review-groups",
         icon: Users,
@@ -28,6 +23,11 @@ const items = [
         title: "Users",
         url: "/dashboard/users",
         icon: UserRoundPen,
+    },
+    {
+        title: "Modules",
+        url: "/dashboard/modules",
+        icon: Component,
     },
     {
         title: "Assessments",
