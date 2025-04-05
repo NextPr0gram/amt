@@ -16,19 +16,19 @@ datasource db {
 }
 
 model User {
-    id            Int            @id @default(autoincrement())
-    email         String         @unique
-    password      String
-    firstName     String
-    lastName      String
-    boxRefreshToken String?
-    createdAt     DateTime       @default(now())
-    updatedAt     DateTime       @updatedAt
-    sessions      Session[] // establishes reverse relation to Session model (this is a feature in Prisma ORM, it is not a real column in the database)
-    moduleTutorOf ModuleTutor[]
-    module        Module[]
-    role          UserRole[]
-    reviewGroup   ReviewGroup[]
+    id               Int                @id @default(autoincrement())
+    email            String             @unique
+    password         String
+    firstName        String
+    lastName         String
+    boxRefreshToken  String?
+    createdAt        DateTime           @default(now())
+    updatedAt        DateTime           @updatedAt
+    sessions         Session[] // establishes reverse relation to Session model (this is a feature in Prisma ORM, it is not a real column in the database)
+    moduleTutorOf    ModuleTutor[]
+    module           Module[]
+    role             UserRole[]
+    reviewGroup      ReviewGroup[]
     userNotification UserNotification[]
 }
 
@@ -49,7 +49,8 @@ model Module {
     name              String
     yearId            Int
     year              Year                @relation(fields: [yearId], references: [id])
-    tp                   TpEnum             @default(tp1)
+    tpId              Int
+    tp                TP                  @relation(fields: [tpId], references: [id])
     moduleLeadId      Int?
     moduleLead        User?               @relation(fields: [moduleLeadId], references: [id])
     moduleTutors      ModuleTutor[]
@@ -113,9 +114,11 @@ model ReviewGroupModule {
     @@id([reviewGroupId, moduleId])
 }
 
+// Assessment created along with the module
 model Assessment {
     id                   Int                @id @default(autoincrement())
-    tp                   TpEnum             @default(tp1)
+    tpId                 Int
+    tp                   TP                 @relation(fields: [tpId], references: [id])
     moduleId             Int
     weight               Float
     assessmentTypeId     Int
@@ -126,11 +129,6 @@ model Assessment {
     module               Module             @relation(fields: [moduleId], references: [id])
     assessmentType       AssessmentType     @relation(fields: [assessmentTypeId], references: [id])
     assessmentCategory   AssessmentCategory @relation(fields: [assessmentCategoryId], references: [id])
-}
-
-enum TpEnum {
-    tp1
-    tp2
 }
 
 model AssessmentType {
@@ -148,32 +146,36 @@ model AssessmentCategory {
 }
 
 model Notification {
-    id        Int      @id @default(autoincrement())
-    title     String
-    message   String?
-    createdAt DateTime @default(now())
+    id                 Int                @id @default(autoincrement())
+    title              String
+    message            String?
+    createdAt          DateTime           @default(now())
     notificationTypeId Int
-    userNotification UserNotification[]
-    notificationType      NotificationType     @relation(fields: [notificationTypeId], references: [id])
+    userNotification   UserNotification[]
+    notificationType   NotificationType   @relation(fields: [notificationTypeId], references: [id])
 }
 
 model UserNotification {
-    id        Int      @id @default(autoincrement())
-    userId Int
+    id             Int          @id @default(autoincrement())
+    userId         Int
     notificationId Int
-    user      User     @relation(fields: [userId], references: [id])
-    notification      Notification     @relation(fields: [notificationId], references: [id])
+    user           User         @relation(fields: [userId], references: [id])
+    notification   Notification @relation(fields: [notificationId], references: [id])
 }
+
 model NotificationType {
-    id        Int      @id @default(autoincrement())
-    name String
+    id           Int            @id @default(autoincrement())
+    name         String
     notification Notification[]
 }
+
 model TP {
     id   Int    @id @default(autoincrement())
     name String
 
     moderationPhase ModerationPhase[]
+    module          Module[]
+    assessment      Assessment[]
 }
 
 model Stage {

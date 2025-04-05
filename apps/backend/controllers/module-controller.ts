@@ -10,7 +10,7 @@ const moduleSchema = z.object({
         .min(1)
         .max(255)
         .refine((s) => !s.includes(" "), "Id cannot have spaces"),
-    tp: z.union([z.literal("tp1"), z.literal("tp2")]),
+    tpId: z.union([z.literal(1), z.literal(2), z.literal(5)]),
     name: z.string().min(1).max(255),
     yearId: z.number().int(),
     moduleLeadId: z.number().int(),
@@ -26,7 +26,7 @@ export const getModulesHandler = catchErrors(async (req, res) => {
         select: {
             id: true,
             code: true,
-            tp: true,
+            tpId: true,
             name: true,
             year: true,
             moduleLead: {
@@ -49,7 +49,7 @@ export const getModulesHandler = catchErrors(async (req, res) => {
 });
 
 export const createModuleHandler = catchErrors(async (req, res) => {
-    const { code, tp, name, yearId, moduleLeadId, moduleTutors } =
+    const { code, tpId, name, yearId, moduleLeadId, moduleTutors } =
         moduleSchema.parse(req.body);
     console.log(moduleTutors);
 
@@ -59,7 +59,7 @@ export const createModuleHandler = catchErrors(async (req, res) => {
     const createModule = await prisma.module.create({
         data: {
             code,
-            tp,
+            tpId,
             name,
             yearId,
             moduleLeadId,
@@ -79,7 +79,7 @@ export const createModuleHandler = catchErrors(async (req, res) => {
 });
 
 export const updateModuleHandler = catchErrors(async (req, res) => {
-    const { id, code, tp, name, yearId, moduleLeadId, moduleTutors } =
+    const { id, code, tpId, name, yearId, moduleLeadId, moduleTutors } =
         moduleSchemaWithId.parse(req.body);
 
     const updateAssignTutors: { moduleId: number; userId: number }[] =
@@ -91,7 +91,7 @@ export const updateModuleHandler = catchErrors(async (req, res) => {
                 where: { id },
                 data: {
                     code,
-                    tp,
+                    tpId,
                     name,
                     yearId,
                     moduleLeadId,

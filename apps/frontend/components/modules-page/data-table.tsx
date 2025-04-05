@@ -14,6 +14,10 @@ import ModuleModal from "./module-modal";
 
 const columns: ColumnDef<Module>[] = [
     {
+        accessorKey: "tp",
+        header: "TP",
+    },
+    {
         accessorKey: "code",
         header: "Module Code",
     },

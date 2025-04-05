@@ -119,9 +119,9 @@ const handleModerationPhaseOne = async (statusData: any) => {
         );
         const date = new Date("2025-03-24T01:56:00Z");
 
-        if (isPastDate(date)) {
-            await advanceModerationStatus();
-        }
+        // if (isPastDate(date)) {
+        //     await advanceModerationStatus();
+        // }
     } catch (error) {
         logMsg(logType.ERROR, "custom error");
     }

@@ -9,6 +9,16 @@ const getRandomInt = (max: number) => {
     return Math.floor(Math.random() * max);
 };
 async function main() {
+    const tps = await prisma.tP.createMany({
+        data: [
+            { name: "TP 1" },
+            { name: "TP 2" },
+            { name: "Resit" },
+            { name: "none" },
+            { name: "TP 3" },
+        ],
+    });
+
     const createUsers = await prisma.user.createMany({
         data: [
             {
@@ -309,112 +319,112 @@ async function main() {
                 code: "CS1IAD",
                 name: "Internet Applications and Databases",
                 yearId: 1,
-                tp: "tp1",
+                tpId: 1,
                 moduleLeadId: 1,
             },
             {
                 code: "CS1OOP",
                 name: "Object-Oriented Programming",
                 yearId: 1,
-                tp: "tp1",
+                tpId: 1,
                 moduleLeadId: 2,
             },
             {
                 code: "CS1PSA",
                 name: "Programming and Software Architecture",
                 yearId: 1,
-                tp: "tp1",
+                tpId: 1,
                 moduleLeadId: 3,
             },
             {
                 code: "CS2HCI",
                 name: "Human-Computer Interaction",
                 yearId: 2,
-                tp: "tp1",
+                tpId: 1,
                 moduleLeadId: 4,
             },
             {
                 code: "CS2IS",
                 name: "Information Security",
                 yearId: 2,
-                tp: "tp1",
+                tpId: 1,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS2IDS",
                 name: "Introduction to Distributed Systems",
                 yearId: 2,
-                tp: "tp1",
+                tpId: 1,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS2OS",
                 name: "Operating Systems",
                 yearId: 2,
-                tp: "tp1",
+                tpId: 1,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS2PLC",
                 name: "Programming Language Concepts",
                 yearId: 2,
-                tp: "tp1",
+                tpId: 1,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS3IVP",
                 name: "Image and Video Processing",
                 yearId: 3,
-                tp: "tp2",
+                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS3ADG",
                 name: "Advanced Database Systems and GIS",
                 yearId: 3,
-                tp: "tp2",
+                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS3DM",
                 name: "Data Mining",
                 yearId: 3,
-                tp: "tp2",
+                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS3ECS",
                 name: "Enterprise Computing Strategies",
                 yearId: 3,
-                tp: "tp2",
+                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS3CA",
                 name: "Computer Animation",
                 yearId: 3,
-                tp: "tp2",
+                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS3GD",
                 name: "Game Development",
                 yearId: 3,
-                tp: "tp2",
+                tpId: 2,
                 moduleLeadId: 6,
             },
             {
                 code: "CS4AI",
                 name: "Artificial Intelligence",
                 yearId: 4,
-                tp: "tp2",
+                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
             {
                 code: "CS4QC",
                 name: "Quantum Computing",
                 yearId: 4,
-                tp: "tp2",
+                tpId: 2,
                 moduleLeadId: await getRandomInt(37),
             },
         ],
@@ -483,7 +493,7 @@ async function main() {
     const assessments = await prisma.assessment.createMany({
         data: [
             {
-                tp: "tp1",
+                tpId: 1,
                 moduleId: 1,
                 weight: 0.5,
                 assessmentTypeId: 1,
@@ -493,7 +503,7 @@ async function main() {
                 submissionDate: new Date(2025, 9, 20),
             },
             {
-                tp: "tp1",
+                tpId: 1,
                 moduleId: 1,
                 weight: 0.5,
                 assessmentTypeId: 1,
@@ -501,7 +511,7 @@ async function main() {
                 durationInMinutes: 120,
             },
             {
-                tp: "tp2",
+                tpId: 2,
                 moduleId: 5,
                 weight: 1,
                 assessmentTypeId: 3,
@@ -509,15 +519,6 @@ async function main() {
                 releaseDate: new Date(2026, 1, 1),
                 submissionDate: new Date(2026, 1, 20),
             },
-        ],
-    });
-
-    const tps = await prisma.tP.createMany({
-        data: [
-            { name: "TP 1" },
-            { name: "TP 2" },
-            { name: "Resit" },
-            { name: "none" },
         ],
     });
 

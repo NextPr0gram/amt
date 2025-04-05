@@ -8,7 +8,7 @@ export const getAssessmentsHandler = catchErrors(async (req, res) => {
     const assessments = await prisma.assessment.findMany({
         select: {
             id: true,
-            tp: true,
+            tpId: true,
             module: {
                 select: {
                     code: true,
@@ -53,11 +53,16 @@ export const getAssessmentCategoriesHandler = catchErrors(async (req, res) => {
             name: true,
         },
     });
-    appAssert(assessmentCategories, NOT_FOUND, "Assessment categories not found");
+    appAssert(
+        assessmentCategories,
+        NOT_FOUND,
+        "Assessment categories not found",
+    );
     return res.status(OK).json(assessmentCategories);
 });
 
 const assessmentSchema = z.object({
+    tpId: z.union([z.literal(1), z.literal(2), z.literal(5)]),
     moduleId: z.number().int(),
     typeId: z.number().int(),
     categoryId: z.number().int(),
@@ -68,9 +73,19 @@ const assessmentSchema = z.object({
 });
 
 export const createAssessmentHandler = catchErrors(async (req, res) => {
-    const { moduleId, typeId, categoryId, weight, releaseDate, submissionDate, durationInMinutes } = assessmentSchema.parse(req.body);
+    const {
+        tpId,
+        moduleId,
+        typeId,
+        categoryId,
+        weight,
+        releaseDate,
+        submissionDate,
+        durationInMinutes,
+    } = assessmentSchema.parse(req.body);
     const assessment = await prisma.assessment.create({
         data: {
+            tpId,
             moduleId,
             assessmentTypeId: typeId,
             assessmentCategoryId: categoryId,
