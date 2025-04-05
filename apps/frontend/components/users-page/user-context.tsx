@@ -11,7 +11,7 @@ export type User = {
 type UserAPIRespone = {
     firstName: string;
     lastName: string;
-    Role: { role: { name: string } }[];
+    role: { role: { name: string } }[];
 };
 
 type UsersContextType = {
@@ -29,7 +29,7 @@ export const UsersProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const resData = res.data.map((user: UserAPIRespone) => ({
             firstName: user.firstName,
             lastName: user.lastName,
-            roles: user.Role.map((role) => role.role.name),
+            roles: user.role.map((role) => role.role.name),
         }));
         console.log(resData);
         setUsers(resData);
