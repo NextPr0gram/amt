@@ -1,3 +1,4 @@
+
 "use client";
 import { SyntheticEvent, useEffect, useState } from "react";
 import Link from "next/link";
@@ -6,54 +7,76 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { protectedFetch } from "@/utils/protected-fetch";
-import Cookies from "js-cookie";
+import { Loader } from "./ui/loader";
 
 export function LoginForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true); // Add loading state, start with true
     const router = useRouter();
 
     const handleSubmit = async (e: SyntheticEvent) => {
         e.preventDefault();
         setError("");
+        setLoading(true); // Set loading to true during form submission
 
-        const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include", // Store cookies
-            body: JSON.stringify({ email, password }),
-        });
-
-        if (response.ok) {
-            router.push("/dashboard");
-        } else {
-            setError("Invalid credentials");
-        }
-    };
-
-    useEffect(() => {
-
-        const checkIfLoggedIn = async () => {
-
-            const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/validate", {
+        try {
+            const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 credentials: "include", // Store cookies
+                body: JSON.stringify({ email, password }),
             });
 
             if (response.ok) {
                 router.push("/dashboard");
+            } else {
+                setError("Invalid credentials");
+                setLoading(false); // Only set loading to false if there's an error
             }
+        } catch (err) {
+            setError("Something went wrong. Please try again.");
+            setLoading(false);
         }
-        checkIfLoggedIn()
+    };
 
-    }, []);
+    useEffect(() => {
+        const checkIfLoggedIn = async () => {
+            setLoading(true); // Set loading to true during validation check
+            try {
+                const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/validate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include", // Store cookies
+                });
+
+                if (response.ok) {
+                    router.push("/dashboard");
+                } else {
+                    setLoading(false); // Only set loading to false if user is not logged in
+                }
+            } catch (err) {
+                setLoading(false);
+            }
+        };
+
+        checkIfLoggedIn();
+    }, [router]);
+
+    if (loading) {
+        return (
+            <div>
+                <Loader className="mx-auto" variant="circular" />
+                <p className="mt-4 text-center text-md">Checking authentication status...</p>
+            </div>
+        );
+    }
+
     return (
         <Card className="mx-auto max-w-sm">
             <CardHeader>
@@ -76,8 +99,15 @@ export function LoginForm() {
                         <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
                     {error && <p className="text-red-500">{error}</p>}
-                    <Button size="sm" type="submit" className="w-full">
-                        Login
+                    <Button size="sm" type="submit" className="w-full" disabled={loading}>
+                        {loading ? (
+                            <div className="flex items-center justify-center gap-2">
+                                <RoundSpinner size="sm" color="white" />
+                                <span>Logging in...</span>
+                            </div>
+                        ) : (
+                            "Login"
+                        )}
                     </Button>
                 </form>
                 <div className="mt-4 text-center text-sm">
@@ -90,3 +120,4 @@ export function LoginForm() {
         </Card>
     );
 }
+
