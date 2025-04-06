@@ -17,7 +17,7 @@ import { DialogClose, DialogTitle } from "../ui/dialog";
 import { Alert, AlertDescription } from "../ui/alert";
 import MultiSelect from "../multi-select";
 import ModalAlert from "../modal-alert";
-import { Module } from "../modules-page/module-context";
+import { Module, useModules } from "../modules-page/module-context";
 import { Calendar } from "../ui/calendar";
 import { format } from "date-fns";
 import { Assessment, useAssessments } from "./assessment-context";
@@ -60,7 +60,7 @@ const formSchema = z.object({
 
 const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
     const { fetchAssessments, assessments } = useAssessments();
-    const [modules, setModules] = useState<Module[]>([]);
+    const { fetchModules, modules } = useModules();
     const [selectedModule, setSelectedModule] = useState<Module>();
     const [assessmentTypes, setAssessmentTypes] = useState<AssessmentType[]>([]);
     const [assessmentCategories, setAssessmentCategories] = useState<AssessmentCategory[]>([]);
@@ -73,11 +73,27 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [showError, setShowError] = useState(false);
 
+
     useEffect(() => {
-        const fetchModules = async () => {
-            const res = await protectedFetch("/modules", "GET");
-            setModules(res.data);
-        };
+        const fetchModuleTps = async () => {
+            if (selectedModule) {
+                const res = await protectedFetch(`/modules/module-tps?moduleId=${selectedModule.id
+                    }`, "GET")
+                setAssessmentTps(res.data)
+            }
+        }
+
+        fetchModuleTps();
+        form.setValue("tpId", undefined);
+    }, [selectedModule, setSelectedModule])
+
+    useEffect(() => {
+        fetchModules()
+        if (type === "viewOrEdit") {
+            const currentAssessment = assessments.find((assessment: Assessment) => assessment.id === assessmentId);
+            setSelectedModule(modules.find((md) => md.id === currentAssessment?.moduleId))
+        }
+
 
         const fetchAssessmentTypes = async () => {
             const res = await protectedFetch("/assessments/types", "GET");
@@ -88,21 +104,10 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
             const res = await protectedFetch("/assessments/categories", "GET");
             setAssessmentCategories(res.data);
         };
-        fetchModules();
         fetchAssessmentTypes();
         fetchAssessmentCategories();
-    }, [setModules]);
+    }, []);
 
-    useEffect(() => {
-        const fetchAssessmentTps = async () => {
-            if (selectedModule) {
-                const res = await protectedFetch(`/assessments/assessment-tps?moduleId=${selectedModule.id
-                    }`, "GET")
-                setAssessmentTps(res.data)
-            }
-        }
-        fetchAssessmentTps();
-    }, [selectedModule, setSelectedModule])
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -137,17 +142,15 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
                 durationInMinutes: undefined,
             };
         } else if (type === "viewOrEdit") {
-            //const currentAssessment = assessments.find((assessment: Assessment) => assessment.id === assessmentId);
+            const currentAssessment = assessments.find((assessment: Assessment) => assessment.id === assessmentId);
 
             return {
-                moduleId: undefined,
-                tpId: undefined,
-                typeId: undefined,
-                categoryId: undefined,
-                weight: undefined,
-                releaseDate: "",
-                submissionDate: "",
-                durationInMinutes: undefined,
+                moduleId: currentAssessment?.moduleId,
+                tpId: currentAssessment?.tpId,
+                typeId: currentAssessment?.assessmentTypeId,
+                categoryId: currentAssessment?.assessmentCategoryId,
+                weight: currentAssessment?.weight,
+                durationInMinutes: currentAssessment?.durationInMinutes,
             };
         }
     };
@@ -217,9 +220,7 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const releaseDate = values.releaseDate instanceof Date ? values.releaseDate : undefined;
-        const submissionDate = values.submissionDate instanceof Date ? values.submissionDate : undefined;
-        const body = { id: 0, moduleId: values.moduleId, typeId: values.typeId, categoryId: values.categoryId, weight: values.weight, releaseDate, submissionDate, durationInMinutes: values.durationInMinutes };
+        const body = { id: assessmentId, moduleId: values.moduleId, tpId: values.tpId, typeId: values.typeId, categoryId: values.categoryId, weight: values.weight, durationInMinutes: values.durationInMinutes };
         let res;
 
         if (type === "viewOrEdit") {
@@ -431,7 +432,7 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
                             <FormItem>
                                 <FormLabel>Weight in %</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="e.g. 20" value={(field.value ?? 0) * 100} onChange={(e) => form.setValue("weight", parseFloat(e.target.value) / 100)} />
+                                    <Input className={cn(!isEditing && "pointer-events-none")} tabIndex={isEditing ? 0 : -1} type="number" placeholder="e.g. 20" value={(field.value ?? 0) * 100} onChange={(e) => form.setValue("weight", parseFloat(e.target.value) / 100)} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -442,9 +443,9 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
                         name="durationInMinutes"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Duration in Minutes (optional) {field.value}</FormLabel>
+                                <FormLabel>Duration in Minutes (optional) </FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="e.g. 120" onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)} />
+                                    <Input className={cn(!isEditing && "pointer-events-none")} tabIndex={isEditing ? 0 : -1} type="number" placeholder="e.g. 120" value={field.value ?? undefined} onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

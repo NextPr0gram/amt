@@ -38,3 +38,21 @@ export const getModerationStatusHandler = catchErrors(async (req, res) => {
 
     return res.status(OK).json(moderationStatus.moderationPhase);
 });
+
+export const getTpsHandler = catchErrors(async (req, res) => {
+    const tps = await prisma.TP.findMany({
+        where: {
+            id: {
+                in: [1, 2],
+            },
+        },
+        select: {
+            id: true,
+            name: true,
+        },
+    });
+
+    appAssert(tps, NOT_FOUND, "Could not find tps");
+
+    return res.status(OK).json(tps);
+});

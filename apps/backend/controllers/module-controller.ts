@@ -10,7 +10,7 @@ const moduleSchema = z.object({
         .min(1)
         .max(255)
         .refine((s) => !s.includes(" "), "Id cannot have spaces"),
-    tpId: z.union([z.literal(1), z.literal(2), z.literal(5)]),
+    tpIds: z.array(z.number().int()),
     name: z.string().min(1).max(255),
     yearId: z.number().int(),
     moduleLeadId: z.number().int(),
@@ -30,6 +30,7 @@ export const getModulesHandler = catchErrors(async (req, res) => {
                 select: {
                     tp: {
                         select: {
+                            id: true,
                             name: true,
                         },
                     },
@@ -57,7 +58,7 @@ export const getModulesHandler = catchErrors(async (req, res) => {
 });
 
 export const createModuleHandler = catchErrors(async (req, res) => {
-    const { code, tpId, name, yearId, moduleLeadId, moduleTutors } =
+    const { code, tpIds, name, yearId, moduleLeadId, moduleTutors } =
         moduleSchema.parse(req.body);
     console.log(moduleTutors);
 
@@ -67,12 +68,14 @@ export const createModuleHandler = catchErrors(async (req, res) => {
     const createModule = await prisma.module.create({
         data: {
             code,
-            tpId,
             name,
             yearId,
             moduleLeadId,
             moduleTutors: {
                 createMany: { data: assignTutors },
+            },
+            tps: {
+                createMany: { data: tpIds.map((tpId: number) => ({ tpId })) },
             },
         },
     });
@@ -84,6 +87,37 @@ export const createModuleHandler = catchErrors(async (req, res) => {
     );
 
     return res.status(OK).json(createModule);
+});
+
+const moduleTpsSchema = z.object({
+    moduleId: z
+        .string()
+        .refine((val) => !isNaN(Number(val)), {
+            message: "moduleId must be a number",
+        })
+        .transform(Number),
+});
+
+export const getModuleTpsHandler = catchErrors(async (req, res) => {
+    const { moduleId } = moduleTpsSchema.parse(req.query);
+
+    const tps = await prisma.moduleTP.findMany({
+        where: {
+            moduleId,
+        },
+        select: {
+            tp: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
+        },
+    });
+
+    appAssert(tps, NOT_FOUND, "Tps associated with provided module not found");
+
+    return res.status(OK).json(tps);
 });
 
 export const updateModuleHandler = catchErrors(async (req, res) => {

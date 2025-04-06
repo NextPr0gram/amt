@@ -16,7 +16,7 @@ const columns: ColumnDef<Module>[] = [
     {
         accessorKey: "tp",
         header: "TP",
-        cell: ({ row }) => (row.original.tp.join(", ")),
+        cell: ({ row }) => (row.original.tps.join(", ")),
         filterFn: (row, columnId, filterValue) => {
             const tpArray = row.getValue<string[]>(columnId);
             return filterValue.some((value: string) => tpArray.includes(value));
@@ -49,10 +49,6 @@ const tpFilterOptions = [
     {
         label: "TP 2",
         value: "TP 2",
-    },
-    {
-        label: "TP 3",
-        value: "TP 3",
     },
 ];
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { NOT_FOUND, OK } from "../constants/http";
+import { INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
 import { catchErrors } from "../utils/catch-errors";
@@ -10,22 +10,26 @@ export const getAssessmentsHandler = catchErrors(async (req, res) => {
             id: true,
             tp: {
                 select: {
+                    id: true,
                     name: true,
                 },
             },
             module: {
                 select: {
+                    id: true,
                     code: true,
                     name: true,
                 },
             },
             assessmentType: {
                 select: {
+                    id: true,
                     name: true,
                 },
             },
             assessmentCategory: {
                 select: {
+                    id: true,
                     name: true,
                 },
             },
@@ -35,6 +39,37 @@ export const getAssessmentsHandler = catchErrors(async (req, res) => {
     });
     appAssert(assessments, NOT_FOUND, "Years not found");
     return res.status(OK).json(assessments);
+});
+
+export const updateAssessmentsHandler = catchErrors(async (req, res) => {
+    const {
+        id,
+        tpId,
+        moduleId,
+        typeId,
+        categoryId,
+        weight,
+        durationInMinutes,
+    } = assessmentSchemaWithId.parse(req.body);
+    const assessment = await prisma.assessment.update({
+        where: {
+            id,
+        },
+        data: {
+            tpId,
+            moduleId,
+            assessmentTypeId: typeId,
+            assessmentCategoryId: categoryId,
+            weight,
+            durationInMinutes,
+        },
+    });
+    appAssert(
+        assessment,
+        INTERNAL_SERVER_ERROR,
+        "Something went wrong while updating assessment",
+    );
+    return res.status(OK).json(assessment);
 });
 
 export const getAssessmentTypesHandler = catchErrors(async (req, res) => {
@@ -63,39 +98,19 @@ export const getAssessmentCategoriesHandler = catchErrors(async (req, res) => {
     return res.status(OK).json(assessmentCategories);
 });
 
-const assessmentTpsSchema = z.object({
-    moduleId: z
-        .string()
-        .refine((val) => !isNaN(Number(val)), {
-            message: "moduleId must be a number",
-        })
-        .transform(Number),
-});
-
-export const getAssessmentTpsHandler = catchErrors(async (req, res) => {
-    // Accessing query parameters instead of body
-    const { moduleId } = assessmentTpsSchema.parse(req.query); // Parse from req.query
-
-    const tps = await prisma.moduleTP.findMany({
-        where: {
-            moduleId,
-        },
-        select: {
-            tp: {
-                select: {
-                    id: true,
-                    name: true,
-                },
-            },
-        },
-    });
-
-    appAssert(tps, NOT_FOUND, "Tps associated with provided module not found");
-
-    return res.status(OK).json(tps);
-});
-
 const assessmentSchema = z.object({
+    tpId: z.union([z.literal(1), z.literal(2), z.literal(5)]),
+    moduleId: z.number().int(),
+    typeId: z.number().int(),
+    categoryId: z.number().int(),
+    weight: z.number(),
+    releaseDate: z.date().optional(),
+    submissionDate: z.date().optional(),
+    durationInMinutes: z.number().int().optional(),
+});
+
+const assessmentSchemaWithId = z.object({
+    id: z.number().int(),
     tpId: z.union([z.literal(1), z.literal(2), z.literal(5)]),
     moduleId: z.number().int(),
     typeId: z.number().int(),

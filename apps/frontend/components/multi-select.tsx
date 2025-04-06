@@ -15,6 +15,7 @@ export type ModuleTutor = {
 };
 
 interface MultiSelectProps {
+    placeholder: string;
     data: ModuleTutor[];
     field: {
         value: number[];
@@ -23,7 +24,7 @@ interface MultiSelectProps {
     isEditing: boolean;
 }
 
-const MultiSelect = ({ data, field, isEditing }: MultiSelectProps) => {
+const MultiSelect = ({ placeholder, data, field, isEditing }: MultiSelectProps) => {
     const [open, setOpen] = React.useState(false);
     const selectedTutors = data.filter((tutor) => field.value?.includes(tutor.id));
 
@@ -64,7 +65,7 @@ const MultiSelect = ({ data, field, isEditing }: MultiSelectProps) => {
                                 ))}
                             </div>
                         ) : (
-                            "Assign module tutors"
+                            placeholder
                         )}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>

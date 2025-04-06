@@ -35,6 +35,11 @@ interface ModuleModalProps {
     moduleId?: number;
 }
 
+interface Tp {
+    id: number;
+    name: string;
+}
+
 const formSchema = z
     .object({
         moduleCode: z
@@ -51,7 +56,7 @@ const formSchema = z
                 required_error: "Please select a year",
             })
             .int(),
-        tp: z.union([z.literal("tp1"), z.literal("tp2")]),
+        tpIds: z.array(z.number({ invalid_type_error: "Values must be integers" })),
         moduleTutorId: z.number({ invalid_type_error: "Value must be an integer", message: "This field is required" }).int(), // represents module lead id
         // module tutors must be array of numbers and the modulettorid cannot be in the array
         moduleTutors: z.array(z.number({ invalid_type_error: "Values must be integers" })).optional(),
@@ -69,6 +74,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
     const { fetchModules, modules } = useModules();
     const [moduleTutors, setModuleTutors] = useState<ModuleTutor[]>([]);
     const [years, setyears] = useState<Year[]>([]);
+    const [tps, setTps] = useState<Tp[]>([]);
     const [isModuleTutorPopoverOpen, setIsModuleTutorPopoverOpen] = useState(false);
     const [isYearPopoverOpen, setIsYearPopoverOpen] = useState(false);
     const [isTpPopoverOpen, setIsTpPopoverOpen] = useState(false);
@@ -77,6 +83,11 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
     const [showError, setShowError] = useState(false);
 
     useEffect(() => {
+        const fetchTps = async () => {
+            const res = await protectedFetch(`/moderation/tps`, "GET")
+            setTps(res.data)
+        }
+
         const fetchModuleTutors = async () => {
             const res = await protectedFetch("/users", "GET");
             const moduleTutors = res.data.map((moduleTutor: { id: number; firstName: string; lastName: string }) => ({ ...moduleTutor, name: moduleTutor.firstName + " " + moduleTutor.lastName }));
@@ -88,6 +99,8 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
             const years = res.data.map((year: { id: number; name: string }) => year);
             setyears(years);
         };
+
+        fetchTps();
         fetchModuleTutors();
         fetchYears();
     }, []);
@@ -116,7 +129,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
         if (type === "add") {
             return {
                 moduleCode: "",
-                tp: undefined,
+                tpIds: undefined,
                 moduleName: "",
                 yearId: undefined,
                 moduleTutorId: undefined,
@@ -127,7 +140,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
 
             return {
                 moduleCode: currentModule?.code || "",
-                tp: currentModule?.tp || "",
+                tpIds: currentModule?.tpIds || "",
                 moduleName: currentModule?.name || "",
                 yearId: currentModule?.yearId || undefined,
                 moduleTutorId: currentModule?.leadId || undefined,
@@ -208,7 +221,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
             });
             return;
         }
-        const body = { id: moduleId, code: values.moduleCode, tp: values.tp, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId, moduleTutors: values.moduleTutors };
+        const body = { id: moduleId, code: values.moduleCode, tpIds: values.tpIds, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId, moduleTutors: values.moduleTutors };
         let res;
 
         if (type === "viewOrEdit") {
@@ -308,52 +321,11 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
 
                     <FormField
                         control={form.control}
-                        name="tp"
+                        name="tpIds"
                         render={({ field }) => (
                             <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
-                                <FormLabel>Year</FormLabel>
-                                <Popover open={isTpPopoverOpen} onOpenChange={setIsTpPopoverOpen}>
-                                    <PopoverTrigger asChild>
-                                        <FormControl>
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                role="combobox"
-                                                className={cn("justify-between font-normal", !field.value && "text-muted-foreground")}
-                                                tabIndex={isEditing ? 0 : -1}
-                                            >
-                                                {field.value ? `TP ${field.value.replace("tp", "")}` : "Select TP"}
-                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                            </Button>
-                                        </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 -mt-2">
-                                        <Command>
-                                            <CommandList>
-                                                <CommandEmpty>No TP available.</CommandEmpty>
-                                                <CommandGroup>
-                                                    {isEditing && (
-                                                        <>
-                                                            {["tp1", "tp2"].map((tp) => (
-                                                                <CommandItem
-                                                                    key={tp}
-                                                                    value={tp}
-                                                                    onSelect={() => {
-                                                                        form.setValue("tp", tp as "tp1" | "tp2");
-                                                                        setIsTpPopoverOpen(false);
-                                                                    }}
-                                                                >
-                                                                    {tp.toUpperCase()} {/* Display TP 1, TP 2 */}
-                                                                    <Check className={cn("ml-auto", field.value === tp ? "opacity-100" : "opacity-0")} />
-                                                                </CommandItem>
-                                                            ))}
-                                                        </>
-                                                    )}
-                                                </CommandGroup>
-                                            </CommandList>
-                                        </Command>
-                                    </PopoverContent>
-                                </Popover>
+                                <FormLabel>TP</FormLabel>
+                                <MultiSelect placeholder="Select TP" data={tps} field={{ ...field, value: field.value || [] }} isEditing={isEditing} />
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -408,7 +380,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
                         render={({ field }) => (
                             <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
                                 <FormLabel>Module Tutors</FormLabel>
-                                <MultiSelect data={moduleTutors} field={{ ...field, value: field.value || [] }} isEditing={isEditing} />
+                                <MultiSelect placeholder="Assign module tutors" data={moduleTutors} field={{ ...field, value: field.value || [] }} isEditing={isEditing} />
                                 <FormMessage />
                             </FormItem>
                         )}

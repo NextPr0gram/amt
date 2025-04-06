@@ -523,7 +523,7 @@ async function main() {
                 durationInMinutes: 120,
             },
             {
-                tpId: 2,
+                tpId: 1,
                 moduleId: 5,
                 weight: 1,
                 assessmentTypeId: 3,

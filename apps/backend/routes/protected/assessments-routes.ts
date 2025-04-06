@@ -3,17 +3,17 @@ import {
     createAssessmentHandler,
     getAssessmentCategoriesHandler,
     getAssessmentsHandler,
-    getAssessmentTpsHandler,
     getAssessmentTypesHandler,
+    updateAssessmentsHandler,
 } from "../../controllers/assessments-controller";
 
 const assessmentsRouter = Router();
 
 // Prefix: /assessments
 assessmentsRouter.get("/", getAssessmentsHandler);
+assessmentsRouter.patch("/", updateAssessmentsHandler);
 assessmentsRouter.get("/types", getAssessmentTypesHandler);
 assessmentsRouter.get("/categories", getAssessmentCategoriesHandler);
 assessmentsRouter.post("/", createAssessmentHandler);
-assessmentsRouter.get("/assessment-tps", getAssessmentTpsHandler);
 
 export default assessmentsRouter;

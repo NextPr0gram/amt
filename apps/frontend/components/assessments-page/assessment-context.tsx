@@ -4,10 +4,13 @@ import { protectedFetch } from "@/utils/protected-fetch";
 
 export type Assessment = {
     id: number;
-    tp: "tp1" | "tp2";
+    tpId: number;
+    moduleId: number;
     moduleCode: string;
     moduleName: string;
+    assessmentTypeId: number;
     assessmentType: string;
+    assessmentCategoryId: number;
     assessmentCategory: string;
     weight: number;
     releaseDate?: string;
@@ -18,16 +21,20 @@ export type Assessment = {
 type AssessmentAPIResponse = {
     id: number;
     tp: {
+        id: number;
         name: string;
     }
     module: {
+        id: number;
         code: string;
         name: string;
     };
     assessmentType: {
+        id: number;
         name: string;
     };
     assessmentCategory: {
+        id: number;
         name: string;
     };
     weight: number;
@@ -48,10 +55,13 @@ export const AssessmentsProvider: React.FC<{ children: React.ReactNode }> = ({ c
         const res = await protectedFetch("/assessments", "GET");
         const resData = res.data.map((assessment: AssessmentAPIResponse) => ({
             id: assessment.id,
-            tp: assessment.tp.name,
+            tpId: assessment.tp.id,
+            moduleId: assessment.module.id,
             moduleCode: assessment.module.code,
             moduleName: assessment.module.name,
+            assessmentTypeId: assessment.assessmentType.id,
             assessmentType: assessment.assessmentType.name,
+            assessmentCategoryId: assessment.assessmentCategory.id,
             assessmentCategory: assessment.assessmentCategory.name,
             weight: assessment.weight,
             durationInMinutes: assessment.durationInMinutes,

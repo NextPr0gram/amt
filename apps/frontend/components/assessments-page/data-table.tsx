@@ -16,6 +16,10 @@ const columns: ColumnDef<Assessment>[] = [
     {
         accessorKey: "tp",
         header: "TP",
+        filterFn: (row, columnId, filterValue) => {
+            const tpArray = row.getValue<string[]>(columnId);
+            return filterValue.some((value: string) => tpArray.includes(value));
+        },
     },
     {
         accessorKey: "moduleCode",
@@ -46,6 +50,17 @@ const columns: ColumnDef<Assessment>[] = [
     },
 ];
 
+const tpFilterOptions = [
+    {
+        label: "TP 1",
+        value: "TP 1",
+    },
+    {
+        label: "TP 2",
+        value: "TP 2",
+    },
+];
+
 export function DataTable() {
     const { assessments } = useAssessments();
     const [globalFilter, setGlobalFilter] = useState([]);
@@ -67,6 +82,7 @@ export function DataTable() {
 
     return (
         <div>
+            <DataTableToolbar table={table} filterColumn="tp" filterTitle="TP" filterOptions={tpFilterOptions} seachInputPlaceholder="Search assessments" />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>

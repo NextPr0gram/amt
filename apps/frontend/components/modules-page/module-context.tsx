@@ -5,7 +5,8 @@ import { protectedFetch } from "@/utils/protected-fetch";
 export type Module = {
     id: number;
     code: string;
-    tp: string[];
+    tps: string[];
+    tpIds: number[];
     name: string;
     year: string;
     yearId: number;
@@ -19,6 +20,7 @@ type ModuleAPIResponse = {
     code: string;
     tps: {
         tp: {
+            id: number;
             name: string;
         }
     }[]
@@ -52,7 +54,8 @@ export const ModulesProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const resData = res.data.map((module: ModuleAPIResponse) => ({
             id: module.id,
             code: module.code,
-            tp: module.tps.map((tp) => tp.tp.name),
+            tps: module.tps.map((tp) => tp.tp.name),
+            tpIds: module.tps.map((tp) => tp.tp.id),
             name: module.name,
             year: module.year.name,
             yearId: module.year.id,
