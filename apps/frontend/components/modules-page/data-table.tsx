@@ -14,7 +14,7 @@ import { DataTableToolbar } from "./modules-page-toolbar";
 
 const columns: ColumnDef<Module>[] = [
     {
-        accessorKey: "tp",
+        accessorKey: "tps",
         header: "TP",
         cell: ({ row }) => (row.original.tps.join(", ")),
         filterFn: (row, columnId, filterValue) => {
@@ -87,7 +87,7 @@ export function DataTable() {
 
     return (
         <div>
-            <DataTableToolbar table={table} tpFilterColumn="tp" tpFilterTitle="TP" tpFilterOptions={tpFilterOptions} yearFilterColumn="year" YearFilterTitle="Year" yearFilterOptions={yearFilterOptions} seachInputPlaceholder="Search module" />
+            <DataTableToolbar table={table} tpFilterColumn="tps" tpFilterTitle="TP" tpFilterOptions={tpFilterOptions} yearFilterColumn="year" YearFilterTitle="Year" yearFilterOptions={yearFilterOptions} seachInputPlaceholder="Search module" />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>

@@ -14,7 +14,7 @@ import AssessmentModal from "./assessment-modal";
 
 const columns: ColumnDef<Assessment>[] = [
     {
-        accessorKey: "tp",
+        accessorKey: "tpName",
         header: "TP",
         filterFn: (row, columnId, filterValue) => {
             const tpArray = row.getValue<string[]>(columnId);
@@ -82,7 +82,7 @@ export function DataTable() {
 
     return (
         <div>
-            <DataTableToolbar table={table} filterColumn="tp" filterTitle="TP" filterOptions={tpFilterOptions} seachInputPlaceholder="Search assessments" />
+            <DataTableToolbar table={table} filterColumn="tpName" filterTitle="TP" filterOptions={tpFilterOptions} seachInputPlaceholder="Search assessments" />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
