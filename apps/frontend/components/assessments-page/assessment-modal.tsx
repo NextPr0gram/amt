@@ -33,13 +33,23 @@ interface AssessmentType {
     id: number;
     name: string;
 }
+
 interface AssessmentCategory {
     id: number;
     name: string;
 }
 
+interface AssessmentTps {
+    tp: {
+        id: number;
+        name: string;
+
+    }
+}
+
 const formSchema = z.object({
     moduleId: z.number().int(),
+    tpId: z.number().int(),
     typeId: z.number().int(),
     categoryId: z.number().int(),
     weight: z.number(),
@@ -51,9 +61,12 @@ const formSchema = z.object({
 const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
     const { fetchAssessments, assessments } = useAssessments();
     const [modules, setModules] = useState<Module[]>([]);
+    const [selectedModule, setSelectedModule] = useState<Module>();
     const [assessmentTypes, setAssessmentTypes] = useState<AssessmentType[]>([]);
     const [assessmentCategories, setAssessmentCategories] = useState<AssessmentCategory[]>([]);
+    const [assessmentTps, setAssessmentTps] = useState<AssessmentTps[]>([]);
     const [isModulePopoverOpen, setIsModulePopoverOpen] = useState(false);
+    const [isAssessmentTpsPopoverOpen, setIsAssessmentTpsPopoverOpen] = useState(false);
     const [isTypePopoverOpen, setIsTypePopoverOpen] = useState(false);
     const [isCategoryPopoverOpen, setIsCategoryPopoverOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(type === "add" ? true : false);
@@ -81,6 +94,17 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
     }, [setModules]);
 
     useEffect(() => {
+        const fetchAssessmentTps = async () => {
+            if (selectedModule) {
+                const res = await protectedFetch(`/assessments/assessment-tps?moduleId=${selectedModule.id
+                    }`, "GET")
+                setAssessmentTps(res.data)
+            }
+        }
+        fetchAssessmentTps();
+    }, [selectedModule, setSelectedModule])
+
+    useEffect(() => {
         let timer: NodeJS.Timeout;
         if (showSuccess) {
             timer = setTimeout(() => {
@@ -104,6 +128,7 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
         if (type === "add") {
             return {
                 moduleId: undefined,
+                tpId: undefined,
                 typeId: undefined,
                 categoryId: undefined,
                 weight: undefined,
@@ -116,6 +141,7 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
 
             return {
                 moduleId: undefined,
+                tpId: undefined,
                 typeId: undefined,
                 categoryId: undefined,
                 weight: undefined,
@@ -246,6 +272,7 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
                                                             <CommandItem
                                                                 key={module.id}
                                                                 onSelect={() => {
+                                                                    setSelectedModule(modules.find((md) => md.id === module.id))
                                                                     form.setValue("moduleId", module.id);
                                                                     setIsModulePopoverOpen(false);
                                                                 }}
@@ -264,6 +291,51 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
                             </FormItem>
                         )}
                     />
+                    <FormField
+                        control={form.control}
+                        name="tpId"
+                        render={({ field }) => (
+                            <FormItem className={cn("flex flex-col", !isEditing && "pointer-events-none")}>
+                                <FormLabel>TP</FormLabel>
+                                <Popover open={isAssessmentTpsPopoverOpen} onOpenChange={setIsAssessmentTpsPopoverOpen}>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button size="sm" variant="outline" role="combobox" className={cn("justify-between font-normal", !field.value && "text-muted-foreground")} tabIndex={isEditing ? 0 : -1}>
+                                                {field.value ? `${assessmentTps.find((tp) => tp.tp.id === field.value)?.tp.name}` : "Select TP"}
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 -mt-2">
+                                        <Command>
+                                            <CommandInput placeholder="Search tp..." />
+                                            <CommandList>
+                                                <CommandEmpty>No TPs found.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {isEditing &&
+                                                        assessmentTps?.map((tp) => (
+                                                            <CommandItem
+                                                                key={tp.tp.id}
+                                                                onSelect={() => {
+                                                                    form.setValue("tpId", tp.tp.id);
+                                                                    setIsAssessmentTpsPopoverOpen(false);
+                                                                }}
+                                                                className="cursor-pointer"
+                                                            >
+                                                                {tp.tp.name}
+                                                                <Check className={cn("ml-auto", tp.tp.id === field.value ? "opacity-100" : "opacity-0")} />
+                                                            </CommandItem>
+                                                        ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
                     <FormField
                         control={form.control}
                         name="typeId"

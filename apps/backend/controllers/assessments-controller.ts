@@ -63,6 +63,38 @@ export const getAssessmentCategoriesHandler = catchErrors(async (req, res) => {
     return res.status(OK).json(assessmentCategories);
 });
 
+const assessmentTpsSchema = z.object({
+    moduleId: z
+        .string()
+        .refine((val) => !isNaN(Number(val)), {
+            message: "moduleId must be a number",
+        })
+        .transform(Number),
+});
+
+export const getAssessmentTpsHandler = catchErrors(async (req, res) => {
+    // Accessing query parameters instead of body
+    const { moduleId } = assessmentTpsSchema.parse(req.query); // Parse from req.query
+
+    const tps = await prisma.moduleTP.findMany({
+        where: {
+            moduleId,
+        },
+        select: {
+            tp: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
+        },
+    });
+
+    appAssert(tps, NOT_FOUND, "Tps associated with provided module not found");
+
+    return res.status(OK).json(tps);
+});
+
 const assessmentSchema = z.object({
     tpId: z.union([z.literal(1), z.literal(2), z.literal(5)]),
     moduleId: z.number().int(),
