@@ -243,6 +243,18 @@ async function main() {
                 lastName: "Wanner",
                 password: await generateRandomPassword(),
             },
+            {
+                email: "a.karim@aston.ac.uk",
+                firstName: "Anaf",
+                lastName: "Karim",
+                password: await hashValue("password123"),
+            },
+            {
+                email: "a.karim.mt@aston.ac.uk",
+                firstName: "Anaf.mt",
+                lastName: "Karim",
+                password: await hashValue("password123"),
+            },
         ],
     });
 
@@ -252,14 +264,13 @@ async function main() {
             { name: "Module Lead" },
             { name: "Module Tutor" },
             { name: "Office Staff" },
-            { name: "External Revier" },
+            { name: "External Reviewer" },
         ],
     });
 
     const AssignRoles = await prisma.userRole.createMany({
         data: [
             { userId: 1, roleId: 3 },
-            { userId: 2, roleId: 1 },
             { userId: 2, roleId: 2 },
             { userId: 2, roleId: 3 },
             { userId: 3, roleId: 3 },
@@ -303,6 +314,8 @@ async function main() {
             { userId: 35, roleId: 3 },
             { userId: 36, roleId: 3 },
             { userId: 37, roleId: 3 },
+            { userId: 38, roleId: 1 },
+            { userId: 39, roleId: 3 },
         ],
     });
 
