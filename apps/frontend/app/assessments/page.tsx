@@ -25,10 +25,6 @@ export default function Page() {
                                     <div className="flex items-center gap-2">
                                         <Breadcrumb>
                                             <BreadcrumbList>
-                                                <BreadcrumbItem className="hidden md:block">
-                                                    <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                                                </BreadcrumbItem>
-                                                <BreadcrumbSeparator className="hidden md:block" />
                                                 <BreadcrumbItem>
                                                     <BreadcrumbPage>Assessments</BreadcrumbPage>
                                                 </BreadcrumbItem>

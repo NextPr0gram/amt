@@ -1,16 +1,17 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { DateStage } from "@/components/date-stage";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { DataTable } from "@/components/modules-page/data-table";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { DataTable } from "@/components/review-groups-page/data-table";
-import { ReviewGroupsProvider } from "@/components/review-groups-page/review-groups-context";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import ReviewGroupsModal from "@/components/review-groups-page/review-groups-modal";
+import { ModulesProvider } from "@/components/modules-page/module-context";
+import ModuleModal from "../../../components/modules-page/module-modal";
 import { WebsocketProvider } from "@/components/contexts/websocket-context";
 import { ModerationProvider } from "@/components/contexts/moderation-context";
 
 export default function Page() {
+    // https://ui.shadcn.com/docs/components/data-table#basic-table
     return (
         <SidebarProvider>
             <AppSidebar />
@@ -18,17 +19,13 @@ export default function Page() {
                 <WebsocketProvider>
                     <ModerationProvider>
                         <DateStage />
-                        <ReviewGroupsProvider>
+                        <ModulesProvider>
                             <header className="flex h-16 shrink-0 items-center gap-2 px-4">
                                 <div className="flex items-center gap-2">
                                     <Breadcrumb>
                                         <BreadcrumbList>
-                                            <BreadcrumbItem className="hidden md:block">
-                                                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                                            </BreadcrumbItem>
-                                            <BreadcrumbSeparator className="hidden md:block" />
                                             <BreadcrumbItem>
-                                                <BreadcrumbPage>Review groups</BreadcrumbPage>
+                                                <BreadcrumbPage>Modules</BreadcrumbPage>
                                             </BreadcrumbItem>
                                         </BreadcrumbList>
                                     </Breadcrumb>
@@ -36,18 +33,18 @@ export default function Page() {
                                 <Dialog>
                                     <DialogTrigger asChild>
                                         <Button size="sm" className="ml-auto">
-                                            Create review group
+                                            Add module
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent>
-                                        <ReviewGroupsModal type="add" />
+                                        <ModuleModal type="add" />
                                     </DialogContent>
                                 </Dialog>
                             </header>
                             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                                 <DataTable />
                             </div>
-                        </ReviewGroupsProvider>
+                        </ModulesProvider>
                     </ModerationProvider>
                 </WebsocketProvider>
             </SidebarInset>

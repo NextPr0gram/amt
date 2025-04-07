@@ -18,11 +18,11 @@ authorizeRouter.post(
         // Map paths to required roles
         const pathRoleMap: { [key: string]: number[] } = {
             "/dashboard": [1, 2, 3],
-            "/dashboard/review-groups": [1, 3], // Assessment Lead, Module Tutor
-            "/dashboard/users": [1], // Assessment Lead
-            "/dashboard/modules": [1], // Assessment Lead
-            "/dashboard/assessments": [1], // Assessment Lead
-            "/dashboard/other": [1], // Assessment Lead
+            "/review-groups": [1, 3], // Assessment Lead, Module Tutor
+            "/users": [1], // Assessment Lead
+            "/modules": [1], // Assessment Lead
+            "/assessments": [1], // Assessment Lead
+            "/other": [1], // Assessment Lead
         };
 
         const requiredRoles = pathRoleMap[path];

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Command, Settings, Component, Users, UserRoundPen, BookOpenText } from "lucide-react";
+import { Command, Settings, Component, Users, UserRoundPen, BookOpenText, LayoutDashboard } from "lucide-react";
 import { NavUser } from "@/components/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import Link from "next/link";
@@ -12,32 +12,38 @@ import SidebarCard from "./sidebar-card";
 // Menu items with role-based visibility.
 const items = [
     {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: LayoutDashboard,
+        allowedRoles: [1, 2, 3], // Assessment Lead, Module Lead, Module Tutor
+    },
+    {
         title: "Review Groups",
-        url: "/dashboard/review-groups",
+        url: "/review-groups",
         icon: Users,
         allowedRoles: [1, 3], // Assessment Lead, Module Tutor
     },
     {
         title: "Users",
-        url: "/dashboard/users",
+        url: "/users",
         icon: UserRoundPen,
         allowedRoles: [1], // Assessment Lead
     },
     {
         title: "Modules",
-        url: "/dashboard/modules",
+        url: "/modules",
         icon: Component,
         allowedRoles: [1], // Assessment Lead
     },
     {
         title: "Assessments",
-        url: "/dashboard/assessments",
+        url: "/assessments",
         icon: BookOpenText,
         allowedRoles: [1], // Assessment Lead
     },
     {
         title: "Other",
-        url: "/dashboard/other",
+        url: "/other",
         icon: Settings,
         allowedRoles: [1], // Assessment Lead
     },

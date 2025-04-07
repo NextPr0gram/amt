@@ -13,11 +13,11 @@ export async function middleware(request: NextRequest) {
 
     const protectedPaths = [
         "/dashboard",
-        "/dashboard/review-groups",
-        "/dashboard/users",
-        "/dashboard/modules",
-        "/dashboard/assessments",
-        "/dashboard/other",
+        "/review-groups",
+        "/users",
+        "/modules",
+        "/assessments",
+        "/other",
     ];
 
     const isProtectedPath = protectedPaths.some(
