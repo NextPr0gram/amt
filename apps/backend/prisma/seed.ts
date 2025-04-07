@@ -315,6 +315,7 @@ async function main() {
             { userId: 36, roleId: 3 },
             { userId: 37, roleId: 3 },
             { userId: 38, roleId: 1 },
+            { userId: 38, roleId: 3 },
             { userId: 39, roleId: 3 },
         ],
     });

@@ -4,7 +4,12 @@ import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
 import { compareValue, hashValue } from "../utils/bcrypt";
 import { ONE_DAY_IN_MS, oneYearFromNow } from "../utils/date";
-import { RefreshTokenPayload, refreshTokenSignOptions, signToken, verifyToken } from "../utils/jwt";
+import {
+    RefreshTokenPayload,
+    refreshTokenSignOptions,
+    signToken,
+    verifyToken,
+} from "../utils/jwt";
 
 export type CreateAccountParams = {
     email: string;
@@ -37,6 +42,11 @@ export const createAccount = async (data: CreateAccountParams) => {
             password: hashedPassword,
             firstName: data.firstName,
             lastName: data.lastName,
+            role: {
+                create: {
+                    roleId: 3,
+                },
+            },
         },
     });
 
@@ -51,7 +61,10 @@ export const createAccount = async (data: CreateAccountParams) => {
     });
 
     // Sign access token and refresh token
-    const refreshToken = signToken({ sessionId: session.id }, refreshTokenSignOptions);
+    const refreshToken = signToken(
+        { sessionId: session.id },
+        refreshTokenSignOptions,
+    );
     const accessToken = signToken({ userId: user.id, sessionId: session.id });
 
     // return the user and tokens
@@ -64,7 +77,11 @@ export type LoginUserParams = {
     userAgent?: string;
 };
 
-export const loginUser = async ({ email, password, userAgent }: LoginUserParams) => {
+export const loginUser = async ({
+    email,
+    password,
+    userAgent,
+}: LoginUserParams) => {
     // Find the user by email
     const user = await prisma.user.findUnique({
         where: {
@@ -83,7 +100,10 @@ export const loginUser = async ({ email, password, userAgent }: LoginUserParams)
         },
     });
     appAssert(storedPasswordResult, UNAUTHORIZED, "Invalid email or password");
-    const passwordIsValid = await compareValue(password, storedPasswordResult.password);
+    const passwordIsValid = await compareValue(
+        password,
+        storedPasswordResult.password,
+    );
     appAssert(passwordIsValid, UNAUTHORIZED, "Invalid email or password");
 
     // Create a new session
@@ -117,10 +137,15 @@ export const refreshUserAccessToken = async (refreshToken: string) => {
             id: payload.sessionId,
         },
     });
-    appAssert(session && session.expiresAt.getTime() > Date.now(), UNAUTHORIZED, "Session expired");
+    appAssert(
+        session && session.expiresAt.getTime() > Date.now(),
+        UNAUTHORIZED,
+        "Session expired",
+    );
 
     // Refresh the session if it expires in the next 24 hours
-    const sessionNeedsRefresh = session.expiresAt.getTime() - Date.now() <= ONE_DAY_IN_MS;
+    const sessionNeedsRefresh =
+        session.expiresAt.getTime() - Date.now() <= ONE_DAY_IN_MS;
 
     if (sessionNeedsRefresh) {
         const newSessionExpiresAt = oneYearFromNow();
@@ -134,8 +159,13 @@ export const refreshUserAccessToken = async (refreshToken: string) => {
         });
     }
 
-    const newRefreshToken = sessionNeedsRefresh ? signToken({ sessionId: session.id }, refreshTokenSignOptions) : undefined;
-    const accessToken = signToken({ userId: session.userId, sessionId: session.id });
+    const newRefreshToken = sessionNeedsRefresh
+        ? signToken({ sessionId: session.id }, refreshTokenSignOptions)
+        : undefined;
+    const accessToken = signToken({
+        userId: session.userId,
+        sessionId: session.id,
+    });
 
     return { accessToken, newRefreshToken };
 };

@@ -13,12 +13,28 @@ const assessmentsRouter = Router();
 // Prefix: /assessments
 assessmentsRouter.get(
     "/",
-    authorizeRoles(userRoles.moduleTutor),
+    authorizeRoles(userRoles.assessmentLead),
     getAssessmentsHandler,
 );
-assessmentsRouter.patch("/", updateAssessmentsHandler);
-assessmentsRouter.get("/types", getAssessmentTypesHandler);
-assessmentsRouter.get("/categories", getAssessmentCategoriesHandler);
-assessmentsRouter.post("/", createAssessmentHandler);
+assessmentsRouter.patch(
+    "/",
+    authorizeRoles(userRoles.assessmentLead),
+    updateAssessmentsHandler,
+);
+assessmentsRouter.get(
+    "/types",
+    authorizeRoles(userRoles.assessmentLead),
+    getAssessmentTypesHandler,
+);
+assessmentsRouter.get(
+    "/categories",
+    authorizeRoles(userRoles.assessmentLead),
+    getAssessmentCategoriesHandler,
+);
+assessmentsRouter.post(
+    "/",
+    authorizeRoles(userRoles.assessmentLead),
+    createAssessmentHandler,
+);
 
 export default assessmentsRouter;

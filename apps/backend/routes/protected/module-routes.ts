@@ -15,8 +15,24 @@ modulesRouter.get(
     authorizeRoles(userRoles.assessmentLead),
     getModulesHandler,
 );
-modulesRouter.post("/", createModuleHandler);
-modulesRouter.patch("/", updateModuleHandler);
-modulesRouter.get("/module-tps", getModuleTpsHandler);
+modulesRouter.post(
+    "/",
+    authorizeRoles(userRoles.assessmentLead),
+    createModuleHandler,
+);
+modulesRouter.patch(
+    "/",
+    authorizeRoles(userRoles.assessmentLead),
+    updateModuleHandler,
+);
+modulesRouter.get(
+    "/module-tps",
+    authorizeRoles(
+        userRoles.assessmentLead,
+        userRoles.moduleTutor,
+        userRoles.moduleTutor,
+    ),
+    getModuleTpsHandler,
+);
 
 export default modulesRouter;

@@ -11,6 +11,7 @@ import moderationRouter from "./protected/moderation-routes";
 import demoRouter from "./protected/demo-routes";
 import boxRouter from "./protected/box-routes";
 import { boxCallbackHandler } from "../controllers/box-controller";
+import authorizeRouter from "./protected/authorize-page-routes";
 
 const router = Router();
 
@@ -28,4 +29,5 @@ router.use("/assessments", authenticate, assessmentsRouter);
 router.use("/moderation", authenticate, moderationRouter);
 router.use("/box", authenticate, boxRouter);
 router.use("/demo", authenticate, demoRouter);
+router.use("/authorize-page", authenticate, authorizeRouter);
 export default router;
