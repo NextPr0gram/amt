@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
         "/users",
         "/modules",
         "/assessments",
-        "/other",
+        "/deadlines",
     ];
 
     const isProtectedPath = protectedPaths.some(

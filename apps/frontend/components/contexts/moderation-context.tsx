@@ -4,18 +4,25 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useWebsocket } from "./websocket-context";
 
 type ModerationStatus = {
-    tP: {
-        id: number;
-        name: string;
+    moderationPhase: {
+
+        tP: {
+            id: number;
+            name: string;
+        };
+        stage: {
+            id: number;
+            name: string;
+        };
+        reviewType: {
+            id: number;
+            name: string;
+        };
     };
-    stage: {
-        id: number;
-        name: string;
-    };
-    reviewType: {
-        id: number;
-        name: string;
-    };
+    internalModerationDeadline: Date;
+    externalModerationDeadline: Date;
+    finalDeadline: Date;
+
 };
 type ModerationContextType = {
     moderationStatus: ModerationStatus | null;

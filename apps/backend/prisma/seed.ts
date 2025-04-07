@@ -19,7 +19,7 @@ async function main() {
         ],
     });
 
-    const createUsers = await prisma.user.createMany({
+    const createusers = await prisma.user.createMany({
         data: [
             {
                 email: "n.powell@aston.ac.uk",
@@ -646,6 +646,9 @@ async function main() {
     const moderationStatus = await prisma.moderationStatus.create({
         data: {
             moderationPhaseId: 1,
+            internalModerationDeadline: new Date("2025-05-15"), // May 15, 2025
+            externalModerationDeadline: new Date("2025-06-01"), // June 1, 2025
+            finalDeadline: new Date("2025-06-15"), // June 15, 2025
         },
     });
     const notificationTypes = await prisma.notificationType.createMany({

@@ -22,7 +22,7 @@ authorizeRouter.post(
             "/users": [1], // Assessment Lead
             "/modules": [1], // Assessment Lead
             "/assessments": [1], // Assessment Lead
-            "/other": [1], // Assessment Lead
+            "/deadlines": [1], // Assessment Lead
         };
 
         const requiredRoles = pathRoleMap[path];

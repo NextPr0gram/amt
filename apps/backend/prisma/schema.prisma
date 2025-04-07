@@ -226,6 +226,9 @@ model ReviewType {
 model ModerationStatus {
     id                Int             @id @default(autoincrement())
     moderationPhaseId Int
+    internalModerationDeadline DateTime
+    externalModerationDeadline DateTime
+    finalDeadline DateTime
     moderationPhase   ModerationPhase @relation(fields: [moderationPhaseId], references: [id])
 }
 
