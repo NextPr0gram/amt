@@ -6,14 +6,11 @@ export async function middleware(request: NextRequest) {
     const refreshToken = request.cookies.get("refreshToken")?.value;
     const path = request.nextUrl.pathname;
 
-    // Public routes that don't require authentication
     const publicPaths = ["/login", "/register", "/403"];
     if (publicPaths.includes(path)) {
         return NextResponse.next();
     }
 
-    // Define valid application paths that should be protected
-    // This should match your pathRoleMap on the backend
     const protectedPaths = [
         "/dashboard",
         "/dashboard/review-groups",
@@ -21,21 +18,17 @@ export async function middleware(request: NextRequest) {
         "/dashboard/modules",
         "/dashboard/assessments",
         "/dashboard/other",
-        // Add other protected paths here
     ];
 
-    // Check if the current path should be protected
     const isProtectedPath = protectedPaths.some(
         (validPath) => path === validPath || path.startsWith(`${validPath}/`),
     );
 
-    // If it's not a protected path, let Next.js handle it (will render 404 for non-existent paths)
     if (!isProtectedPath) {
         return NextResponse.next();
     }
 
     try {
-        // Verify the token with external API
         const res = await fetch(
             process.env.NEXT_PUBLIC_API_URL + "/auth/validate",
             {
@@ -47,7 +40,6 @@ export async function middleware(request: NextRequest) {
         );
 
         if (res.status !== 200) {
-            // If token is invalid or does not exist try refreshing
             if (refreshToken) {
                 const refreshRes = await fetch(
                     process.env.NEXT_PUBLIC_API_URL + "/auth/refresh",
@@ -78,7 +70,6 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL("/login", request.url));
         }
 
-        // Check if the user is authorized for the requested page
         const roleCheckRes = await fetch(
             process.env.NEXT_PUBLIC_API_URL + "/authorize-page",
             {
@@ -90,9 +81,9 @@ export async function middleware(request: NextRequest) {
                 body: JSON.stringify({ path }),
             },
         );
+        console.log(JSON.stringify({ path }));
 
         if (roleCheckRes.status !== 200) {
-            // If the user is not authorized, deny access
             return NextResponse.redirect(new URL("/403", request.url));
         }
 
@@ -103,7 +94,6 @@ export async function middleware(request: NextRequest) {
     }
 }
 
-// Specify which routes this middleware should run on
 export const config = {
     matcher: ["/((?!api|_next/static|_next/image|favicon.ico|403).*)"],
 };
