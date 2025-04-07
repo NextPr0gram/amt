@@ -16,13 +16,7 @@ export default function Page() {
                         <div className="px-4"></div>
                         <header className="flex h-16 shrink-0 items-center gap-2">
                             <div className="flex items-center gap-2 px-4">
-                                <Breadcrumb>
-                                    <BreadcrumbList>
-                                        <BreadcrumbItem className="hidden md:block">
-                                            <BreadcrumbPage>Dashboard</BreadcrumbPage>
-                                        </BreadcrumbItem>
-                                    </BreadcrumbList>
-                                </Breadcrumb>
+                                <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
                             </div>
                         </header>
                         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

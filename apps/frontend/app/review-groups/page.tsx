@@ -21,13 +21,8 @@ export default function Page() {
                         <ReviewGroupsProvider>
                             <header className="flex h-16 shrink-0 items-center gap-2 px-4">
                                 <div className="flex items-center gap-2">
-                                    <Breadcrumb>
-                                        <BreadcrumbList>
-                                            <BreadcrumbItem>
-                                                <BreadcrumbPage>Review groups</BreadcrumbPage>
-                                            </BreadcrumbItem>
-                                        </BreadcrumbList>
-                                    </Breadcrumb>
+
+                                    <h1 className="text-2xl font-bold tracking-tight">Review Groups</h1>
                                 </div>
                                 <Dialog>
                                     <DialogTrigger asChild>

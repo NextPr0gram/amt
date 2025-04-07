@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Command, Settings, Component, Users, UserRoundPen, BookOpenText, LayoutDashboard } from "lucide-react";
+import { Command, Settings, Component, Users, UserRoundPen, BookOpenText, LayoutDashboard, Calendar } from "lucide-react";
 import { NavUser } from "@/components/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import Link from "next/link";
@@ -42,9 +42,9 @@ const items = [
         allowedRoles: [1], // Assessment Lead
     },
     {
-        title: "Other",
-        url: "/other",
-        icon: Settings,
+        title: "Deadlines",
+        url: "/deadlines",
+        icon: Calendar,
         allowedRoles: [1], // Assessment Lead
     },
 ];

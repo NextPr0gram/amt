@@ -22,13 +22,7 @@ export default function Page() {
                         <ModulesProvider>
                             <header className="flex h-16 shrink-0 items-center gap-2 px-4">
                                 <div className="flex items-center gap-2">
-                                    <Breadcrumb>
-                                        <BreadcrumbList>
-                                            <BreadcrumbItem>
-                                                <BreadcrumbPage>Modules</BreadcrumbPage>
-                                            </BreadcrumbItem>
-                                        </BreadcrumbList>
-                                    </Breadcrumb>
+                                    <h1 className="text-2xl font-bold tracking-tight">Modules</h1>
                                 </div>
                                 <Dialog>
                                     <DialogTrigger asChild>
