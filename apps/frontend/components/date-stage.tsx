@@ -11,7 +11,6 @@ export function DateStage() {
             <div className="flex h-16 shrink-0 items-center gap-2">
                 <div className="flex items-center gap-2 px-4">
                     <SidebarTrigger className="-ml-1" />
-                    <Separator orientation="vertical" className="mr-2 h-6" />
                     {/* <h3>{date + " | " + (moderationStatus ? moderationStatus.tP.name + " | " + moderationStatus.stage.name + (moderationStatus.reviewType.id === 3 ? "" : " | " + moderationStatus.reviewType.name) : "")}</h3> */}
                     <h3>{date + (moderationStatus?.moderationPhase.tP.id !== 4 ? " | " + (moderationStatus ? moderationStatus.moderationPhase.tP.name + " | " + moderationStatus.moderationPhase.stage.name + (moderationStatus.moderationPhase.reviewType.id === 3 ? "" : " | " + moderationStatus.moderationPhase.reviewType.name) : "") : "")}</h3>
                 </div>

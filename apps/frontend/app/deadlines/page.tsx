@@ -22,7 +22,9 @@ export default function Page() {
                             </div>
                         </header>
                         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                            <DeadlinesForm />
+                            <div className="p-4 border-l">
+                                <DeadlinesForm />
+                            </div>
                         </div>
                     </ModerationProvider>
                 </WebsocketProvider>
