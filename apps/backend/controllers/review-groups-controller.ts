@@ -10,6 +10,18 @@ import { catchErrors } from "../utils/catch-errors";
 import { getUserIdFromToken } from "../utils/jwt";
 
 export const getReviewGroupsHandler = catchErrors(async (req, res) => {
+    const isReviewGroupsFinalized = await prisma.moderationStatus.findFirst({
+        select: {
+            finalizeReviewGroups: true,
+        },
+    });
+
+    appAssert(
+        isReviewGroupsFinalized,
+        NOT_FOUND,
+        "isReviewGroupsFinalized not found",
+    );
+
     const reviewGroups = await prisma.reviewGroup.findMany({
         select: {
             id: true,
@@ -51,12 +63,28 @@ export const getReviewGroupsHandler = catchErrors(async (req, res) => {
     });
 
     appAssert(reviewGroups.length, NOT_FOUND, "Review groups not found");
+
     return res.status(OK).json(reviewGroups);
 });
 
 export const createReviewGroupHandler = catchErrors(async (req, res) => {
-    const { yearId, moduleIds, convener } = req.body;
+    const isReviewGroupsFinalized = await prisma.moderationStatus.findFirst({
+        select: {
+            finalizeReviewGroups: true,
+        },
+    });
+    appAssert(
+        isReviewGroupsFinalized,
+        NOT_FOUND,
+        "isReviewGroupsFinalized not found",
+    );
+    if (isReviewGroupsFinalized.finalizeReviewGroups) {
+        return res.status(INTERNAL_SERVER_ERROR).json({
+            message: "Cannot modify review groups when finalized",
+        });
+    }
 
+    const { yearId, moduleIds, convener } = req.body;
     const existingModules = await prisma.module.findMany({
         where: {
             id: { in: moduleIds },
@@ -121,6 +149,17 @@ export const createReviewGroupHandler = catchErrors(async (req, res) => {
 });
 
 export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
+    const isReviewGroupsFinalized = await prisma.moderationStatus.findFirst({
+        select: {
+            finalizeReviewGroups: true,
+        },
+    });
+    if (isReviewGroupsFinalized.finalizeReviewGroups) {
+        return res.status(INTERNAL_SERVER_ERROR).json({
+            message: "Cannot modify review groups when finalized",
+        });
+    }
+
     const { moduleId } = req.body;
     const userId = (await getUserIdFromToken(
         req.cookies.accessToken,
@@ -135,7 +174,6 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
             reviewGroup: true,
         },
     });
-    console.log("reviewGroupModule: ", reviewGroupModule);
 
     appAssert(
         reviewGroupModule,
@@ -144,7 +182,6 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
     );
 
     const groupName = reviewGroupModule.reviewGroup.group;
-    console.log("groupName: ", groupName);
 
     // Delete the module from the review group
     const removeReviewGroupFromModule = await prisma.module.update({
@@ -155,7 +192,6 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
             reviewGroupId: null,
         },
     });
-    console.log("removeReviewGroupFromModule: ", removeReviewGroupFromModule);
 
     appAssert(
         removeReviewGroupFromModule,
@@ -169,7 +205,6 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
             reviewGroupId: reviewGroupModule.reviewGroup.id,
         },
     });
-    console.log("remainingModules: ", remainingModules);
 
     // If no modules left, delete the review group and shift other groups
     if (remainingModules === 0) {
@@ -179,7 +214,6 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
                 id: reviewGroupModule.reviewGroup.yearId,
             },
         });
-        console.log("year: ", year);
 
         // Delete the empty review group
         const deleteReviewGroup = await prisma.reviewGroup.delete({
@@ -187,7 +221,6 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
                 id: reviewGroupModule.reviewGroup.id,
             },
         });
-        console.log("deleteReviewGroup: ", deleteReviewGroup);
         appAssert(deleteReviewGroup, INTERNAL_SERVER_ERROR);
 
         // Get all remaining review groups in the same year that have a higher letter
@@ -202,7 +235,6 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
                 group: "asc",
             },
         });
-        console.log("groupsToUpdate: ", groupsToUpdate);
         appAssert(
             groupsToUpdate,
             INTERNAL_SERVER_ERROR,
@@ -222,7 +254,6 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
                     group: newLetter,
                 },
             });
-            console.log("updateReviewGroupLetter: ", updateReviewGroupLetter);
             appAssert(
                 updateReviewGroupLetter,
                 INTERNAL_SERVER_ERROR,
@@ -242,3 +273,39 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
         message: `Module removed from review group ${groupName}.${remainingModules === 0 ? " Empty review group was deleted." : ""}`,
     });
 });
+
+export const finalizeReviewGroupsHandler = catchErrors(async (req, res) => {
+    const updateModerationStatus = await prisma.moderationStatus.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            finalizeReviewGroups: true,
+        },
+    });
+    appAssert(
+        updateModerationStatus,
+        INTERNAL_SERVER_ERROR,
+        "Something went wront while updating moderationStatus",
+    );
+    return res.status(OK).json("Review groups finalized");
+});
+
+export const getIsFinalizedReviewGroupsHandler = catchErrors(
+    async (req, res) => {
+        const isFinalizedReviewGroups = await prisma.moderationStatus.findFirst(
+            {
+                select: {
+                    finalizeReviewGroups: true,
+                },
+            },
+        );
+
+        appAssert(
+            isFinalizedReviewGroups,
+            NOT_FOUND,
+            "Could not find FinalizedReviewGroups",
+        );
+        return res.status(OK).json(isFinalizedReviewGroups);
+    },
+);

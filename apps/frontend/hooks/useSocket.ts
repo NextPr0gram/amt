@@ -14,11 +14,9 @@ const useSocket = (userId: number | null) => {
             transports: ["websocket"],
             query: { userId },
         });
-        console.log("Connecting to socket server...");
 
         setSocket(socketIo);
 
-        console.log("Socket connected!", socketIo);
         // Register the user after the socket is connected
         socketIo.emit("register", userId);
 

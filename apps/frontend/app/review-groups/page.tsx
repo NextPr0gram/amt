@@ -4,11 +4,9 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { DataTable } from "@/components/review-groups-page/data-table";
 import { ReviewGroupsProvider } from "@/components/review-groups-page/review-groups-context";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import ReviewGroupsModal from "@/components/review-groups-page/review-groups-modal";
 import { WebsocketProvider } from "@/components/contexts/websocket-context";
 import { ModerationProvider } from "@/components/contexts/moderation-context";
+import CreateReviewGroupDialog from "@/components/review-groups-page/dialog";
 
 export default function Page() {
     return (
@@ -24,16 +22,7 @@ export default function Page() {
 
                                     <h1 className="text-2xl font-bold tracking-tight">Review Groups</h1>
                                 </div>
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button size="sm" className="ml-auto">
-                                            Create review group
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <ReviewGroupsModal type="add" />
-                                    </DialogContent>
-                                </Dialog>
+                                <CreateReviewGroupDialog />
                             </header>
                             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                                 <DataTable />

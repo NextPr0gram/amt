@@ -653,6 +653,7 @@ async function main() {
             internalModerationDeadline: new Date("2025-05-15"), // May 15, 2025
             externalModerationDeadline: new Date("2025-06-01"), // June 1, 2025
             finalDeadline: new Date("2025-06-15"), // June 15, 2025
+            finalizeReviewGroups: false,
         },
     });
     const notificationTypes = await prisma.notificationType.createMany({

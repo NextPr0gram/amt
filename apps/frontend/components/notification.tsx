@@ -28,7 +28,6 @@ const Notification = () => {
         fetchUserId();
     }, []);
 
-    console.log("userId: ", userId);
     // Create socket only when we have userId
     const socket = useSocket(userId);
 
@@ -38,7 +37,6 @@ const Notification = () => {
 
         socket.on("notification", (data) => {
             setNotifications((prev) => [...prev, data.message]);
-            console.log("Notification received:", data.message);
         });
 
         return () => {

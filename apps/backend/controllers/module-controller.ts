@@ -60,7 +60,6 @@ export const getModulesHandler = catchErrors(async (req, res) => {
 export const createModuleHandler = catchErrors(async (req, res) => {
     const { code, tpIds, name, yearId, moduleLeadId, moduleTutors } =
         moduleSchema.parse(req.body);
-    console.log(moduleTutors);
 
     const assignTutors: { userId: number }[] = moduleTutors.map((userId) => ({
         userId,

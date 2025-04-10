@@ -55,12 +55,15 @@ type ReviewGroupAPIResponse = {
 type ReviewGroupsContextType = {
     reviewGroups: ReviewGroup[];
     fetchReviewGroups: () => void;
+    finalizeReviewGroups: boolean;
+    fetchFinalizeReviewGroups: () => void;
 };
 
 const ReviewGroupsContext = createContext<ReviewGroupsContextType | undefined>(undefined);
 
 export const ReviewGroupsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [reviewGroups, setReviewGroups] = useState<ReviewGroup[]>([]);
+    const [finalizeReviewGroups, setFinalizeReviewGroups] = useState<boolean>(false);
 
     const fetchReviewGroups = async () => {
         const res = await protectedFetch("/review-groups", "GET");
@@ -84,12 +87,21 @@ export const ReviewGroupsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }));
         setReviewGroups(resData);
     };
-
+    const fetchFinalizeReviewGroups = async () => {
+        const res = await protectedFetch("/review-groups/get-finalize", "GET");
+        setFinalizeReviewGroups(res.data.finalizeReviewGroups);
+    };
     useEffect(() => {
         fetchReviewGroups();
+        fetchFinalizeReviewGroups();
     }, []);
 
-    return <ReviewGroupsContext.Provider value={{ reviewGroups, fetchReviewGroups }}>{children}</ReviewGroupsContext.Provider>;
+    return <ReviewGroupsContext.Provider value={{
+        reviewGroups,
+        fetchReviewGroups,
+        finalizeReviewGroups,
+        fetchFinalizeReviewGroups,
+    }}>{children}</ReviewGroupsContext.Provider>;
 };
 
 export const useReviewGroups = () => {

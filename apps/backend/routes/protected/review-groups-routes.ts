@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
     createReviewGroupHandler,
     deleteReviewGroupHandler,
+    finalizeReviewGroupsHandler,
+    getIsFinalizedReviewGroupsHandler,
     getReviewGroupsHandler,
 } from "../../controllers/review-groups-controller";
 import { authorizeRoles, userRoles } from "apps/backend/middleware/authorize";
@@ -29,4 +31,15 @@ reviewGroupsRouter.delete(
     deleteReviewGroupHandler,
 );
 
+reviewGroupsRouter.post(
+    "/finalize",
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
+    finalizeReviewGroupsHandler,
+);
+
+reviewGroupsRouter.get(
+    "/get-finalize",
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
+    getIsFinalizedReviewGroupsHandler,
+);
 export default reviewGroupsRouter;

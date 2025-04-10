@@ -221,6 +221,7 @@ model ModerationStatus {
     internalModerationDeadline DateTime
     externalModerationDeadline DateTime
     finalDeadline DateTime
+    finalizeReviewGroups Boolean @default(false)
     moderationPhase   ModerationPhase @relation(fields: [moderationPhaseId], references: [id])
 }
 

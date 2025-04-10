@@ -11,6 +11,7 @@ import { ReviewGroup, useReviewGroups } from "./review-groups-context";
 import ReviewGroupsModal from "./review-groups-modal";
 import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { protectedFetch } from "@/utils/protected-fetch";
+import { FinalizeReviewGroups } from "./finalize-review-groups";
 
 type ModuleIdentifier = {
     reviewGroupId: number
@@ -80,7 +81,7 @@ const columns: ColumnDef<ReviewGroup>[] = [
 ];
 
 export function DataTable() {
-    const { reviewGroups, fetchReviewGroups } = useReviewGroups();
+    const { reviewGroups, fetchReviewGroups, finalizeReviewGroups } = useReviewGroups();
     const [selectedReviewGroup, setSelectedReviewGroup] = useState<number>();
     const [hoveredModule, setHoveredModule] = useState<ModuleIdentifier | null>(null)
 
@@ -106,7 +107,8 @@ export function DataTable() {
                     const isHovered =
                         hoveredModule !== null &&
                         hoveredModule.reviewGroupId === row.original.id &&
-                        hoveredModule.moduleCode === module.code;
+                        hoveredModule.moduleCode === module.code &&
+                        !finalizeReviewGroups;
 
                     return (
                         <div
@@ -216,6 +218,7 @@ export function DataTable() {
                     </Dialog>
                 </Table>
             </div>
+            <FinalizeReviewGroups />
         </div>
     );
 }

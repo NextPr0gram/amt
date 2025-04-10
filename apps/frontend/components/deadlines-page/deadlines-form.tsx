@@ -44,7 +44,6 @@ export const DeadlinesForm = () => {
             if (res.status === 200 && res.data) {
                 // Parse dates safely
                 const internalDate = res.data.internalModerationDeadline
-                console.log(res.data.internalModerationDeadline)
 
 
                 const externalDate = res.data.externalModerationDeadline
