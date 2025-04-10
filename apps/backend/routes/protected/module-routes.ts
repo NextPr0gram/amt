@@ -12,23 +12,24 @@ const modulesRouter = Router();
 // Prefix: /modules
 modulesRouter.get(
     "/",
-    authorizeRoles(userRoles.assessmentLead),
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     getModulesHandler,
 );
 modulesRouter.post(
     "/",
-    authorizeRoles(userRoles.assessmentLead),
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     createModuleHandler,
 );
 modulesRouter.patch(
     "/",
-    authorizeRoles(userRoles.assessmentLead),
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     updateModuleHandler,
 );
 modulesRouter.get(
     "/module-tps",
     authorizeRoles(
         userRoles.assessmentLead,
+        userRoles.dev,
         userRoles.moduleTutor,
         userRoles.moduleTutor,
     ),

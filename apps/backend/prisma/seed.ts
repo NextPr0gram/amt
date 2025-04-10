@@ -255,6 +255,12 @@ async function main() {
                 lastName: "Karim",
                 password: await hashValue("password123"),
             },
+            {
+                email: "testuser@test.postman",
+                firstName: "Post",
+                lastName: "Man",
+                password: await hashValue("postman"),
+            },
         ],
     });
 
@@ -265,6 +271,7 @@ async function main() {
             { name: "Module Tutor" },
             { name: "Office Staff" },
             { name: "External Reviewer" },
+            { name: "Dev" },
         ],
     });
 
@@ -317,6 +324,7 @@ async function main() {
             { userId: 38, roleId: 1 },
             { userId: 38, roleId: 3 },
             { userId: 39, roleId: 3 },
+            { userId: 40, roleId: 6 },
         ],
     });
 
@@ -328,6 +336,14 @@ async function main() {
             { name: "Postgraduate" },
         ],
     });
+
+    const reviewGroups = await prisma.reviewGroup.createMany({
+        data: [
+            { yearId: 1, group: "A", convenerId: 1 },
+            { yearId: 2, group: "A", convenerId: 4 },
+        ],
+    });
+
     const createModules = await prisma.module.createMany({
         data: [
             {
@@ -335,36 +351,42 @@ async function main() {
                 name: "Internet Applications and Databases",
                 yearId: 1,
                 moduleLeadId: 1,
+                reviewGroupId: 1,
             },
             {
                 code: "CS1OOP",
                 name: "Object-Oriented Programming",
                 yearId: 1,
                 moduleLeadId: 2,
+                reviewGroupId: 1,
             },
             {
                 code: "CS1PSA",
                 name: "Programming and Software Architecture",
                 yearId: 1,
                 moduleLeadId: 3,
+                reviewGroupId: 1,
             },
             {
                 code: "CS2HCI",
                 name: "Human-Computer Interaction",
                 yearId: 2,
                 moduleLeadId: 4,
+                reviewGroupId: 2,
             },
             {
                 code: "CS2IS",
                 name: "Information Security",
                 yearId: 2,
                 moduleLeadId: await getRandomInt(37),
+                reviewGroupId: 2,
             },
             {
                 code: "CS2IDS",
                 name: "Introduction to Distributed Systems",
                 yearId: 2,
                 moduleLeadId: await getRandomInt(37),
+                reviewGroupId: 2,
             },
             {
                 code: "CS2OS",
@@ -470,24 +492,6 @@ async function main() {
             { moduleId: 3, userId: 7 },
             { moduleId: 3, userId: 24 },
             { moduleId: 3, userId: 28 },
-        ],
-    });
-
-    const reviewGroups = await prisma.reviewGroup.createMany({
-        data: [
-            { yearId: 1, group: "A", convenerId: 1 },
-            { yearId: 2, group: "A", convenerId: 4 },
-        ],
-    });
-
-    const reviewGroupModule = await prisma.reviewGroupModule.createMany({
-        data: [
-            { reviewGroupId: 1, moduleId: 1 },
-            { reviewGroupId: 1, moduleId: 2 },
-            { reviewGroupId: 1, moduleId: 3 },
-            { reviewGroupId: 2, moduleId: 4 },
-            { reviewGroupId: 2, moduleId: 5 },
-            { reviewGroupId: 2, moduleId: 6 },
         ],
     });
 

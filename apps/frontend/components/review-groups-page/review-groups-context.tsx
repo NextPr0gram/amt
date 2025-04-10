@@ -29,23 +29,21 @@ type ReviewGroupAPIResponse = {
     };
     group: string;
     modules: {
-        module: {
+        id: number;
+        code: string;
+        name: string;
+        moduleLead: {
             id: number;
-            code: string;
-            name: string;
-            moduleLead: {
+            firstName: string;
+            lastName: string;
+        };
+        moduleTutors: {
+            user: {
                 id: number;
                 firstName: string;
                 lastName: string;
             };
-            moduleTutors: {
-                user: {
-                    id: number;
-                    firstName: string;
-                    lastName: string;
-                };
-            }[];
-        };
+        }[];
     }[];
     convener: {
         id: number;
@@ -72,13 +70,13 @@ export const ReviewGroupsProvider: React.FC<{ children: React.ReactNode }> = ({ 
             year: reviewGroup.year.name,
             group: reviewGroup.group,
             modules: reviewGroup.modules.map((module) => ({
-                id: module.module.id,
-                code: module.module.code,
-                name: module.module.name,
-                shortNameML: `${module.module.moduleLead.firstName[0]}. ${module.module.moduleLead.lastName}`,
-                moduleLead: `${module.module.moduleLead.firstName} ${module.module.moduleLead.lastName}`,
-                shortNameMT: module.module.moduleTutors.map((tutor) => `${tutor.user.firstName[0]}. ${tutor.user.lastName}`),
-                moduleTutors: module.module.moduleTutors.map((tutor) => `${tutor.user.firstName} ${tutor.user.lastName}`),
+                id: module.id,
+                code: module.code,
+                name: module.name,
+                shortNameML: `${module.moduleLead.firstName[0]}. ${module.moduleLead.lastName}`,
+                moduleLead: `${module.moduleLead.firstName} ${module.moduleLead.lastName}`,
+                shortNameMT: module.moduleTutors.map((tutor) => `${tutor.user.firstName[0]}. ${tutor.user.lastName}`),
+                moduleTutors: module.moduleTutors.map((tutor) => `${tutor.user.firstName} ${tutor.user.lastName}`),
             })),
             shortConvener: `${reviewGroup.convener.firstName[0]}. ${reviewGroup.convener.lastName}`,
             convener: reviewGroup.convener.id,

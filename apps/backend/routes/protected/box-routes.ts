@@ -9,12 +9,12 @@ const boxRouter = Router();
 // Prefix: /box
 boxRouter.get(
     "/connect",
-    authorizeRoles(userRoles.assessmentLead),
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     boxConnectHandler,
 );
 boxRouter.get(
     "/check-box-connection",
-    authorizeRoles(userRoles.assessmentLead),
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     checkBoxConnectedHandler,
 );
 

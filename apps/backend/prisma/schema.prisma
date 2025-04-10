@@ -51,8 +51,9 @@ model Module {
   year              Year                @relation(fields: [yearId], references: [id])
   moduleLeadId      Int?
   moduleLead        User?               @relation(fields: [moduleLeadId], references: [id])
+  reviewGroupId     Int?
+  reviewGroup       ReviewGroup?        @relation(fields: [reviewGroupId], references: [id])
   moduleTutors      ModuleTutor[]
-  reviewGroupModule ReviewGroupModule[]
   assessment        Assessment[]
   academicYearAssessment AcademicYearAssessment[]
   tps               ModuleTP[]
@@ -108,21 +109,12 @@ model ReviewGroup {
     yearId     Int
     group      String
     convenerId Int
-    modules    ReviewGroupModule[]
-    convener   User                @relation(fields: [convenerId], references: [id])
+       modules Module[]
+       convener   User                @relation(fields: [convenerId], references: [id])
     year       Year                @relation(fields: [yearId], references: [id])
 }
 
-// Join table for ReviewGroup and Module
-model ReviewGroupModule {
-    reviewGroupId Int
-    moduleId      Int
 
-    reviewGroup ReviewGroup @relation(fields: [reviewGroupId], references: [id], onDelete: Cascade)
-    module      Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-
-    @@id([reviewGroupId, moduleId])
-}
 
 // Assessment created along with the module
 model Assessment {

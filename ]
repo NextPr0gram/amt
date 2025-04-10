@@ -1,0 +1,217 @@
+import AppErrorCode from "../constants/app-error-code";
+import { NOT_FOUND, OK } from "../constants/http";
+import prisma from "../prisma/primsa-client";
+import {
+    broadcastNotification,
+    sendNotification,
+} from "../services/notification-service";
+import appAssert from "../utils/app-assert";
+import { catchErrors } from "../utils/catch-errors";
+import { getUserIdFromToken } from "../utils/jwt";
+
+export const getReviewGroupsHandler = catchErrors(async (req, res) => {
+    const reviewGroups = await prisma.reviewGroup.findMany({
+        select: {
+            id: true,
+            year: true,
+            group: true,
+            modules: {
+                select: {
+                    module: {
+                        select: {
+                            id: true,
+                            code: true,
+                            name: true,
+                            moduleLead: {
+                                select: {
+                                    id: true,
+                                    firstName: true,
+                                    lastName: true,
+                                },
+                            },
+                            moduleTutors: {
+                                select: {
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            firstName: true,
+                                            lastName: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            convener: {
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                },
+            },
+        },
+    });
+
+    appAssert(reviewGroups.length, NOT_FOUND, "Review groups not found");
+    return res.status(OK).json(reviewGroups);
+});
+
+export const createReviewGroupHandler = catchErrors(async (req, res) => {
+    const { yearId, moduleIds, convener } = req.body;
+
+    // Check if existing review groups contain the same modules
+
+    const modulesInExsistingReviewGroups = await prisma.reviewGroup.findMany({
+        where: {
+            modules: {
+                some: {
+                    moduleId: {
+                        in: moduleIds,
+                    },
+                },
+            },
+        },
+    });
+    appAssert(
+        !modulesInExsistingReviewGroups.length,
+        NOT_FOUND,
+        "Modules already assigned in another review group",
+        AppErrorCode.InvalidUsageOrAssignment,
+    );
+
+    // Get previour group character and increment it else start from A
+    const newestGroup = await prisma.reviewGroup.findFirst({
+        where: {
+            year: {
+                id: yearId,
+            },
+        },
+        orderBy: {
+            group: "desc",
+        },
+    });
+    const nextChar = newestGroup
+        ? String.fromCharCode(newestGroup.group.charCodeAt(0) + 1)
+        : "A";
+
+    const reviewGroup = await prisma.reviewGroup.create({
+        data: {
+            year: {
+                connect: {
+                    id: yearId,
+                },
+            },
+            group: nextChar,
+            modules: {
+                create: moduleIds.map((id: number) => ({
+                    module: { connect: { id } },
+                })),
+            },
+            convener: {
+                connect: {
+                    id: convener,
+                },
+            },
+        },
+    });
+
+    await broadcastNotification(
+        "info",
+        "Review group",
+        `New review group created for yearId: ${yearId}, moduleIds: ${moduleIds.join(", ")}, convener: ${convener}`,
+    );
+
+    return res.status(OK).json(reviewGroup);
+});
+
+export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
+    const { moduleId } = req.body;
+    const userId = (await getUserIdFromToken(
+        req.cookies.accessToken,
+    )) as number;
+
+    const module = await prisma.module.findUnique({
+        where: { id: moduleId },
+        select: {
+            name: true,
+            code: true,
+        },
+    });
+
+    // Step 1: Find the review group that contains the given moduleId
+    const reviewGroupToDelete = await prisma.reviewGroup.findFirst({
+        where: {
+            modules: {
+                some: {
+                    moduleId: moduleId,
+                },
+            },
+        },
+    });
+
+    appAssert(
+        reviewGroupToDelete,
+        NOT_FOUND,
+        "Review group not found for the provided module ID",
+        AppErrorCode.InvalidUsageOrAssignment,
+    );
+
+    const { yearId } = reviewGroupToDelete;
+
+    // Step 2: Get all the review groups for the year and order by group letter
+    const reviewGroups = await prisma.reviewGroup.findMany({
+        where: {
+            yearId,
+        },
+        orderBy: {
+            group: "asc",
+        },
+    });
+
+    // Step 3–4: Delete the group and shift group letters within a transaction
+    await prisma.$transaction(async (tx) => {
+        // Optional: explicitly delete join table entries, in case cascade doesn't work as expected
+        await tx.reviewGroupModule.deleteMany({
+            where: { reviewGroupId: reviewGroupToDelete.id },
+        });
+
+        await tx.reviewGroup.delete({
+            where: {
+                id: reviewGroupToDelete.id,
+            },
+        });
+
+        // Step 4: Update remaining review group letters
+        const remainingGroups = reviewGroups
+            .filter((group) => group.id !== reviewGroupToDelete.id)
+            .sort((a, b) => a.group.localeCompare(b.group)); // Just to be extra safe
+
+        for (let i = 0; i < remainingGroups.length; i++) {
+            const newGroupLetter = String.fromCharCode(65 + i); // 'A', 'B', ...
+            if (remainingGroups[i].group !== newGroupLetter) {
+                await tx.reviewGroup.update({
+                    where: {
+                        id: remainingGroups[i].id,
+                    },
+                    data: {
+                        group: newGroupLetter,
+                    },
+                });
+            }
+        }
+    });
+
+    // Step 5: Notify user
+    await sendNotification(
+        userId,
+        "info",
+        "Review Group",
+        `Review group for module: ${module?.code} - ${module?.name} has been deleted`,
+    );
+
+    return res
+        .status(OK)
+        .json({ message: "Review group deleted and group letters updated." });
+});

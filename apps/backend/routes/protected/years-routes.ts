@@ -9,6 +9,7 @@ yearsRouter.get(
     "/",
     authorizeRoles(
         userRoles.assessmentLead,
+        userRoles.dev,
         userRoles.moduleTutor,
         userRoles.moduleLead,
     ),

@@ -15,6 +15,7 @@ export const userRoles = {
     moduleTutor: 3,
     officeStaff: 4,
     externalReviewer: 5,
+    dev: 6,
 };
 
 const userRoleCache: Map<number, { roleIds: number[]; timestamp: number }> =

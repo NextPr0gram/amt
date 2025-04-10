@@ -10,17 +10,17 @@ const demoRouter = Router();
 // Prefix: /demo
 demoRouter.post(
     "/prev-phase",
-    authorizeRoles(userRoles.assessmentLead),
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     prevPhaseHandler,
 );
 demoRouter.post(
     "/next-phase",
-    authorizeRoles(userRoles.assessmentLead),
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     nextPhaseHandler,
 );
 demoRouter.post(
     "/create-box-folders",
-    authorizeRoles(userRoles.assessmentLead),
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     createBoxFoldersHandler,
 );
 

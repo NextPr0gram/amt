@@ -15,6 +15,7 @@ moderationRouter.get(
     "/status",
     authorizeRoles(
         userRoles.assessmentLead,
+        userRoles.dev,
         userRoles.moduleLead,
         userRoles.moduleTutor,
     ),
@@ -24,6 +25,7 @@ moderationRouter.get(
     "/tps",
     authorizeRoles(
         userRoles.assessmentLead,
+        userRoles.dev,
         userRoles.moduleLead,
         userRoles.moduleTutor,
     ),
@@ -32,19 +34,19 @@ moderationRouter.get(
 
 moderationRouter.patch(
     "/deadlines/internal",
-    authorizeRoles(userRoles.assessmentLead),
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     updateInternalModerationDeadlineHandler,
 );
 
 moderationRouter.patch(
     "/deadlines/external",
-    authorizeRoles(userRoles.assessmentLead),
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     updateExternalModerationDeadlineHandler,
 );
 
 moderationRouter.patch(
     "/deadlines/final",
-    authorizeRoles(userRoles.assessmentLead),
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     updateFinalDeadlineHandler,
 );
 

@@ -9,7 +9,13 @@ import { Button } from "../ui/button";
 import { Dialog } from "@radix-ui/react-dialog";
 import { ReviewGroup, useReviewGroups } from "./review-groups-context";
 import ReviewGroupsModal from "./review-groups-modal";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { protectedFetch } from "@/utils/protected-fetch";
+
+type ModuleIdentifier = {
+    reviewGroupId: number
+    moduleCode: string
+}
 
 // Columns are define the core of what the table will look like. They define the data that will be displayed, how it will be formatted, sorted and filtered.
 const columns: ColumnDef<ReviewGroup>[] = [
@@ -40,34 +46,6 @@ const columns: ColumnDef<ReviewGroup>[] = [
                 <div>Module Lead/Tutor</div>
             </div>
         ),
-        cell: ({ row }) => {
-            if (row.getIsGrouped()) return null;
-
-            return (
-                <Fragment>
-                    {row.original.modules.map((module) => (
-                        <div className="grid grid-cols-2 grid-rows-1 gap-4 py-2" key={module.code}>
-                            <div className="self-center ">
-                                {module.code}
-                                <div className="hidden xl:inline"> - {module.name}</div>
-                            </div>
-                            <div className="self-center">
-                                <div className="font-bold inline xl:hidden">
-                                    {module.shortNameML}
-                                    {module.moduleTutors.length > 0 ? ", " : ""}
-                                </div>
-                                <div className="font-bold hidden xl:inline">
-                                    {module.moduleLead}
-                                    {module.moduleTutors.length > 0 ? ", " : ""}
-                                </div>
-                                <div className="inline xl:hidden">{module.shortNameMT.join(", ")}</div>
-                                <div className="hidden xl:inline">{module.moduleTutors.join(", ")}</div>
-                            </div>
-                        </div>
-                    ))}
-                </Fragment>
-            );
-        },
     },
     {
         accessorKey: "convener",
@@ -102,9 +80,9 @@ const columns: ColumnDef<ReviewGroup>[] = [
 ];
 
 export function DataTable() {
-    const { reviewGroups } = useReviewGroups();
+    const { reviewGroups, fetchReviewGroups } = useReviewGroups();
     const [selectedReviewGroup, setSelectedReviewGroup] = useState<number>();
-    
+    const [hoveredModule, setHoveredModule] = useState<ModuleIdentifier | null>(null)
 
     const table = useReactTable({
         data: reviewGroups,
@@ -118,6 +96,76 @@ export function DataTable() {
             expanded: true,
         },
     });
+
+    const renderModuleCodeAndTutors = (row: any) => {
+        if (row.getIsGrouped()) return null;
+
+        return (
+            <Fragment>
+                {row.original.modules.map((module) => {
+                    const isHovered =
+                        hoveredModule !== null &&
+                        hoveredModule.reviewGroupId === row.original.id &&
+                        hoveredModule.moduleCode === module.code;
+
+                    return (
+                        <div
+                            className="grid grid-cols-2 grid-rows-1 gap-4 py-2 relative"
+                            key={module.code}
+                            onMouseEnter={() => setHoveredModule({ reviewGroupId: row.original.id, moduleCode: module.code })}
+                            onMouseLeave={() => setHoveredModule(null)}
+                        >
+                            {/* Module code and name */}
+                            <div className="self-center">
+                                {module.code}
+                                <div className="hidden xl:inline"> - {module.name}</div>
+                            </div>
+
+                            {/* Module lead and tutors */}
+                            <div className="self-center">
+                                <div className="font-bold inline xl:hidden">
+                                    {module.shortNameML}
+                                    {module.moduleTutors.length > 0 ? ", " : ""}
+                                </div>
+                                <div className="font-bold hidden xl:inline">
+                                    {module.moduleLead}
+                                    {module.moduleTutors.length > 0 ? ", " : ""}
+                                </div>
+                                <div className="inline xl:hidden">{module.shortNameMT.join(", ")}</div>
+                                <div className="hidden xl:inline">{module.moduleTutors.join(", ")}</div>
+                            </div>
+
+                            {/* Overlay with delete button */}
+                            {isHovered && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-white  z-10">
+                                    <Button
+                                        variant="link"
+                                        size="sm"
+                                        className="flex items-center gap-1"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            deleteModule(module.id,);
+                                        }}
+                                    >
+                                        Delete
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </Fragment>
+        );
+    };
+
+    const deleteModule = async (moduleId: number) => {
+        const res = await protectedFetch("/review-groups", "DELETE", {
+            moduleId
+        })
+
+        fetchReviewGroups();
+    }
 
     // Calculate the total number of columns including the actions column
     const totalColumnCount = columns.length;
@@ -146,7 +194,11 @@ export function DataTable() {
                                                 {flexRender(row.getVisibleCells()[0].column.columnDef.cell, row.getVisibleCells()[0].getContext())}
                                             </TableCell>
                                         ) : (
-                                            row.getVisibleCells().map((cell) => <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)
+                                            row.getVisibleCells().map((cell) => <TableCell key={cell.id}>
+                                                {cell.column.id === "moduleCodeAndTutors"
+                                                    ? renderModuleCodeAndTutors(row)
+                                                    : flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </TableCell>)
                                         )}
                                     </TableRow>
                                 ))

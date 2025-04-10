@@ -6,9 +6,9 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ModulesProvider } from "@/components/modules-page/module-context";
-import ModuleModal from "../../../components/modules-page/module-modal";
 import { WebsocketProvider } from "@/components/contexts/websocket-context";
 import { ModerationProvider } from "@/components/contexts/moderation-context";
+import ModuleModal from "@/components/modules-page/module-modal";
 
 export default function Page() {
     // https://ui.shadcn.com/docs/components/data-table#basic-table

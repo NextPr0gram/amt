@@ -7,7 +7,7 @@ const usersRouter = Router();
 // Prefix: /users
 usersRouter.get(
     "/",
-    authorizeRoles(userRoles.assessmentLead),
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     getModuleTutorsHandler,
 );
 
