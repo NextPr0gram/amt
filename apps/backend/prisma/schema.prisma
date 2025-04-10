@@ -44,29 +44,29 @@ model Session {
 // Many modules have many module tutors
 // One module lead can lead many modules
 model Module {
-  id                Int                 @id @default(autoincrement())
-  code              String              @unique
-  name              String
-  yearId            Int
-  year              Year                @relation(fields: [yearId], references: [id])
-  moduleLeadId      Int?
-  moduleLead        User?               @relation(fields: [moduleLeadId], references: [id])
-  reviewGroupId     Int?
-  reviewGroup       ReviewGroup?        @relation(fields: [reviewGroupId], references: [id])
-  moduleTutors      ModuleTutor[]
-  assessment        Assessment[]
-  academicYearAssessment AcademicYearAssessment[]
-  tps               ModuleTP[]
+    id                     Int                      @id @default(autoincrement())
+    code                   String                   @unique
+    name                   String
+    yearId                 Int
+    year                   Year                     @relation(fields: [yearId], references: [id])
+    moduleLeadId           Int?
+    moduleLead             User?                    @relation(fields: [moduleLeadId], references: [id])
+    reviewGroupId          Int?
+    reviewGroup            ReviewGroup?             @relation(fields: [reviewGroupId], references: [id])
+    moduleTutors           ModuleTutor[]
+    assessment             Assessment[]
+    academicYearAssessment AcademicYearAssessment[]
+    tps                    ModuleTP[]
 }
 
 model ModuleTP {
-  moduleId Int
-  tpId     Int
+    moduleId Int
+    tpId     Int
 
-  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  tp     TP     @relation(fields: [tpId], references: [id], onDelete: Cascade)
+    module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+    tp     TP     @relation(fields: [tpId], references: [id], onDelete: Cascade)
 
-  @@id([moduleId, tpId]) // Composite primary key
+    @@id([moduleId, tpId]) // Composite primary key
 }
 
 model Year {
@@ -105,16 +105,14 @@ model UserRole {
 
 // need to migrage again
 model ReviewGroup {
-    id         Int                 @id @default(autoincrement())
+    id         Int      @id @default(autoincrement())
     yearId     Int
     group      String
     convenerId Int
-       modules Module[]
-       convener   User                @relation(fields: [convenerId], references: [id])
-    year       Year                @relation(fields: [yearId], references: [id])
+    modules    Module[]
+    convener   User     @relation(fields: [convenerId], references: [id])
+    year       Year     @relation(fields: [yearId], references: [id])
 }
-
-
 
 // Assessment created along with the module
 model Assessment {
@@ -146,8 +144,9 @@ model AcademicYearAssessment {
     assessmentType       AssessmentType     @relation(fields: [assessmentTypeId], references: [id])
     assessmentCategory   AssessmentCategory @relation(fields: [assessmentCategoryId], references: [id])
 }
+
 model AcademicYear {
-    id                   Int                @id @default(autoincrement())
+    id   Int @id @default(autoincrement())
     year Int
 }
 
@@ -155,7 +154,7 @@ model AssessmentType {
     id   Int    @id @default(autoincrement())
     name String @unique
 
-    assessment Assessment[]
+    assessment             Assessment[]
     academicYearAssessment AcademicYearAssessment[]
 }
 
@@ -163,7 +162,7 @@ model AssessmentCategory {
     id   Int    @id @default(autoincrement())
     name String @unique
 
-    assessment Assessment[]
+    assessment             Assessment[]
     academicYearAssessment AcademicYearAssessment[]
 }
 
@@ -195,10 +194,10 @@ model TP {
     id   Int    @id @default(autoincrement())
     name String
 
-    moderationPhase ModerationPhase[]
-    assessment      Assessment[]
+    moderationPhase        ModerationPhase[]
+    assessment             Assessment[]
     academicYearAssessment AcademicYearAssessment[]
-modules                ModuleTP[]
+    modules                ModuleTP[]
 }
 
 model Stage {
@@ -216,13 +215,13 @@ model ReviewType {
 }
 
 model ModerationStatus {
-    id                Int             @id @default(autoincrement())
-    moderationPhaseId Int
+    id                         Int             @id @default(autoincrement())
+    moderationPhaseId          Int
     internalModerationDeadline DateTime
     externalModerationDeadline DateTime
-    finalDeadline DateTime
-    finalizeReviewGroups Boolean @default(false)
-    moderationPhase   ModerationPhase @relation(fields: [moderationPhaseId], references: [id])
+    finalDeadline              DateTime
+    finalizeReviewGroups       Boolean         @default(false)
+    moderationPhase            ModerationPhase @relation(fields: [moderationPhaseId], references: [id])
 }
 
 model ModerationPhase {
