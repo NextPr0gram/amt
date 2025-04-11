@@ -72,7 +72,20 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
     const [isEditing, setIsEditing] = useState(type === "add" ? true : false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [showError, setShowError] = useState(false);
+    const [remainingWeight, setRemainingWeight] = useState<number | null>(null);
 
+    useEffect(() => {
+        const fetchRemainingWeight = async () => {
+            const moduleId = form.watch("moduleId");
+            if (moduleId) {
+                const res = await protectedFetch(`/assessments/get-remaining-weight?moduleId=${moduleId}`, "GET")
+                if (res.status === 200) {
+                    setRemainingWeight(res.data.remainingWeight)
+                }
+            }
+        }
+        fetchRemainingWeight()
+    }, [selectedModule]);
 
     useEffect(() => {
         const fetchModuleTps = async () => {
@@ -430,9 +443,11 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
                         name="weight"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Weight in %</FormLabel>
+                                <FormLabel>
+                                    Weight in % {remainingWeight !== null && `(Remaining weight: ${remainingWeight})`}
+                                </FormLabel>
                                 <FormControl>
-                                    <Input className={cn(!isEditing && "pointer-events-none")} tabIndex={isEditing ? 0 : -1} type="number" placeholder="e.g. 20" value={(field.value ?? 0) * 100} onChange={(e) => form.setValue("weight", parseFloat(e.target.value) / 100)} />
+                                    <Input className={cn(!isEditing && "pointer-events-none")} tabIndex={isEditing ? 0 : -1} type="number" placeholder="e.g. 20" value={Math.round((field.value ?? 0) * 100)} onChange={(e) => form.setValue("weight", parseFloat(e.target.value) / 100)} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

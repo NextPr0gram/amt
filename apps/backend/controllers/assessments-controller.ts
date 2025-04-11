@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from "../constants/http";
+import {
+    BAD_REQUEST,
+    INTERNAL_SERVER_ERROR,
+    NOT_FOUND,
+    OK,
+} from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
 import { catchErrors } from "../utils/catch-errors";
@@ -126,7 +131,45 @@ export const createAssessmentHandler = catchErrors(async (req, res) => {
         assessmentSchema.parse(req.body);
 
     // Check TpID is in module
+    const moduleTps = await prisma.module.findUnique({
+        where: {
+            id: moduleId,
+        },
+        select: {
+            tps: {
+                select: {
+                    tpId: true,
+                },
+            },
+        },
+    });
+
+    appAssert(moduleTps, NOT_FOUND, "module not found");
+
+    const isModuleTp = moduleTps.tps.some((tp) => tp.tpId === tpId);
+
+    appAssert(isModuleTp, BAD_REQUEST, "tpId is not part of the module");
+
     // Check Weight
+    const assessments = await prisma.assessment.findMany({
+        where: {
+            moduleId,
+        },
+        select: {
+            weight: true,
+        },
+    });
+
+    const totalWeight = assessments
+        ? assessments.reduce((sum, a) => sum + a.weight, 0)
+        : 0;
+    const remainingWeight = 100 - totalWeight * 100;
+
+    appAssert(
+        !(remainingWeight <= 0),
+        INTERNAL_SERVER_ERROR,
+        "Remaining weight is below 0",
+    );
 
     const assessment = await prisma.assessment.create({
         data: {

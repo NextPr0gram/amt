@@ -41,7 +41,7 @@ const columns: ColumnDef<Assessment>[] = [
         accessorKey: "weight",
         header: "Weight",
         cell: (cell) => {
-            return `${(cell.getValue() as number) * 100}%`;
+            return `${Math.round((cell.getValue() as number) * 100)}%`;
         },
     },
     {
