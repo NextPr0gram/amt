@@ -138,13 +138,6 @@ export const createReviewGroupHandler = catchErrors(async (req, res) => {
             reviewGroupId: reviewGroup.id,
         },
     });
-
-    await broadcastNotification(
-        "info",
-        "Review group",
-        `New review group created for yearId: ${yearId}, moduleIds: ${moduleIds.join(", ")}, convener: ${convener}`,
-    );
-
     return res.status(OK).json(reviewGroup);
 });
 

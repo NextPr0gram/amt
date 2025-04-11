@@ -72,3 +72,69 @@ export const getUserRoles = catchErrors(async (req, res) => {
 
     return res.status(OK).json(userRoles);
 });
+
+export const getReviewGroupHandler = catchErrors(async (req, res) => {
+    const userId = getUserIdFromToken(req.cookies.accessToken);
+    appAssert(userId, NOT_FOUND, "Could not get userId from accessToken");
+
+    const reviewGroup = await prisma.reviewGroup.findFirst({
+        where: {
+            modules: {
+                some: {
+                    OR: [
+                        { moduleLeadId: userId },
+                        { moduleTutors: { some: { userId } } },
+                    ],
+                },
+            },
+        },
+        select: {
+            id: true,
+            group: true,
+            year: {
+                select: {
+                    name: true,
+                },
+            },
+            convener: {
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                },
+            },
+            modules: {
+                select: {
+                    id: true,
+                    name: true,
+                    code: true,
+                    moduleLead: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            email: true,
+                        },
+                    },
+                    moduleTutors: {
+                        select: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    firstName: true,
+                                    lastName: true,
+                                    email: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    });
+
+    appAssert(reviewGroup, NOT_FOUND, "Could not retrieve review group");
+
+    return res.status(OK).json(reviewGroup);
+});
