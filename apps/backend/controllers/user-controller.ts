@@ -1,4 +1,4 @@
-import { NOT_FOUND, OK } from "../constants/http";
+import { INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import { getUserIdFromRequest } from "../services/user-service";
 import appAssert from "../utils/app-assert";
@@ -74,6 +74,22 @@ export const getUserRoles = catchErrors(async (req, res) => {
 });
 
 export const getReviewGroupHandler = catchErrors(async (req, res) => {
+    const isReviewGroupsFinalized = await prisma.moderationStatus.findFirst({
+        select: {
+            finalizeReviewGroups: true,
+        },
+    });
+    appAssert(
+        isReviewGroupsFinalized,
+        NOT_FOUND,
+        "isReviewGroupsFinalized not found",
+    );
+    if (!isReviewGroupsFinalized.finalizeReviewGroups) {
+        return res.status(INTERNAL_SERVER_ERROR).json({
+            message: "Canot retrieve review groups when not finalized",
+        });
+    }
+
     const userId = getUserIdFromToken(req.cookies.accessToken);
     appAssert(userId, NOT_FOUND, "Could not get userId from accessToken");
 

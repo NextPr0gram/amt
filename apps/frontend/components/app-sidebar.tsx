@@ -21,7 +21,7 @@ const items = [
         title: "Review Groups",
         url: "/review-groups",
         icon: Users,
-        allowedRoles: [1, 3], // Assessment Lead, Module Tutor
+        allowedRoles: [1], // Assessment Lead, Module Tutor
     },
     {
         title: "Users",
@@ -95,7 +95,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
+                    <SidebarGroupLabel>Pages</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {filteredItems.map((item) => (

@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { protectedFetch } from '@/utils/protected-fetch';
 import { Separator } from '../ui/separator';
+import { Loader2 } from 'lucide-react';
+import { Loader } from '../ui/loader';
 
 
 export type ReviewGroup = {
@@ -41,6 +43,7 @@ export type ReviewGroup = {
 
 const ReviewGroupCard = () => {
     const [reviewGroup, setReviewGroup] = useState<ReviewGroup | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         const fetchReviewGroup = async () => {
@@ -48,8 +51,16 @@ const ReviewGroupCard = () => {
             res.status === 200 && setReviewGroup(res.data)
         }
         fetchReviewGroup()
+        setIsLoading(false)
     }, [])
 
+    if (isLoading) {
+        return (
+            <Card className='h-60 flex justify-center items-center'>
+                <Loader className="mx-auto" variant="circular" />
+            </Card>
+        );
+    }
     return (
         <Card >
             <CardHeader className='flex flex-row justify-between'>
@@ -96,7 +107,7 @@ const ReviewGroupCard = () => {
                                     </div>
                                 ))
                             }
-                            <p className='flex gap-1'><div className='font-semibold'>Convener:</div> <div>{reviewGroup.convener.firstName} {reviewGroup.convener.lastName}</div></p>
+                            <div className='flex gap-1 pt-2'><div className='font-semibold'>Convener:</div> <div>{reviewGroup.convener.firstName} {reviewGroup.convener.lastName}</div></div>
                         </div>
                     ) : <p >You are not in any review group</p>
                 }

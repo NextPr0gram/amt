@@ -49,7 +49,7 @@ export default function Page() {
                                         <ReviewGroupCard />
                                     </div>
                                 </TabsContent>
-                            </Tabs>                            <div className="min-h-[100vh] flex-1 rounded-xl bg-zinc-100/50 md:min-h-min dark:bg-zinc-800/50" />
+                            </Tabs>
                         </div>
                     </ModerationProvider>
                 </WebsocketProvider>

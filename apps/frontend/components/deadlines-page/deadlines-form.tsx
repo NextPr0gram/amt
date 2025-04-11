@@ -14,6 +14,7 @@ import { CalendarIcon, Loader2 } from "lucide-react"
 import { Calendar } from "../ui/calendar";
 import { useEffect, useState } from "react";
 import { protectedFetch } from "@/utils/protected-fetch";
+import { Loader } from "../ui/loader";
 
 const formSchema = z.object({
     internalModeration: z.date({
@@ -126,7 +127,7 @@ export const DeadlinesForm = () => {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center p-6">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <Loader className="mx-auto" variant="circular" />
             </div>
         );
     }
@@ -271,7 +272,7 @@ export const DeadlinesForm = () => {
                 >
                     {isSaving ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader className="mx-auto" variant="circular" />
                             Saving...
                         </>
                     ) : (
