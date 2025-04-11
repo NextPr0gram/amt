@@ -281,6 +281,13 @@ export const finalizeReviewGroupsHandler = catchErrors(async (req, res) => {
         INTERNAL_SERVER_ERROR,
         "Something went wront while updating moderationStatus",
     );
+    const userId = getUserIdFromToken(req.cookies.accessToken) as number;
+    sendNotification(
+        userId,
+        "info",
+        "Review groups finalized",
+        "Box folders are currently being created. Once this is complete, the moderation phase will move to Stage 1: Internal Review, and all module tutors will be notified",
+    );
     return res.status(OK).json("Review groups finalized");
 });
 
