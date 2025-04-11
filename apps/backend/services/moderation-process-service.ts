@@ -87,7 +87,35 @@ export const processModerationStatus = async () => {
         }
     }
 };
-
+const getAssessmentLeadId = async () => {
+    return await safeExecute(async () => {
+        const assessmentLead = await prisma.user.findFirst({
+            where: {
+                role: {
+                    some: {
+                        roleId: 1,
+                    },
+                },
+            },
+            select: {
+                id: true,
+            },
+        });
+        return assessmentLead?.id as number;
+    }, "Could not retreive assessment lead");
+};
+const getIsReviewGroupsFinalized = async () => {
+    return await safeExecute(async () => {
+        const isFinalizedReviewGroups = await prisma.moderationStatus.findFirst(
+            {
+                select: {
+                    finalizeReviewGroups: true,
+                },
+            },
+        );
+        return isFinalizedReviewGroups?.finalizeReviewGroups ?? false;
+    }, "Error retrieving finalizeReviewGroups from DB");
+};
 const getCurrentStatusFromDB = async () => {
     logMsg(logType.MODERATION, "Retrieving current status from DB...");
     try {
@@ -135,11 +163,21 @@ const handleModerationPhaseTwo = async (statusData: any) => {
             `Processing Status ${statusData.moderationPhaseId}`,
         );
         // get userid of the user who's role is assessment lead
-        const userId = 38;
-        const isboxFoldersCreated = await safeExecute(
-            () => createBoxFolders(userId),
-            "Failed to create box folders",
+        const isReviewGroupFinalized = await getIsReviewGroupsFinalized();
+        let isboxFoldersCreated;
+        const userId = await getAssessmentLeadId();
+        console.log(
+            "isReviewGroupFinalized: ",
+            isReviewGroupFinalized,
+            "userId: ",
+            userId,
         );
+        if (isReviewGroupFinalized) {
+            isboxFoldersCreated = await safeExecute(
+                () => createBoxFolders(userId),
+                "Failed to create box folders",
+            );
+        }
 
         if (!isboxFoldersCreated) {
             if (!isCannotCreateBoxFolderNotificationSent) {

@@ -183,83 +183,358 @@ const getBoxAccessToken = async (userId: number) => {
 export const createBoxFolders = async (userId: number) => {
     const boxAccessToken = await getBoxAccessToken(userId);
 
+    // Year 1 modules
     const year1tp1modules = await prisma.module.findMany({
-        where: { yearId: 1, tp: "tp1" },
-        select: { code: true, name: true },
+        where: {
+            yearId: 1,
+            tps: {
+                some: { tp: { id: 1 } }, // Using id: 1 for tp1
+            },
+            NOT: {
+                tps: {
+                    some: { tp: { id: 2 } }, // Using id: 2 for tp2
+                },
+            },
+        },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+        },
     });
+    console.log("year1tp1modules: ", year1tp1modules);
+
     const year1tp2modules = await prisma.module.findMany({
-        where: { yearId: 1, tp: "tp2" },
-        select: { code: true, name: true },
+        where: {
+            yearId: 1,
+            tps: {
+                some: { tp: { id: 2 } }, // Using id: 2 for tp2
+            },
+            NOT: {
+                tps: {
+                    some: { tp: { id: 1 } }, // Using id: 1 for tp1
+                },
+            },
+        },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+        },
     });
+    console.log("year1tp2modules: ", year1tp2modules);
+
+    const year1bothTpModules = await prisma.module.findMany({
+        where: {
+            yearId: 1,
+            tps: {
+                some: { tp: { id: 1 } }, // Using id: 1 for tp1
+            },
+            AND: [
+                {
+                    tps: {
+                        some: { tp: { id: 2 } }, // Using id: 2 for tp2
+                    },
+                },
+            ],
+        },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+        },
+    });
+    console.log("year1bothTpModules: ", year1bothTpModules);
+
+    // Year 2 modules
     const year2tp1modules = await prisma.module.findMany({
-        where: { yearId: 2, tp: "tp1" },
-        select: { code: true, name: true },
+        where: {
+            yearId: 2,
+            tps: {
+                some: { tp: { id: 1 } }, // Using id: 1 for tp1
+            },
+            NOT: {
+                tps: {
+                    some: { tp: { id: 2 } }, // Using id: 2 for tp2
+                },
+            },
+        },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+        },
     });
+    console.log("year2tp1modules: ", year2tp1modules);
+
     const year2tp2modules = await prisma.module.findMany({
-        where: { yearId: 2, tp: "tp2" },
-        select: { code: true, name: true },
+        where: {
+            yearId: 2,
+            tps: {
+                some: { tp: { id: 2 } }, // Using id: 2 for tp2
+            },
+            NOT: {
+                tps: {
+                    some: { tp: { id: 1 } }, // Using id: 1 for tp1
+                },
+            },
+        },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+        },
     });
+    console.log("year2tp2modules: ", year2tp2modules);
+
+    const year2bothTpModules = await prisma.module.findMany({
+        where: {
+            yearId: 2,
+            tps: {
+                some: { tp: { id: 1 } }, // Using id: 1 for tp1
+            },
+            AND: [
+                {
+                    tps: {
+                        some: { tp: { id: 2 } }, // Using id: 2 for tp2
+                    },
+                },
+            ],
+        },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+        },
+    });
+    console.log("year2bothTpModules: ", year2bothTpModules);
+
+    // Year 3 modules
     const year3tp1modules = await prisma.module.findMany({
-        where: { yearId: 3, tp: "tp1" },
-        select: { code: true, name: true },
+        where: {
+            yearId: 3,
+            tps: {
+                some: { tp: { id: 1 } }, // Using id: 1 for tp1
+            },
+            NOT: {
+                tps: {
+                    some: { tp: { id: 2 } }, // Using id: 2 for tp2
+                },
+            },
+        },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+        },
     });
+    console.log("year3tp1modules: ", year3tp1modules);
+
     const year3tp2modules = await prisma.module.findMany({
-        where: { yearId: 3, tp: "tp2" },
-        select: { code: true, name: true },
+        where: {
+            yearId: 3,
+            tps: {
+                some: { tp: { id: 2 } }, // Using id: 2 for tp2
+            },
+            NOT: {
+                tps: {
+                    some: { tp: { id: 1 } }, // Using id: 1 for tp1
+                },
+            },
+        },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+        },
     });
+    console.log("year3tp2modules: ", year3tp2modules);
+
+    const year3bothTpModules = await prisma.module.findMany({
+        where: {
+            yearId: 3,
+            tps: {
+                some: { tp: { id: 1 } }, // Using id: 1 for tp1
+            },
+            AND: [
+                {
+                    tps: {
+                        some: { tp: { id: 2 } }, // Using id: 2 for tp2
+                    },
+                },
+            ],
+        },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+        },
+    });
+    console.log("year3bothTpModules: ", year3bothTpModules);
+
+    // PG Year modules (Year 4)
     const pgtp1modules = await prisma.module.findMany({
-        where: { yearId: 4, tp: "tp1" },
-        select: { code: true, name: true },
+        where: {
+            yearId: 4,
+            tps: {
+                some: { tp: { id: 1 } }, // Using id: 1 for tp1
+            },
+            NOT: {
+                tps: {
+                    some: { tp: { id: 2 } }, // Using id: 2 for tp2
+                },
+            },
+        },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+        },
     });
+    console.log("pgtp1modules: ", pgtp1modules);
+
     const pgtp2modules = await prisma.module.findMany({
-        where: { yearId: 4, tp: "tp2" },
-        select: { code: true, name: true },
+        where: {
+            yearId: 4,
+            tps: {
+                some: { tp: { id: 2 } }, // Using id: 2 for tp2
+            },
+            NOT: {
+                tps: {
+                    some: { tp: { id: 1 } }, // Using id: 1 for tp1
+                },
+            },
+        },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+        },
     });
+    console.log("pgtp2modules: ", pgtp2modules);
+
+    const pgBothTpModules = await prisma.module.findMany({
+        where: {
+            yearId: 4,
+            tps: {
+                some: { tp: { id: 1 } }, // Using id: 1 for tp1
+            },
+            AND: [
+                {
+                    tps: {
+                        some: { tp: { id: 2 } }, // Using id: 2 for tp2
+                    },
+                },
+            ],
+        },
+        select: {
+            id: true,
+            code: true,
+            name: true,
+        },
+    });
+    console.log("pgBothTpModules: ", pgBothTpModules);
 
     type moduleType = {
+        id: number;
         code: string;
         name: string;
     };
+
     // Function to map modules into the structure
-    function mapModules(modules: moduleType[]) {
-        return modules.reduce(
-            (
-                acc: Record<
-                    string,
-                    { Assessments: {}; "Moderation forms": {} }
-                >,
-                module: moduleType,
-            ) => {
-                acc[`${module.code} - ${module.name}`] = {
-                    Assessments: {},
-                    "Moderation forms": {},
-                };
-                return acc;
-            },
-            {},
-        );
+    async function mapModules(modules: moduleType[]) {
+        // Debug: Check if modules array is empty
+        console.log("Number of modules:", modules.length);
+
+        const result: Record<
+            string,
+            {
+                Assessments: Record<string, any>;
+                "Moderation forms": Record<string, any>;
+            }
+        > = {};
+
+        for (const module of modules) {
+            // Debug: Print module info
+            console.log(
+                `Processing module: ${module.code} - ${module.name} (ID: ${module.id})`,
+            );
+
+            const assessments = await prisma.assessment.findMany({
+                where: {
+                    module: {
+                        id: module.id,
+                    },
+                },
+                select: {
+                    id: true,
+                    assessmentType: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                    assessmentCategory: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                    weight: true,
+                },
+            });
+
+            // Debug: Check if assessments were found
+            console.log(
+                `Found ${assessments.length} assessments for module ${module.code}`,
+            );
+
+            const assessmentsObj: Record<string, any> = {};
+
+            // Create an entry for each assessment with the required naming convention
+            assessments.forEach((assessment) => {
+                const assessmentName = `${module.code}_${assessment.assessmentType.name}_${assessment.assessmentCategory.name}_${assessment.weight}`;
+                assessmentsObj[assessmentName] = assessment;
+
+                // Debug: Print assessment info
+                console.log(`Added assessment: ${assessmentName}`);
+            });
+
+            result[`${module.code} - ${module.name}`] = {
+                Assessments: assessmentsObj,
+                "Moderation forms": {},
+            };
+        }
+
+        // Debug: Check final result structure
+        console.log("Final result structure:", Object.keys(result));
+
+        return result;
     }
 
     const folderStructure = {
         UG: {
             "Year 1": {
-                tp1: mapModules(year1tp1modules),
-                tp2: mapModules(year1tp2modules),
+                tp1: await mapModules(year1tp1modules),
+                tp2: await mapModules(year1tp2modules),
+                "tp1 and tp2": await mapModules(year1bothTpModules),
             },
             "Year 2": {
-                tp1: mapModules(year2tp1modules),
-                tp2: mapModules(year2tp2modules),
+                tp1: await mapModules(year2tp1modules),
+                tp2: await mapModules(year2tp2modules),
+                "tp1 and tp2": await mapModules(year2bothTpModules),
             },
             "Year 3": {
-                tp1: mapModules(year3tp1modules),
-                tp2: mapModules(year3tp2modules),
+                tp1: await mapModules(year3tp1modules),
+                tp2: await mapModules(year3tp2modules),
+                "tp1 and tp2": await mapModules(year2bothTpModules),
             },
         },
         PG: {
-            tp1: mapModules(pgtp1modules),
-            tp2: mapModules(pgtp2modules),
+            tp1: await mapModules(pgtp1modules),
+            tp2: await mapModules(pgtp2modules),
+            "tp1 and tp2": await mapModules(pgBothTpModules),
         },
     };
+    console.log(folderStructure);
 
     const createFoldersRecursively = async (
         parentId: string,

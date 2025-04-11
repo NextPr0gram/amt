@@ -1,13 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { Command, Settings, Component, Users, UserRoundPen, BookOpenText, LayoutDashboard, Calendar } from "lucide-react";
+import { Command, Settings, Component, Users, UserRoundPen, BookOpenText, LayoutDashboard, Calendar, Bell } from "lucide-react";
 import { NavUser } from "@/components/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { useEffect, useState } from "react";
 import SidebarCard from "./sidebar-card";
+import { Button } from "./ui/button";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 // Menu items with role-based visibility.
 const items = [
@@ -113,6 +116,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
+                <SidebarGroup>
+                    <SidebarGroupLabel>Demo controls</SidebarGroupLabel>
+                    <div className="space-y-2 ">
+                        <Button className="w-full" variant="outline" onClick={() => toast.error("Toast title", { icon: <Bell className="size-5 mx-2" />, description: "toast description", descriptionClassName: cn("text-red-500") })}>
+                            Toast
+                        </Button>
+                        <div className="flex space-x-2">
+                            <Button onClick={() => protectedFetch("/demo/prev-phase", "POST")} className="flex-1" variant="outline">
+                                Prv Phase
+                            </Button>
+                            <Button onClick={() => protectedFetch("/demo/next-phase", "POST")} className="flex-1" variant="outline">
+                                Nxt Phase
+                            </Button>
+                        </div>
+                    </div>
+
+                </SidebarGroup>
                 <SidebarCard />
                 <NavUser user={userData} />
             </SidebarFooter>
