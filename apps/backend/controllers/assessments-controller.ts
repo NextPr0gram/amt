@@ -124,6 +124,10 @@ const assessmentSchemaWithId = z.object({
 export const createAssessmentHandler = catchErrors(async (req, res) => {
     const { tpId, moduleId, typeId, categoryId, weight, durationInMinutes } =
         assessmentSchema.parse(req.body);
+
+    // Check TpID is in module
+    // Check Weight
+
     const assessment = await prisma.assessment.create({
         data: {
             tpId,
@@ -136,3 +140,36 @@ export const createAssessmentHandler = catchErrors(async (req, res) => {
     });
     return res.status(OK).json(assessment);
 });
+
+const getRemainingAssessmentWeightsSchema = z.object({
+    moduleId: z.coerce.number().int(),
+});
+export const getRemainingAssessmentWeightsHandler = catchErrors(
+    async (req, res) => {
+        const { moduleId } = getRemainingAssessmentWeightsSchema.parse(
+            req.query,
+        );
+
+        const assessments = await prisma.assessment.findMany({
+            where: {
+                moduleId,
+            },
+            select: {
+                weight: true,
+            },
+        });
+
+        const totalWeight = assessments
+            ? assessments.reduce((sum, a) => sum + a.weight, 0)
+            : 0;
+        const remainingWeight = 100 - totalWeight * 100;
+
+        appAssert(
+            !(remainingWeight < 0),
+            INTERNAL_SERVER_ERROR,
+            "Remaining weight is below 0",
+        );
+
+        return res.status(OK).json({ remainingWeight });
+    },
+);

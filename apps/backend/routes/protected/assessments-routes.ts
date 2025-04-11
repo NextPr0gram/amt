@@ -4,6 +4,7 @@ import {
     getAssessmentCategoriesHandler,
     getAssessmentsHandler,
     getAssessmentTypesHandler,
+    getRemainingAssessmentWeightsHandler,
     updateAssessmentsHandler,
 } from "../../controllers/assessments-controller";
 import { authorizeRoles, userRoles } from "apps/backend/middleware/authorize";
@@ -35,6 +36,11 @@ assessmentsRouter.post(
     "/",
     authorizeRoles(userRoles.assessmentLead, userRoles.dev),
     createAssessmentHandler,
+);
+assessmentsRouter.get(
+    "/get-remaining-weight",
+    authorizeRoles(userRoles.assessmentLead, userRoles.dev),
+    getRemainingAssessmentWeightsHandler,
 );
 
 export default assessmentsRouter;
