@@ -179,6 +179,7 @@ export const getUserAssessmentsForCurrentAcademicYearHandler = catchErrors(
                 ],
             },
             select: {
+                id: true,
                 module: {
                     select: {
                         code: true,

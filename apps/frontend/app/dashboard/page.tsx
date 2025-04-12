@@ -7,6 +7,7 @@ import { ModerationProvider } from "@/components/contexts/moderation-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReviewGroupCard from "@/components/dashboard-page/review-group-card";
+import AssessmentsCard from "@/components/dashboard-page/assessments-card";
 
 export default function Page() {
     return (
@@ -47,6 +48,7 @@ export default function Page() {
                                             </CardContent>
                                         </Card>
                                         <ReviewGroupCard />
+                                        <AssessmentsCard />
                                     </div>
                                 </TabsContent>
                             </Tabs>
