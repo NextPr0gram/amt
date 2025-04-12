@@ -13,11 +13,11 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Check, CheckCircle2, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Module, useModules } from "@/components/modules-page/module-context";
 import { DialogClose, DialogTitle } from "../ui/dialog";
 import { Alert, AlertDescription } from "../ui/alert";
 import MultiSelect from "../multi-select";
 import ModalAlert from "../modal-alert";
+import { useModules } from "./module-context";
 
 export type ModuleTutor = {
     id: number;

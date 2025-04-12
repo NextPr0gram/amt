@@ -3,41 +3,50 @@
 import { flexRender, getCoreRowModel, getFacetedRowModel, getFacetedUniqueValues, getFilteredRowModel, getPaginationRowModel, useReactTable } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ColumnDef } from "@tanstack/react-table";
-import { Module, useModules } from "@/components/modules-page/module-context";
 import { useState } from "react";
 import { DataTablePagination } from "../data-table/data-table-pagination";
 import { DialogContent, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Dialog } from "@radix-ui/react-dialog";
-import ModuleModal from "./module-modal";
-import { DataTableToolbar } from "./modules-page-toolbar";
+import AssessmentModal from "./assessment-modal";
+import { Assessment, useAssessments } from "./assessment-context";
+import { DataTableToolbar } from "../data-table/data-table-toolbar";
 
-const columns: ColumnDef<Module>[] = [
+const columns: ColumnDef<Assessment>[] = [
     {
-        accessorKey: "tps",
+        accessorKey: "tpName",
         header: "TP",
-        cell: ({ row }) => (row.original.tps.join(", ")),
         filterFn: (row, columnId, filterValue) => {
             const tpArray = row.getValue<string[]>(columnId);
             return filterValue.some((value: string) => tpArray.includes(value));
         },
     },
     {
-        accessorKey: "code",
+        accessorKey: "moduleCode",
         header: "Module Code",
     },
     {
-        accessorKey: "name",
-        header: "Module Name",
+        accessorKey: "moduleName",
+        header: "Module name",
     },
     {
-        accessorKey: "year",
-        header: "Year",
-        filterFn: "arrIncludesSome",
+        accessorKey: "assessmentType",
+        header: "Type",
     },
     {
-        accessorKey: "lead",
-        header: "Module Lead",
+        accessorKey: "assessmentCategory",
+        header: "Category",
+    },
+    {
+        accessorKey: "weight",
+        header: "Weight",
+        cell: (cell) => {
+            return `${Math.round((cell.getValue() as number) * 100)}%`;
+        },
+    },
+    {
+        accessorKey: "durationInMinutes",
+        header: "Duration (mins)",
     },
 ];
 
@@ -52,27 +61,13 @@ const tpFilterOptions = [
     },
 ];
 
-const yearFilterOptions = [
-    {
-        label: "Year 1",
-        value: "1",
-    },
-    {
-        label: "Year 2",
-        value: "2",
-    },
-    {
-        label: "Year 3",
-        value: "3",
-    },
-];
-export function DataTable() {
-    const { modules } = useModules();
+export function AssessmentsDataTable() {
+    const { assessments } = useAssessments();
     const [globalFilter, setGlobalFilter] = useState([]);
-    const [selectedModule, setSelectedModule] = useState<number>();
+    const [selectedAssessment, setSelectedAssessment] = useState<number>();
 
     const table = useReactTable({
-        data: modules,
+        data: assessments,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -87,7 +82,7 @@ export function DataTable() {
 
     return (
         <div>
-            <DataTableToolbar table={table} tpFilterColumn="tps" tpFilterTitle="TP" tpFilterOptions={tpFilterOptions} yearFilterColumn="year" YearFilterTitle="Year" yearFilterOptions={yearFilterOptions} seachInputPlaceholder="Search module" />
+            <DataTableToolbar table={table} filterColumn="tpName" filterTitle="TP" filterOptions={tpFilterOptions} seachInputPlaceholder="Search assessments" />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -110,7 +105,7 @@ export function DataTable() {
 
                                         <TableCell>
                                             <DialogTrigger asChild>
-                                                <Button variant={"link"} size="sm" className="ml-auto" onClick={() => setSelectedModule(row.original.id)}>
+                                                <Button variant={"link"} size="sm" className="ml-auto" onClick={() => setSelectedAssessment(row.original.id)}>
                                                     View
                                                 </Button>
                                             </DialogTrigger>
@@ -126,12 +121,11 @@ export function DataTable() {
                             )}
                         </TableBody>
                         <DialogContent>
-                            <ModuleModal type="viewOrEdit" moduleId={selectedModule} />
+                            <AssessmentModal type="viewOrEdit" assessmentId={selectedAssessment} />
                         </DialogContent>
                     </Dialog>
                 </Table>
             </div>
-            <DataTablePagination table={table} />
         </div>
     );
 }

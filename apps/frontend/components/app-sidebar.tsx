@@ -33,15 +33,9 @@ const items = [
         allowedRoles: [1], // Assessment Lead
     },
     {
-        title: "Modules",
-        url: "/modules",
+        title: "Modules & Assessments",
+        url: "/modules-and-assessments",
         icon: Component,
-        allowedRoles: [1], // Assessment Lead
-    },
-    {
-        title: "Assessments",
-        url: "/assessments",
-        icon: BookOpenText,
         allowedRoles: [1], // Assessment Lead
     },
     {

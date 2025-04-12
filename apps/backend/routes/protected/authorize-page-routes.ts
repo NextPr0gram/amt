@@ -20,8 +20,7 @@ authorizeRouter.post(
             "/dashboard": [1, 2, 3],
             "/review-groups": [1], // Assessment Lead, Module Tutor
             "/users": [1], // Assessment Lead
-            "/modules": [1], // Assessment Lead
-            "/assessments": [1], // Assessment Lead
+            "/modules-and-assessments": [1], // Assessment Lead
             "/deadlines": [1], // Assessment Lead
         };
 

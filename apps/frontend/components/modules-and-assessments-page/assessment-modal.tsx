@@ -17,11 +17,11 @@ import { DialogClose, DialogTitle } from "../ui/dialog";
 import { Alert, AlertDescription } from "../ui/alert";
 import MultiSelect from "../multi-select";
 import ModalAlert from "../modal-alert";
-import { Module, useModules } from "../modules-page/module-context";
 import { Calendar } from "../ui/calendar";
 import { format } from "date-fns";
 import { Assessment, useAssessments } from "./assessment-context";
 import { Value } from "@radix-ui/react-select";
+import { useModules } from "./module-context";
 
 // module prop required if mode is edit
 interface AssessmentModalProps {
