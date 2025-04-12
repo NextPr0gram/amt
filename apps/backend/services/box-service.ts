@@ -202,7 +202,6 @@ export const createBoxFolders = async (userId: number) => {
             name: true,
         },
     });
-    console.log("year1tp1modules: ", year1tp1modules);
 
     const year1tp2modules = await prisma.module.findMany({
         where: {
@@ -222,7 +221,6 @@ export const createBoxFolders = async (userId: number) => {
             name: true,
         },
     });
-    console.log("year1tp2modules: ", year1tp2modules);
 
     const year1bothTpModules = await prisma.module.findMany({
         where: {
@@ -244,7 +242,6 @@ export const createBoxFolders = async (userId: number) => {
             name: true,
         },
     });
-    console.log("year1bothTpModules: ", year1bothTpModules);
 
     // Year 2 modules
     const year2tp1modules = await prisma.module.findMany({
@@ -265,7 +262,6 @@ export const createBoxFolders = async (userId: number) => {
             name: true,
         },
     });
-    console.log("year2tp1modules: ", year2tp1modules);
 
     const year2tp2modules = await prisma.module.findMany({
         where: {
@@ -285,7 +281,6 @@ export const createBoxFolders = async (userId: number) => {
             name: true,
         },
     });
-    console.log("year2tp2modules: ", year2tp2modules);
 
     const year2bothTpModules = await prisma.module.findMany({
         where: {
@@ -307,7 +302,6 @@ export const createBoxFolders = async (userId: number) => {
             name: true,
         },
     });
-    console.log("year2bothTpModules: ", year2bothTpModules);
 
     // Year 3 modules
     const year3tp1modules = await prisma.module.findMany({
@@ -328,7 +322,6 @@ export const createBoxFolders = async (userId: number) => {
             name: true,
         },
     });
-    console.log("year3tp1modules: ", year3tp1modules);
 
     const year3tp2modules = await prisma.module.findMany({
         where: {
@@ -348,7 +341,6 @@ export const createBoxFolders = async (userId: number) => {
             name: true,
         },
     });
-    console.log("year3tp2modules: ", year3tp2modules);
 
     const year3bothTpModules = await prisma.module.findMany({
         where: {
@@ -370,7 +362,6 @@ export const createBoxFolders = async (userId: number) => {
             name: true,
         },
     });
-    console.log("year3bothTpModules: ", year3bothTpModules);
 
     // PG Year modules (Year 4)
     const pgtp1modules = await prisma.module.findMany({
@@ -391,7 +382,6 @@ export const createBoxFolders = async (userId: number) => {
             name: true,
         },
     });
-    console.log("pgtp1modules: ", pgtp1modules);
 
     const pgtp2modules = await prisma.module.findMany({
         where: {
@@ -411,7 +401,6 @@ export const createBoxFolders = async (userId: number) => {
             name: true,
         },
     });
-    console.log("pgtp2modules: ", pgtp2modules);
 
     const pgBothTpModules = await prisma.module.findMany({
         where: {
@@ -433,33 +422,24 @@ export const createBoxFolders = async (userId: number) => {
             name: true,
         },
     });
-    console.log("pgBothTpModules: ", pgBothTpModules);
 
     type moduleType = {
         id: number;
         code: string;
         name: string;
     };
+    const getCurrentAcademicYear = () => {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const nextYear = currentYear + 1;
 
+        return `${currentYear}/${nextYear.toString().slice(-2)}`;
+    };
     // Function to map modules into the structure
     async function mapModules(modules: moduleType[]) {
-        // Debug: Check if modules array is empty
-        console.log("Number of modules:", modules.length);
-
-        const result: Record<
-            string,
-            {
-                Assessments: Record<string, any>;
-                "Moderation forms": Record<string, any>;
-            }
-        > = {};
+        const result: Record<string, Record<string, any>> = {};
 
         for (const module of modules) {
-            // Debug: Print module info
-            console.log(
-                `Processing module: ${module.code} - ${module.name} (ID: ${module.id})`,
-            );
-
             const assessments = await prisma.assessment.findMany({
                 where: {
                     module: {
@@ -479,63 +459,55 @@ export const createBoxFolders = async (userId: number) => {
                         },
                     },
                     weight: true,
+                    tp: {
+                        select: {
+                            name: true,
+                        },
+                    },
                 },
             });
-
-            // Debug: Check if assessments were found
-            console.log(
-                `Found ${assessments.length} assessments for module ${module.code}`,
-            );
 
             const assessmentsObj: Record<string, any> = {};
 
             // Create an entry for each assessment with the required naming convention
             assessments.forEach((assessment) => {
-                const assessmentName = `${module.code}_${assessment.assessmentType.name}_${assessment.assessmentCategory.name}_${assessment.weight}`;
-                assessmentsObj[assessmentName] = assessment;
-
-                // Debug: Print assessment info
-                console.log(`Added assessment: ${assessmentName}`);
+                const assessmentName = `assessment - ${assessment.tp.name}_${module.code} ${assessment.assessmentType.name} ${assessment.assessmentCategory.name} weight: ${Math.round(assessment.weight * 100)}%`;
+                assessmentsObj[assessmentName] = {};
             });
 
-            result[`${module.code} - ${module.name}`] = {
-                Assessments: assessmentsObj,
-                "Moderation forms": {},
-            };
+            result[`${module.code} - ${module.name}`] = assessmentsObj;
         }
-
-        // Debug: Check final result structure
-        console.log("Final result structure:", Object.keys(result));
 
         return result;
     }
 
+    const currentAcademicYear = getCurrentAcademicYear();
     const folderStructure = {
-        UG: {
-            "Year 1": {
-                tp1: await mapModules(year1tp1modules),
-                tp2: await mapModules(year1tp2modules),
-                "tp1 and tp2": await mapModules(year1bothTpModules),
+        "2025-26": {
+            UG: {
+                "Year 1": {
+                    tp1: await mapModules(year1tp1modules),
+                    tp2: await mapModules(year1tp2modules),
+                    "tp1 and tp2": await mapModules(year1bothTpModules),
+                },
+                "Year 2": {
+                    tp1: await mapModules(year2tp1modules),
+                    tp2: await mapModules(year2tp2modules),
+                    "tp1 and tp2": await mapModules(year2bothTpModules),
+                },
+                "Year 3": {
+                    tp1: await mapModules(year3tp1modules),
+                    tp2: await mapModules(year3tp2modules),
+                    "tp1 and tp2": await mapModules(year2bothTpModules),
+                },
             },
-            "Year 2": {
-                tp1: await mapModules(year2tp1modules),
-                tp2: await mapModules(year2tp2modules),
-                "tp1 and tp2": await mapModules(year2bothTpModules),
+            PG: {
+                tp1: await mapModules(pgtp1modules),
+                tp2: await mapModules(pgtp2modules),
+                "tp1 and tp2": await mapModules(pgBothTpModules),
             },
-            "Year 3": {
-                tp1: await mapModules(year3tp1modules),
-                tp2: await mapModules(year3tp2modules),
-                "tp1 and tp2": await mapModules(year2bothTpModules),
-            },
-        },
-        PG: {
-            tp1: await mapModules(pgtp1modules),
-            tp2: await mapModules(pgtp2modules),
-            "tp1 and tp2": await mapModules(pgBothTpModules),
         },
     };
-    console.log(folderStructure);
-
     const createFoldersRecursively = async (
         parentId: string,
         structure: object,
@@ -554,7 +526,6 @@ export const createBoxFolders = async (userId: number) => {
                         parent: { id: parentId },
                     }),
                 });
-
                 appAssert(
                     res.status,
                     INTERNAL_SERVER_ERROR,
