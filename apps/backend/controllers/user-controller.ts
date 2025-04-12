@@ -154,3 +154,43 @@ export const getReviewGroupHandler = catchErrors(async (req, res) => {
 
     return res.status(OK).json(reviewGroup);
 });
+
+export const getUserAssessmentsForCurrentAcademicYearHandler = catchErrors(
+    async (req, res) => {
+        const userId = getUserIdFromToken(req.cookies.accessToken);
+
+        const assessments = await prisma.academicYearAssessment.findMany({
+            where: {
+                OR: [
+                    {
+                        module: {
+                            moduleLeadId: userId,
+                        },
+                    },
+                    {
+                        module: {
+                            moduleTutors: {
+                                some: {
+                                    userId,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+            select: {
+                module: {
+                    select: {
+                        code: true,
+                    },
+                },
+                assessmentType: true,
+                assessmentCategory: true,
+                weight: true,
+                folderId: true,
+            },
+        });
+        appAssert(assessments, NOT_FOUND, "Could not retrieve assessments");
+        return res.status(OK).json(assessments);
+    },
+);

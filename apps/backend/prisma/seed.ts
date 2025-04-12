@@ -341,6 +341,7 @@ async function main() {
         data: [
             { yearId: 1, group: "A", convenerId: 1 },
             { yearId: 2, group: "A", convenerId: 4 },
+            { yearId: 2, group: "B", convenerId: 38 },
         ],
     });
 
@@ -388,23 +389,34 @@ async function main() {
                 moduleLeadId: await getRandomInt(37),
                 reviewGroupId: 2,
             },
+
             {
                 code: "CS2OS",
                 name: "Operating Systems",
                 yearId: 2,
                 moduleLeadId: await getRandomInt(37),
+                reviewGroupId: 3,
             },
             {
                 code: "CS2PLC",
                 name: "Programming Language Concepts",
                 yearId: 2,
                 moduleLeadId: await getRandomInt(37),
+                reviewGroupId: 3,
             },
+            {
+                code: "CS2DSA",
+                name: "Data Structures and Algorithms in Java",
+                yearId: 2,
+                moduleLeadId: 38,
+                reviewGroupId: 3,
+            },
+
             {
                 code: "CS3IVP",
                 name: "Image and Video Processing",
                 yearId: 3,
-                moduleLeadId: await getRandomInt(37),
+                moduleLeadId: 40,
             },
             {
                 code: "CS3ADG",
@@ -492,6 +504,10 @@ async function main() {
             { moduleId: 3, userId: 7 },
             { moduleId: 3, userId: 24 },
             { moduleId: 3, userId: 28 },
+            { moduleId: 7, userId: 25 },
+            { moduleId: 8, userId: 26 },
+            { moduleId: 9, userId: 2 },
+            { moduleId: 9, userId: 8 },
         ],
     });
 
@@ -546,6 +562,71 @@ async function main() {
                 weight: 1,
                 assessmentTypeId: 3,
                 assessmentCategoryId: 1,
+            },
+
+            {
+                tpId: 1,
+                moduleId: 7,
+                weight: 0.5,
+                assessmentTypeId: 3,
+                assessmentCategoryId: 8,
+            },
+            {
+                tpId: 1,
+                moduleId: 7,
+                weight: 0.5,
+                assessmentTypeId: 3,
+                assessmentCategoryId: 9,
+            },
+
+            {
+                tpId: 1,
+                moduleId: 8,
+                weight: 1,
+                assessmentTypeId: 3,
+                assessmentCategoryId: 1,
+            },
+            {
+                tpId: 1,
+                moduleId: 9,
+                weight: 0.1,
+                assessmentTypeId: 3,
+                assessmentCategoryId: 8,
+            },
+            {
+                tpId: 1,
+                moduleId: 9,
+                weight: 0.1,
+                assessmentTypeId: 3,
+                assessmentCategoryId: 8,
+            },
+            {
+                tpId: 1,
+                moduleId: 9,
+                weight: 0.1,
+                assessmentTypeId: 3,
+                assessmentCategoryId: 8,
+            },
+            {
+                tpId: 1,
+                moduleId: 9,
+                weight: 0.7,
+                assessmentTypeId: 3,
+                assessmentCategoryId: 9,
+            },
+            {
+                tpId: 1,
+                moduleId: 10,
+                weight: 0.3,
+                assessmentTypeId: 3,
+                assessmentCategoryId: 8,
+            },
+            {
+                tpId: 1,
+                moduleId: 10,
+                weight: 0.7,
+                assessmentTypeId: 3,
+                assessmentCategoryId: 9,
             },
         ],
     });

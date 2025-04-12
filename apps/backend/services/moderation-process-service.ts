@@ -14,14 +14,14 @@ let isReviewGroupsCreatedNotificationSent = false;
 
 export const processModerationStatus = async () => {
     logMsg(logType.MODERATION, "Starting processStatus...");
-    const resetModerationStatus = await prisma.moderationStatus.update({
-        where: {
-            id: 1,
-        },
-        data: {
-            moderationPhaseId: 1,
-        },
-    });
+    // const resetModerationStatus = await prisma.moderationStatus.update({
+    //     where: {
+    //         id: 1,
+    //     },
+    //     data: {
+    //         moderationPhaseId: 1,
+    //     },
+    // });
 
     while (true) {
         try {
