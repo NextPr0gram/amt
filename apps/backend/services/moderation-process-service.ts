@@ -10,6 +10,7 @@ import {
 
 const POLL_INTERVAL = 1000;
 let isCannotCreateBoxFolderNotificationSent = false;
+let isReviewGroupsCreatedNotificationSent = false;
 
 export const processModerationStatus = async () => {
     logMsg(logType.MODERATION, "Starting processStatus...");
@@ -166,18 +167,42 @@ const handleModerationPhaseTwo = async (statusData: any) => {
         const isReviewGroupFinalized = await getIsReviewGroupsFinalized();
         let isboxFoldersCreated;
         const userId = await getAssessmentLeadId();
-        console.log(
-            "isReviewGroupFinalized: ",
-            isReviewGroupFinalized,
-            "userId: ",
-            userId,
-        );
-        if (isReviewGroupFinalized) {
-            isboxFoldersCreated = await safeExecute(
-                () => createBoxFolders(userId),
-                "Failed to create box folders",
-            );
+
+        if (!isReviewGroupFinalized) {
+            return;
         }
+
+        // Copy all assessments to AcademicYearAssessment table
+        const assessments = await prisma.assessment.findMany();
+
+        const academicYear = new Date().getFullYear() as number;
+
+        const newAcademicYear = await prisma.academicYear.create({
+            data: {
+                year: academicYear,
+            },
+        });
+
+        const academicYearAssessmentData = assessments.map((assessment) => ({
+            tpId: assessment.tpId,
+            moduleId: assessment.moduleId,
+            weight: assessment.weight,
+            assessmentTypeId: assessment.assessmentTypeId,
+            assessmentCategoryId: assessment.assessmentCategoryId,
+            durationInMinutes: assessment.durationInMinutes,
+            academicYearId: newAcademicYear?.id,
+        }));
+        logMsg(
+            logType.MODERATION,
+            "Copying assessments to academicYearAssessments",
+        );
+        const academicYearAssessments =
+            await prisma.academicYearAssessment.createMany({
+                data: academicYearAssessmentData,
+            });
+
+        // Create box folders
+        isboxFoldersCreated = await createBoxFolders(userId);
 
         if (!isboxFoldersCreated) {
             if (!isCannotCreateBoxFolderNotificationSent) {
@@ -191,7 +216,6 @@ const handleModerationPhaseTwo = async (statusData: any) => {
             }
         } else {
             await sendNotification(userId, "info", "Box folders created");
-
             await advanceModerationStatus();
         }
     } catch (error: any) {
@@ -201,10 +225,21 @@ const handleModerationPhaseTwo = async (statusData: any) => {
 
 // tp 1, stage 1, internal review
 const handleModerationPhaseThree = async (statusData: any) => {
-    logMsg(
-        logType.MODERATION,
-        `Processing Status ${statusData.moderationPhaseId}`,
-    );
+    try {
+        logMsg(
+            logType.MODERATION,
+            `Processing Status ${statusData.moderationPhaseId}`,
+        );
+        if (!isReviewGroupsCreatedNotificationSent) {
+            broadcastNotification(
+                "info",
+                "Review groups have been created, please check the dashboard",
+            );
+            isReviewGroupsCreatedNotificationSent = true;
+        }
+    } catch (error: any) {
+        logMsg(logType.ERROR, error.message);
+    }
 };
 
 // tp 1, stage 1, external review

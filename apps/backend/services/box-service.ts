@@ -180,6 +180,14 @@ const getBoxAccessToken = async (userId: number) => {
     return token?.accessToken;
 };
 
+export const getCurrentAcademicYear = () => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const nextYear = currentYear + 1;
+
+    return `${currentYear}-${nextYear.toString().slice(-2)}`;
+};
+
 export const createBoxFolders = async (userId: number) => {
     const boxAccessToken = await getBoxAccessToken(userId);
 
@@ -428,22 +436,21 @@ export const createBoxFolders = async (userId: number) => {
         code: string;
         name: string;
     };
-    const getCurrentAcademicYear = () => {
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const nextYear = currentYear + 1;
 
-        return `${currentYear}/${nextYear.toString().slice(-2)}`;
-    };
     // Function to map modules into the structure
     async function mapModules(modules: moduleType[]) {
         const result: Record<string, Record<string, any>> = {};
 
+        const currentYear = new Date().getFullYear();
+
         for (const module of modules) {
-            const assessments = await prisma.assessment.findMany({
+            const assessments = await prisma.academicYearAssessment.findMany({
                 where: {
                     module: {
                         id: module.id,
+                    },
+                    academicYear: {
+                        year: currentYear,
                     },
                 },
                 select: {
@@ -472,7 +479,7 @@ export const createBoxFolders = async (userId: number) => {
             // Create an entry for each assessment with the required naming convention
             assessments.forEach((assessment) => {
                 const assessmentName = `assessment - ${assessment.tp.name}_${module.code} ${assessment.assessmentType.name} ${assessment.assessmentCategory.name} weight: ${Math.round(assessment.weight * 100)}%`;
-                assessmentsObj[assessmentName] = {};
+                assessmentsObj[assessmentName] = assessment;
             });
 
             result[`${module.code} - ${module.name}`] = assessmentsObj;
@@ -483,7 +490,7 @@ export const createBoxFolders = async (userId: number) => {
 
     const currentAcademicYear = getCurrentAcademicYear();
     const folderStructure = {
-        "2025-26": {
+        [getCurrentAcademicYear()]: {
             UG: {
                 "Year 1": {
                     tp1: await mapModules(year1tp1modules),
@@ -538,8 +545,35 @@ export const createBoxFolders = async (userId: number) => {
                     `Created folder: ${data.name} (ID: ${data.id})`,
                 );
 
+                const isAssessment = folderName
+                    .toLowerCase()
+                    .includes("assessment".toLowerCase());
+
+                if (isAssessment) {
+                    // add folderId from box to the assessment record
+                    const { id } = subfolders; // in this case since this is an assessment, subfolders is an assessment object
+                    const updateAcademicYearAssessment =
+                        await prisma.academicYearAssessment.update({
+                            where: {
+                                id,
+                            },
+                            data: {
+                                folderId: data.id,
+                            },
+                        });
+                    appAssert(
+                        updateAcademicYearAssessment,
+                        INTERNAL_SERVER_ERROR,
+                        "Could not add folderId to assessment",
+                    );
+                }
+
                 // Recursively create subfolders if they exist
-                if (subfolders && Object.keys(subfolders).length > 0) {
+                if (
+                    !isAssessment &&
+                    subfolders &&
+                    Object.keys(subfolders).length > 0
+                ) {
                     await createFoldersRecursively(data.id, subfolders);
                 }
             }

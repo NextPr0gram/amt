@@ -133,6 +133,8 @@ model AcademicYearAssessment {
     id                   Int                @id @default(autoincrement())
     tpId                 Int
     tp                   TP                 @relation(fields: [tpId], references: [id])
+    academicYearId       Int
+    academicYear         AcademicYear       @relation(fields: [academicYearId], references: [id])
     moduleId             Int
     weight               Float
     assessmentTypeId     Int
@@ -140,15 +142,21 @@ model AcademicYearAssessment {
     durationInMinutes    Int?
     releaseDate          DateTime?
     submissionDate       DateTime?
+    folderId             String?
     module               Module             @relation(fields: [moduleId], references: [id])
     assessmentType       AssessmentType     @relation(fields: [assessmentTypeId], references: [id])
     assessmentCategory   AssessmentCategory @relation(fields: [assessmentCategoryId], references: [id])
 }
 
+
+
 model AcademicYear {
-    id   Int @id @default(autoincrement())
-    year Int
+  id    Int   @id @default(autoincrement())
+  year  Int   
+  academicyearassessment AcademicYearAssessment[]
 }
+
+
 
 model AssessmentType {
     id   Int    @id @default(autoincrement())
