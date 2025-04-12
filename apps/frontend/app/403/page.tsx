@@ -54,7 +54,7 @@ export default function Forbidden() {
                 </CardContent>
                 <CardFooter className="flex justify-center gap-4">
                     <Button asChild>
-                        <Link href="/">
+                        <Link href="/dashboard">
                             <LayoutDashboard className="mr-2 h-4 w-4" />
                             Back to Dashboard
                         </Link>

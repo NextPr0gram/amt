@@ -497,14 +497,20 @@ export const createBoxFolders = async (userId: number) => {
                         : " 1";
 
                 const assessmentName = `assessment - ${assessment.tp.name}_${module.code} ${assessment.assessmentType.name} ${assessment.assessmentCategory.name}${categorySuffix} weight: ${Math.round(assessment.weight * 100)}%`;
-                // add this name to the academic assessmen table
+                assessmentsObj[assessmentName] = assessment;
+            });
+            result[`${module.code} - ${module.name}`] = assessmentsObj;
+        }
+        console.log(result);
+        for (const moduleKey in result) {
+            for (const assessment in result[moduleKey]) {
                 const updateAssessment =
                     await prisma.academicYearAssessment.update({
                         where: {
-                            id: assessment.id,
+                            id: result[moduleKey][assessment].id,
                         },
                         data: {
-                            name: assessmentName,
+                            name: assessment,
                         },
                     });
                 appAssert(
@@ -512,10 +518,7 @@ export const createBoxFolders = async (userId: number) => {
                     INTERNAL_SERVER_ERROR,
                     "Could not add name to assessment",
                 );
-                assessmentsObj[assessmentName] = assessment;
-            });
-            result[`${module.code} - ${module.name}`] = assessmentsObj;
-            console.log(result);
+            }
         }
         return result;
     }

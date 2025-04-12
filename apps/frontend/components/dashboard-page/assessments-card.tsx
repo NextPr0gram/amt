@@ -27,7 +27,7 @@ export type Assessment = {
 };
 
 const AssessmentsCard = () => {
-    const [assessments, setAssessments] = useState<Assessment[] | null>(null)
+    const [assessments, setAssessments] = useState<Assessment[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
@@ -52,18 +52,15 @@ const AssessmentsCard = () => {
                 <CardTitle className="text-lg w-fit">Your assessments</CardTitle>
             </CardHeader>
             <CardContent className='text-sm'>
-
                 {
-                    assessments ? (
+                    assessments?.length ? (
                         <div>
                             <Separator />
                             {
                                 assessments.map((assessment) => (
                                     <div key={assessment.id}>
                                         <div className='flex justify-between py-4 px-2'>
-
                                             {assessment.name ? assessment.name : `${assessment.module.code} - ${assessment.assessmentCategory.name} ${assessment.assessmentType.name} weight: ${Math.round(assessment.weight * 100)}%`}
-
                                             <a className='hover:underline' href={"https://app.box.com/folder/" + assessment.folderId} target="_blank" rel="noopener noreferrer">View folder</a>
                                         </div>
                                         <Separator />
@@ -71,10 +68,9 @@ const AssessmentsCard = () => {
                                 ))
                             }
                         </div>
-                    ) : <p >You are not in any review group</p>
+                    ) : <p>You do not have any assessments</p>
                 }
-            </CardContent>
-        </Card >
+            </CardContent>        </Card >
     )
 }
 

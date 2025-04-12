@@ -54,6 +54,7 @@ const items = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const [userData, setUserData] = useState({ name: "", email: "", avatar: "" });
+    const [isBoxConnected, setIsBoxConnected] = useState(true)
     const [userRoles, setUserRoles] = useState<number[]>([]);
 
     useEffect(() => {
@@ -71,7 +72,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             const roles = rolesRes.data.map((roleObj: { role: { id: number } }) => roleObj.role.id);
             setUserRoles(roles);
         };
+
+        const fetchIsBoxConnected = async () => {
+            const res = await protectedFetch("/user/is-box-connected", "GET")
+            if (res.status !== 200) {
+                setIsBoxConnected(false)
+            }
+
+        }
         fetchData();
+        fetchIsBoxConnected();
     }, []);
 
     // Filter menu items based on user roles
@@ -133,7 +143,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </div>
 
                 </SidebarGroup>
-                <SidebarCard />
+                {!isBoxConnected && <SidebarCard />}
                 <NavUser user={userData} />
             </SidebarFooter>
         </Sidebar>

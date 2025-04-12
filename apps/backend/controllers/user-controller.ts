@@ -212,4 +212,20 @@ export const getUserAssessmentsForCurrentAcademicYearHandler = catchErrors(
     },
 );
 
-export const getIsBoxConnected = catchErrors(async (req, res) => {});
+export const getIsBoxConnected = catchErrors(async (req, res) => {
+    const userId = getUserIdFromToken(req.cookies.accessToken);
+    const boxRefreshtoken = await prisma.user.findUnique({
+        where: {
+            id: userId,
+        },
+        select: {
+            boxRefreshToken: true,
+        },
+    });
+    appAssert(
+        boxRefreshtoken?.boxRefreshToken,
+        NOT_FOUND,
+        "Box refresh token not found",
+    );
+    return res.status(OK).json();
+});

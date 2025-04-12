@@ -1,4 +1,5 @@
 import {
+    getIsBoxConnected,
     getReviewGroupHandler,
     getUserAssessmentsForCurrentAcademicYearHandler,
     getUserHandler,
@@ -15,5 +16,6 @@ userRouter.get("/notifications", getUserNotifications);
 userRouter.get("/user-roles", getUserRoles);
 userRouter.get("/review-group", getReviewGroupHandler);
 userRouter.get("/assessments", getUserAssessmentsForCurrentAcademicYearHandler);
+userRouter.get("/is-box-connected", getIsBoxConnected);
 
 export default userRouter;
