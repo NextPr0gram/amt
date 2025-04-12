@@ -10,6 +10,7 @@ import Link from 'next/link';
 
 export type Assessment = {
     id: number,
+    name?: string,
     module: {
         code: string,
     },
@@ -59,9 +60,9 @@ const AssessmentsCard = () => {
                             {
                                 assessments.map((assessment) => (
                                     <div key={assessment.id}>
-                                        <div className='flex justify-between'>
+                                        <div className='flex justify-between py-4 px-2'>
 
-                                            {`${assessment.module.code} - ${assessment.assessmentCategory.name} ${assessment.assessmentType.name} weight: ${Math.round(assessment.weight * 100)}%`}
+                                            {assessment.name ? assessment.name : `${assessment.module.code} - ${assessment.assessmentCategory.name} ${assessment.assessmentType.name} weight: ${Math.round(assessment.weight * 100)}%`}
 
                                             <a className='hover:underline' href={"https://app.box.com/folder/" + assessment.folderId} target="_blank" rel="noopener noreferrer">View folder</a>
                                         </div>

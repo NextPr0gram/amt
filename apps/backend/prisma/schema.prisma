@@ -131,6 +131,7 @@ model Assessment {
 
 model AcademicYearAssessment {
     id                   Int                @id @default(autoincrement())
+    name                 String?
     tpId                 Int
     tp                   TP                 @relation(fields: [tpId], references: [id])
     academicYearId       Int

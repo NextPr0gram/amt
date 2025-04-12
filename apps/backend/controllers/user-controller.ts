@@ -74,17 +74,17 @@ export const getUserRoles = catchErrors(async (req, res) => {
 });
 
 export const getReviewGroupHandler = catchErrors(async (req, res) => {
-    const isReviewGroupsFinalized = await prisma.moderationStatus.findFirst({
+    const isModerationPhase3 = await prisma.moderationStatus.findFirst({
         select: {
-            finalizeReviewGroups: true,
+            moderationPhaseId: true,
         },
     });
     appAssert(
-        isReviewGroupsFinalized,
+        isModerationPhase3,
         NOT_FOUND,
-        "isReviewGroupsFinalized not found",
+        "Could not retrieve review group becuse it is not internal review phase yet",
     );
-    if (!isReviewGroupsFinalized.finalizeReviewGroups) {
+    if (!(isModerationPhase3.moderationPhaseId >= 3)) {
         return res.status(INTERNAL_SERVER_ERROR).json({
             message: "Canot retrieve review groups when not finalized",
         });
@@ -157,6 +157,21 @@ export const getReviewGroupHandler = catchErrors(async (req, res) => {
 
 export const getUserAssessmentsForCurrentAcademicYearHandler = catchErrors(
     async (req, res) => {
+        const isModerationPhase3 = await prisma.moderationStatus.findFirst({
+            select: {
+                moderationPhaseId: true,
+            },
+        });
+        appAssert(
+            isModerationPhase3,
+            NOT_FOUND,
+            "Could not retrieve assessments becuse it is not internal review phase yet",
+        );
+        if (!(isModerationPhase3.moderationPhaseId >= 3)) {
+            return res.status(INTERNAL_SERVER_ERROR).json({
+                message: "Canot retrieve review groups when not finalized",
+            });
+        }
         const userId = getUserIdFromToken(req.cookies.accessToken);
 
         const assessments = await prisma.academicYearAssessment.findMany({
@@ -180,6 +195,7 @@ export const getUserAssessmentsForCurrentAcademicYearHandler = catchErrors(
             },
             select: {
                 id: true,
+                name: true,
                 module: {
                     select: {
                         code: true,
@@ -195,3 +211,5 @@ export const getUserAssessmentsForCurrentAcademicYearHandler = catchErrors(
         return res.status(OK).json(assessments);
     },
 );
+
+export const getIsBoxConnected = catchErrors(async (req, res) => {});

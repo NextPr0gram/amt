@@ -39,16 +39,8 @@ export default function Page() {
                                 </TabsList>
                                 <TabsContent value="overview" className="space-y-4">
                                     <div className="flex flex-col gap-4">
-                                        <Card >
-                                            <CardHeader>
-                                                <CardTitle className="text-lg">Your assessments</CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-
-                                            </CardContent>
-                                        </Card>
-                                        <ReviewGroupCard />
                                         <AssessmentsCard />
+                                        <ReviewGroupCard />
                                     </div>
                                 </TabsContent>
                             </Tabs>

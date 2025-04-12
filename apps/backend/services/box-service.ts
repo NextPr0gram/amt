@@ -438,11 +438,10 @@ export const createBoxFolders = async (userId: number) => {
     };
 
     // Function to map modules into the structure
+    // Function to map modules into the structure
     async function mapModules(modules: moduleType[]) {
         const result: Record<string, Record<string, any>> = {};
-
         const currentYear = new Date().getFullYear();
-
         for (const module of modules) {
             const assessments = await prisma.academicYearAssessment.findMany({
                 where: {
@@ -473,18 +472,51 @@ export const createBoxFolders = async (userId: number) => {
                     },
                 },
             });
-
             const assessmentsObj: Record<string, any> = {};
 
+            // Track combination of assessment type and category counts
+            const typeCategoryCounts: Record<string, number> = {};
+
             // Create an entry for each assessment with the required naming convention
-            assessments.forEach((assessment) => {
-                const assessmentName = `assessment - ${assessment.tp.name}_${module.code} ${assessment.assessmentType.name} ${assessment.assessmentCategory.name} weight: ${Math.round(assessment.weight * 100)}%`;
+            assessments.forEach(async (assessment) => {
+                // Create a key to track type+category combinations
+                const typeKey = `${assessment.assessmentType.name}_${assessment.assessmentCategory.name}_${module.code}`;
+
+                // Initialize counter if not exists
+                if (!typeCategoryCounts[typeKey]) {
+                    typeCategoryCounts[typeKey] = 0;
+                }
+
+                // Increment the counter
+                typeCategoryCounts[typeKey]++;
+
+                // Add number suffix if this is not the first occurrence
+                const categorySuffix =
+                    typeCategoryCounts[typeKey] > 1
+                        ? ` ${typeCategoryCounts[typeKey]}`
+                        : " 1";
+
+                const assessmentName = `assessment - ${assessment.tp.name}_${module.code} ${assessment.assessmentType.name} ${assessment.assessmentCategory.name}${categorySuffix} weight: ${Math.round(assessment.weight * 100)}%`;
+                // add this name to the academic assessmen table
+                const updateAssessment =
+                    await prisma.academicYearAssessment.update({
+                        where: {
+                            id: assessment.id,
+                        },
+                        data: {
+                            name: assessmentName,
+                        },
+                    });
+                appAssert(
+                    updateAssessment,
+                    INTERNAL_SERVER_ERROR,
+                    "Could not add name to assessment",
+                );
                 assessmentsObj[assessmentName] = assessment;
             });
-
             result[`${module.code} - ${module.name}`] = assessmentsObj;
+            console.log(result);
         }
-
         return result;
     }
 
