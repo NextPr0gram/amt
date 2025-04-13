@@ -11,13 +11,17 @@ import { useEffect, useState } from "react";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, CheckCircle2, ChevronsUpDown } from "lucide-react";
+import { Check, CheckCircle2, ChevronsUpDown, Weight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DialogClose, DialogTitle } from "../ui/dialog";
 import { Alert, AlertDescription } from "../ui/alert";
 import MultiSelect from "../multi-select";
 import ModalAlert from "../modal-alert";
-import { useModules } from "./module-context";
+import { Module, useModules } from "./module-context";
+import { useAssessments } from "./assessment-context"
+import AddAssessmentsInModuleModal from "./add-assessments-in-module-modal";
+import { toast } from "sonner";
+import { notify } from "../contexts/websocket-context";
 
 export type ModuleTutor = {
     id: number;
@@ -38,6 +42,13 @@ interface ModuleModalProps {
 interface Tp {
     id: number;
     name: string;
+}
+export interface ModuleAssessment {
+    id: number;
+    tpId: number;
+    typeId: number;
+    categoryId: number;
+    weight: number;
 }
 
 const formSchema = z
@@ -60,6 +71,16 @@ const formSchema = z
         moduleTutorId: z.number({ invalid_type_error: "Value must be an integer", message: "This field is required" }).int(), // represents module lead id
         // module tutors must be array of numbers and the modulettorid cannot be in the array
         moduleTutors: z.array(z.number({ invalid_type_error: "Values must be integers" })).optional(),
+        assessments: z
+            .array(
+                z.object({
+                    tpId: z.number().int(),
+                    typeId: z.number().int(),
+                    categoryId: z.number().int(),
+                    weight: z.number(),
+                })
+            )
+            .optional(),
     })
     .refine(
         (data) => {
@@ -72,6 +93,7 @@ const formSchema = z
 
 const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
     const { fetchModules, modules } = useModules();
+    const { fetchAssessments } = useAssessments();
     const [moduleTutors, setModuleTutors] = useState<ModuleTutor[]>([]);
     const [years, setyears] = useState<Year[]>([]);
     const [tps, setTps] = useState<Tp[]>([]);
@@ -81,12 +103,13 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
     const [isEditing, setIsEditing] = useState(type === "add" ? true : false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [showError, setShowError] = useState(false);
+    const [moduleAssessments, setModuleAssessments] = useState<ModuleAssessment[]>([]);
 
     useEffect(() => {
         const fetchTps = async () => {
-            const res = await protectedFetch(`/moderation/tps`, "GET")
-            setTps(res.data)
-        }
+            const res = await protectedFetch(`/moderation/tps`, "GET");
+            setTps(res.data);
+        };
 
         const fetchModuleTutors = async () => {
             const res = await protectedFetch("/users", "GET");
@@ -134,6 +157,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
                 yearId: undefined,
                 moduleTutorId: undefined,
                 moduleTutors: [],
+                assessments: [],
             };
         } else if (type === "viewOrEdit") {
             const currentModule = modules.find((module: Module) => module.id === moduleId);
@@ -213,7 +237,20 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
         }
     };
 
+    const handleAssessmentsChange = (assessments: ModuleAssessment[]) => {
+        setModuleAssessments(assessments);
+    };
+    useEffect(() => {
+        form.setValue('assessments', moduleAssessments);
+    }, [moduleAssessments, form]);
+
+    const getModuleTps = () => {
+        const selectedTpIds = form.watch("tpIds") || [];
+        return selectedTpIds;
+    };
+
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        console.log("submit button pressed")
         if (modules.some((module: Module) => module.code === values.moduleCode)) {
             form.setError("moduleCode", {
                 type: "manual",
@@ -222,31 +259,63 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
             return;
         }
         const body = { id: moduleId, code: values.moduleCode, tpIds: values.tpIds, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId, moduleTutors: values.moduleTutors };
-        let res;
+        let isModuleCreated = true
+        let isAssessmentCreated = true
+        let createdModuleId
+        let assessmentsFailedToCreate = []
 
         if (type === "viewOrEdit") {
-            res = await protectedFetch(`/modules`, "PATCH", body);
+            const res = await protectedFetch(`/modules`, "PATCH", body);
+            if (res.status !== 200) {
+                isModuleCreated = false
+            } else {
+                moduleId = res.data.moduleId
+            }
         } else if (type === "add") {
-            res = await protectedFetch("/modules", "POST", body);
-        }
+            const res = await protectedFetch("/modules", "POST", body);
+            if (res.status !== 200) {
+                isModuleCreated = false
+            }
 
-        if (res && res.status !== 200) {
-            setShowSuccess(false);
-            setShowError(true);
+            if (values.assessments.length > 0) {
+                for (const assessment of values.assessments) {
+                    const body = { moduleId: createdModuleId, tpId: assessment.tpId, typeId: assessment.typeId, categoryId: assessment.categoryId, weight: assessment.weight }
+                    const res = await protectedFetch("/assessments", "POST", body);
+                    if (res.status !== 200) {
+                        isModuleCreated = false
+                        assessmentsFailedToCreate.push(body)
+                    }
+                }
+            }
+
+        }
+        if (isModuleCreated) {
+            notify("info", "Module created")
             setIsEditing(true);
         } else {
-            setShowError(false);
-            setShowSuccess(true);
             fetchModules();
+            fetchAssessments();
             setIsEditing(false);
         }
+        if (isAssessmentCreated) {
+            notify("info", "Assessment/s created")
+        } else {
+            notify("error", `Failed to create ${assessmentsFailedToCreate.length} assessment/s`,
+                assessmentsFailedToCreate.map(assessment =>
+                    `* ${tps.find(tp => tp.id === assessment.tpId)?.name}, ${assessment.typeId}, ${assessment.categoryId} weight: ${assessment.weight}%`
+                ).join('\n')
+            );
+        }
+
+
+
     };
     return (
         <>
             <DialogTitle>{type === "add" ? "Add new module" : isEditing ? "Edit module information" : "View module information"}</DialogTitle>
             {showSuccess && <ModalAlert type="success" message={type === "add" ? "Module added successfully" : "Module updated successfully"} />}
             {showError && <ModalAlert type="error" message="Something went wrong" />}
-            <Form {...form}>
+            <Form {...form} >
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <FormField
                         control={form.control}
@@ -385,6 +454,11 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
                             </FormItem>
                         )}
                     />
+                    {form.watch("tpIds") && form.watch("tpIds").length > 0 && (
+                        <div className="mt-6">
+                            <AddAssessmentsInModuleModal onAssessmentsChange={handleAssessmentsChange} tps={getModuleTps()} />
+                        </div>
+                    )}
                     {buttons()}
                 </form>
             </Form>

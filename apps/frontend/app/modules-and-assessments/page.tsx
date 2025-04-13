@@ -35,7 +35,7 @@ export default function Page() {
                                                         Add module
                                                     </Button>
                                                 </DialogTrigger>
-                                                <DialogContent>
+                                                <DialogContent className="max-w-[750px]">
                                                     <ModuleModal type="add" />
                                                 </DialogContent>
                                             </Dialog>
