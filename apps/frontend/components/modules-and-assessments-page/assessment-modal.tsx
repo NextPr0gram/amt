@@ -22,6 +22,7 @@ import { format } from "date-fns";
 import { Assessment, useAssessments } from "./assessment-context";
 import { Value } from "@radix-ui/react-select";
 import { useModules } from "./module-context";
+import { notify } from "../contexts/websocket-context";
 
 // module prop required if mode is edit
 interface AssessmentModalProps {
@@ -53,7 +54,9 @@ const formSchema = z.object({
     typeId: z.number().int(),
     categoryId: z.number().int(),
     weight: z.number(),
-    durationInMinutes: z.number().int().optional(),
+    durationInMinutes: z
+        .union([z.number().int(), z.literal("")])
+        .optional(),
 });
 
 const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
@@ -161,7 +164,7 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
                 typeId: currentAssessment?.assessmentTypeId,
                 categoryId: currentAssessment?.assessmentCategoryId,
                 weight: currentAssessment?.weight,
-                durationInMinutes: currentAssessment?.durationInMinutes,
+                durationInMinutes: currentAssessment.durationInMinutes || undefined,
             };
         }
     };
@@ -231,22 +234,28 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const body = { id: assessmentId, moduleId: values.moduleId, tpId: values.tpId, typeId: values.typeId, categoryId: values.categoryId, weight: values.weight, durationInMinutes: values.durationInMinutes };
-        let res;
-
+        const body = { id: assessmentId, moduleId: values.moduleId, tpId: values.tpId, typeId: values.typeId, categoryId: values.categoryId, weight: values.weight, durationInMinutes: values.durationInMinutes === "" ? undefined : values.durationInMinutes };
+        let isRequestSuccess = true
         if (type === "viewOrEdit") {
-            res = await protectedFetch(`/assessments`, "PATCH", body);
+            const res = await protectedFetch(`/assessments`, "PATCH", body);
+            if (res.status !== 200) {
+                isRequestSuccess = false
+            } else {
+                notify("success", "Assessment updated")
+            }
+
         } else if (type === "add") {
-            res = await protectedFetch("/assessments", "POST", body);
+            const res = await protectedFetch("/assessments", "POST", body);
+            if (res.status !== 200) {
+                isRequestSuccess = false
+            } else {
+                notify("success", "Assessment created")
+            }
         }
 
-        if (res && res.status !== 200) {
-            setShowSuccess(false);
-            setShowError(true);
+        if (!isRequestSuccess) {
             setIsEditing(true);
         } else {
-            setShowError(false);
-            setShowSuccess(true);
             fetchAssessments();
             setIsEditing(false);
         }
@@ -458,15 +467,23 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
                             <FormItem>
                                 <FormLabel>Duration in Minutes (optional) </FormLabel>
                                 <FormControl>
-                                    <Input className={cn(!isEditing && "pointer-events-none")} tabIndex={isEditing ? 0 : -1} type="number" placeholder="e.g. 120" value={field.value ?? undefined} onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)} />
+                                    <div className="flex gap-2">
+
+                                        <Input className={cn(!isEditing && "pointer-events-none")} tabIndex={isEditing ? 0 : -1} type="text" placeholder="e.g. 120" value={field.value ?? undefined} onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)} />
+                                        <Button tabIndex={isEditing ? 0 : -1} className={cn(!isEditing && "pointer-events-none")} size="sm" variant="outline" onClick={(e) => {
+                                            e.preventDefault();
+                                            form.setValue("durationInMinutes", "");
+                                        }}> Clear</Button>
+                                    </div>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
+
                     {buttons()}
                 </form>
-            </Form>
+            </Form >
         </>
     );
 };

@@ -41,7 +41,7 @@ export const WebsocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (!socket) return;
 
         socket.on("notification", (data: { message: string; type: string; title: string }) => {
-            notify(data.type as "info" | "warning" | "error", data.title, data.message)
+            notify(data.type as "info" | "warning" | "error" | "success", data.title, data.message)
         });
 
         return () => {
@@ -58,7 +58,7 @@ export const useWebsocket = () => {
     }
     return context;
 };
-export const notify = (type: "info" | "warning" | "error", title: string, message?: string) => {
+export const notify = (type: "info" | "warning" | "error" | "success", title: string, message?: string) => {
     switch (type) {
         case "info":
             toast(title, { icon: <Bell className="size-5 mx-2" />, description: message, duration: 15000 });
@@ -68,6 +68,9 @@ export const notify = (type: "info" | "warning" | "error", title: string, messag
             break;
         case "error":
             toast.error(title, { description: message, duration: 15000 });
+            break;
+        case "success":
+            toast.success(title, { description: message, duration: 15000 });
             break;
     }
 

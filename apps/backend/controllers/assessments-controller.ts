@@ -47,6 +47,7 @@ export const getAssessmentsHandler = catchErrors(async (req, res) => {
 });
 
 export const updateAssessmentsHandler = catchErrors(async (req, res) => {
+    const parsed = assessmentSchemaWithId.parse(req.body);
     const {
         id,
         tpId,
@@ -55,7 +56,7 @@ export const updateAssessmentsHandler = catchErrors(async (req, res) => {
         categoryId,
         weight,
         durationInMinutes,
-    } = assessmentSchemaWithId.parse(req.body);
+    } = parsed;
     const assessment = await prisma.assessment.update({
         where: {
             id,
@@ -66,7 +67,9 @@ export const updateAssessmentsHandler = catchErrors(async (req, res) => {
             assessmentTypeId: typeId,
             assessmentCategoryId: categoryId,
             weight,
-            durationInMinutes,
+            durationInMinutes: parsed.hasOwnProperty("durationInMinutes")
+                ? durationInMinutes
+                : null,
         },
     });
     appAssert(
