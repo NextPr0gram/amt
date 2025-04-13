@@ -22,6 +22,7 @@ import { useAssessments } from "./assessment-context"
 import AddAssessmentsInModuleModal from "./add-assessments-in-module-modal";
 import { toast } from "sonner";
 import { notify } from "../contexts/websocket-context";
+import { AssessmentType, AssessmentCategory } from "./assessment-modal";
 
 export type ModuleTutor = {
     id: number;
@@ -49,6 +50,7 @@ export interface ModuleAssessment {
     typeId: number;
     categoryId: number;
     weight: number;
+    durationInMinutes?: number;
 }
 
 const formSchema = z
@@ -78,6 +80,7 @@ const formSchema = z
                     typeId: z.number().int(),
                     categoryId: z.number().int(),
                     weight: z.number(),
+                    durationInMinutes: z.number().int().optional(),
                 })
             )
             .optional(),
@@ -104,6 +107,8 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [showError, setShowError] = useState(false);
     const [moduleAssessments, setModuleAssessments] = useState<ModuleAssessment[]>([]);
+    const [assessmentTypes, setAssessmentTypes] = useState<AssessmentType[]>([])
+    const [assessmentCategories, setAssessmentCategories] = useState<AssessmentCategory[]>([])
 
     useEffect(() => {
         const fetchTps = async () => {
@@ -123,9 +128,22 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
             setyears(years);
         };
 
+        const fetchAssessmentTypes = async () => {
+            const res = await protectedFetch("/assessments/types", "GET");
+            setAssessmentTypes(res.data);
+        };
+
+        const fetchAssessmentCategories = async () => {
+            const res = await protectedFetch("/assessments/categories", "GET");
+            setAssessmentCategories(res.data);
+        };
+
         fetchTps();
         fetchModuleTutors();
         fetchYears();
+        fetchAssessmentTypes();
+        fetchAssessmentCategories();
+
     }, []);
 
     useEffect(() => {
@@ -269,20 +287,23 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
             if (res.status !== 200) {
                 isModuleCreated = false
             } else {
-                moduleId = res.data.moduleId
+                createdModuleId = res.data.id
             }
         } else if (type === "add") {
             const res = await protectedFetch("/modules", "POST", body);
             if (res.status !== 200) {
                 isModuleCreated = false
+            } else {
+                createdModuleId = res.data.id
             }
 
             if (values.assessments.length > 0) {
+                console.log("assessments", values.assessments)
                 for (const assessment of values.assessments) {
-                    const body = { moduleId: createdModuleId, tpId: assessment.tpId, typeId: assessment.typeId, categoryId: assessment.categoryId, weight: assessment.weight }
+                    const body = { moduleId: createdModuleId, tpId: assessment.tpId, typeId: assessment.typeId, categoryId: assessment.categoryId, weight: assessment.weight / 100, durationInMinutes: assessment.durationInMinutes }
                     const res = await protectedFetch("/assessments", "POST", body);
                     if (res.status !== 200) {
-                        isModuleCreated = false
+                        isAssessmentCreated = false
                         assessmentsFailedToCreate.push(body)
                     }
                 }
@@ -302,7 +323,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
         } else {
             notify("error", `Failed to create ${assessmentsFailedToCreate.length} assessment/s`,
                 assessmentsFailedToCreate.map(assessment =>
-                    `* ${tps.find(tp => tp.id === assessment.tpId)?.name}, ${assessment.typeId}, ${assessment.categoryId} weight: ${assessment.weight}%`
+                    `[${tps.find(tp => tp.id === assessment.tpId)?.name}, ${assessmentTypes.find(at => at.id === assessment.typeId)?.name}, ${assessmentCategories.find(ac => ac.id === assessment.categoryId)?.name} weight: ${assessment.weight}% Duration: ${assessment.durationInMinutes} minutes]`
                 ).join('\n')
             );
         }
@@ -454,7 +475,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
                             </FormItem>
                         )}
                     />
-                    {form.watch("tpIds") && form.watch("tpIds").length > 0 && (
+                    {isEditing && form.watch("tpIds") && form.watch("tpIds").length > 0 && (
                         <div className="mt-6">
                             <AddAssessmentsInModuleModal onAssessmentsChange={handleAssessmentsChange} tps={getModuleTps()} />
                         </div>
