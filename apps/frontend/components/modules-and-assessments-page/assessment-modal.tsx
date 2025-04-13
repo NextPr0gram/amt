@@ -240,6 +240,7 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
             const res = await protectedFetch(`/assessments`, "PATCH", body);
             if (res.status !== 200) {
                 isRequestSuccess = false
+                notify("error", "Something went wrong", "Failed to upadte assessment")
             } else {
                 notify("success", "Assessment updated")
             }
@@ -248,6 +249,7 @@ const AssessmentModal = ({ type, assessmentId }: AssessmentModalProps) => {
             const res = await protectedFetch("/assessments", "POST", body);
             if (res.status !== 200) {
                 isRequestSuccess = false
+                notify("error", "Something went wrong", "Failed to create assessment")
             } else {
                 notify("success", "Assessment created")
             }
