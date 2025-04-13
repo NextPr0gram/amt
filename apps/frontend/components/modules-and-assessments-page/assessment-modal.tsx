@@ -29,17 +29,17 @@ interface AssessmentModalProps {
     assessmentId?: number;
 }
 
-interface AssessmentType {
+export interface AssessmentType {
     id: number;
     name: string;
 }
 
-interface AssessmentCategory {
+export interface AssessmentCategory {
     id: number;
     name: string;
 }
 
-interface AssessmentTps {
+export interface AssessmentTps {
     tp: {
         id: number;
         name: string;
@@ -53,8 +53,6 @@ const formSchema = z.object({
     typeId: z.number().int(),
     categoryId: z.number().int(),
     weight: z.number(),
-    releaseDate: z.union([z.date(), z.string()]).optional(),
-    submissionDate: z.union([z.date(), z.string()]).optional(),
     durationInMinutes: z.number().int().optional(),
 });
 
