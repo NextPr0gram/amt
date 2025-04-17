@@ -6,6 +6,7 @@ import { catchErrors } from "../utils/catch-errors";
 import { getUserIdFromToken } from "../utils/jwt";
 import { addFolderCollaborator, BoxCollaborationRole, createSingleBoxFolder, getBoxAccessToken } from "../services/box-service";
 import { logMsg, logType } from "../utils/logger";
+import AppErrorCode from "../constants/app-error-code";
 
 export const getErFoldersHandler = catchErrors(async (req, res) => {
     /* 
@@ -41,7 +42,7 @@ export const createErFolderHandler = catchErrors(async (req, res) => {
     const existingEr = await prisma.er.findUnique({
         where: { email },
     });
-    appAssert(!existingEr, CONFLICT, `External reviewer with email ${email} already exists`);
+    appAssert(!existingEr, CONFLICT, `External reviewer with this email already exists`, AppErrorCode.ResourceAlreadyExists);
 
     const boxAccessToken = await getBoxAccessToken(userId);
     appAssert(boxAccessToken, INTERNAL_SERVER_ERROR, "Could not obtain Box access token");
