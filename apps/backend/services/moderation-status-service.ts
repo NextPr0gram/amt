@@ -60,3 +60,41 @@ export const advanceModerationStatus = async () => {
     updateClients();
     return changeToNextPhase;
 };
+
+// ...existing code...
+export const getCurrentAcademicYear = async () => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    let academicYearStartYear: number;
+
+    if (currentMonth >= 8) {
+        academicYearStartYear = currentYear;
+    } else {
+        // January to August
+        academicYearStartYear = currentYear - 1;
+    }
+
+    try {
+        let academicYearRecord = await prisma.academicYear.findFirst({
+            where: {
+                year: academicYearStartYear,
+            },
+        });
+
+        if (!academicYearRecord) {
+            logMsg(logType.MODERATION, `Academic year ${academicYearStartYear} not found, creating it.`);
+            academicYearRecord = await prisma.academicYear.create({
+                data: {
+                    year: academicYearStartYear,
+                },
+            });
+        }
+
+        return academicYearRecord;
+    } catch (error: any) {
+        logMsg(logType.ERROR, `Error getting or creating academic year: ${error.message}`);
+        throw new Error("Could not determine or create the current academic year.");
+    }
+};

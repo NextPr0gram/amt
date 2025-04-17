@@ -1,10 +1,7 @@
 import AppErrorCode from "../constants/app-error-code";
 import { INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/primsa-client";
-import {
-    broadcastNotification,
-    sendNotification,
-} from "../services/notification-service";
+import { broadcastNotification, sendNotification } from "../services/notification-service";
 import appAssert from "../utils/app-assert";
 import { catchErrors } from "../utils/catch-errors";
 import { getUserIdFromToken } from "../utils/jwt";
@@ -16,11 +13,7 @@ export const getReviewGroupsHandler = catchErrors(async (req, res) => {
         },
     });
 
-    appAssert(
-        isReviewGroupsFinalized,
-        NOT_FOUND,
-        "isReviewGroupsFinalized not found",
-    );
+    appAssert(isReviewGroupsFinalized, NOT_FOUND, "isReviewGroupsFinalized not found");
 
     const reviewGroups = await prisma.reviewGroup.findMany({
         select: {
@@ -73,11 +66,7 @@ export const createReviewGroupHandler = catchErrors(async (req, res) => {
             finalizeReviewGroups: true,
         },
     });
-    appAssert(
-        isReviewGroupsFinalized,
-        NOT_FOUND,
-        "isReviewGroupsFinalized not found",
-    );
+    appAssert(isReviewGroupsFinalized, NOT_FOUND, "isReviewGroupsFinalized not found");
     if (isReviewGroupsFinalized.finalizeReviewGroups) {
         return res.status(INTERNAL_SERVER_ERROR).json({
             message: "Cannot modify review groups when finalized",
@@ -91,12 +80,7 @@ export const createReviewGroupHandler = catchErrors(async (req, res) => {
             reviewGroupId: { not: null },
         },
     });
-    appAssert(
-        existingModules.length === 0,
-        NOT_FOUND,
-        "Modules already assigned in another review group",
-        AppErrorCode.InvalidUsageOrAssignment,
-    );
+    appAssert(existingModules.length === 0, NOT_FOUND, "Modules already assigned in another review group", AppErrorCode.InvalidUsageOrAssignment);
 
     // Get previous group character and increment it else start from A
     const newestGroup = await prisma.reviewGroup.findFirst({
@@ -109,9 +93,7 @@ export const createReviewGroupHandler = catchErrors(async (req, res) => {
             group: "desc",
         },
     });
-    const nextChar = newestGroup
-        ? String.fromCharCode(newestGroup.group.charCodeAt(0) + 1)
-        : "A";
+    const nextChar = newestGroup ? String.fromCharCode(newestGroup.group.charCodeAt(0) + 1) : "A";
 
     const reviewGroup = await prisma.reviewGroup.create({
         data: {
@@ -154,9 +136,7 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
     }
 
     const { moduleId } = req.body;
-    const userId = (await getUserIdFromToken(
-        req.cookies.accessToken,
-    )) as number;
+    const userId = (await getUserIdFromToken(req.cookies.accessToken)) as number;
 
     // Find which review group contains this module
     const reviewGroupModule = await prisma.module.findUnique({
@@ -168,11 +148,7 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
         },
     });
 
-    appAssert(
-        reviewGroupModule,
-        NOT_FOUND,
-        "Module not found in any review group",
-    );
+    appAssert(reviewGroupModule, NOT_FOUND, "Module not found in any review group");
 
     const groupName = reviewGroupModule.reviewGroup.group;
 
@@ -186,11 +162,7 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
         },
     });
 
-    appAssert(
-        removeReviewGroupFromModule,
-        INTERNAL_SERVER_ERROR,
-        "Something went wrong while trying to remove review group from module",
-    );
+    appAssert(removeReviewGroupFromModule, INTERNAL_SERVER_ERROR, "Something went wrong while trying to remove review group from module");
 
     // Count remaining modules in this review group
     const remainingModules = await prisma.module.count({
@@ -228,17 +200,11 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
                 group: "asc",
             },
         });
-        appAssert(
-            groupsToUpdate,
-            INTERNAL_SERVER_ERROR,
-            "Something went wrong while trying to update review groups",
-        );
+        appAssert(groupsToUpdate, INTERNAL_SERVER_ERROR, "Something went wrong while trying to update review groups");
 
         // Update each group's letter, shifting down one letter
         for (const group of groupsToUpdate) {
-            const newLetter = String.fromCharCode(
-                group.group.charCodeAt(0) - 1,
-            );
+            const newLetter = String.fromCharCode(group.group.charCodeAt(0) - 1);
             const updateReviewGroupLetter = await prisma.reviewGroup.update({
                 where: {
                     id: group.id,
@@ -247,20 +213,11 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
                     group: newLetter,
                 },
             });
-            appAssert(
-                updateReviewGroupLetter,
-                INTERNAL_SERVER_ERROR,
-                "something went wrong while updating review group letter",
-            );
+            appAssert(updateReviewGroupLetter, INTERNAL_SERVER_ERROR, "something went wrong while updating review group letter");
         }
     }
 
-    await sendNotification(
-        userId,
-        "info",
-        "Review Group",
-        `Module ${reviewGroupModule.code} - ${reviewGroupModule.name} has been removed from review group ${groupName}.${remainingModules === 0 ? " Empty review group was deleted." : ""}`,
-    );
+    await sendNotification(userId, "info", "Review Group", `Module ${reviewGroupModule.code} - ${reviewGroupModule.name} has been removed from review group ${groupName}.${remainingModules === 0 ? " Empty review group was deleted." : ""}`);
 
     return res.status(OK).json({
         message: `Module removed from review group ${groupName}.${remainingModules === 0 ? " Empty review group was deleted." : ""}`,
@@ -268,6 +225,22 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
 });
 
 export const finalizeReviewGroupsHandler = catchErrors(async (req, res) => {
+    const userId = getUserIdFromToken(req.cookies.accessToken) as number;
+    const boxRefreshToken = await prisma.user.findUnique({
+        select: {
+            boxRefreshToken: true,
+        },
+        where: {
+            id: userId,
+        },
+    });
+    if (boxRefreshToken == null) {
+        sendNotification(userId, "error", "Box folders not created", "Box folders cannot be created because your Box account is not connected. Please connect your Box account in the settings page.");
+        return res.status(INTERNAL_SERVER_ERROR).json({
+            message: "Box is not connected",
+        });
+    }
+
     const updateModerationStatus = await prisma.moderationStatus.update({
         where: {
             id: 1,
@@ -276,36 +249,18 @@ export const finalizeReviewGroupsHandler = catchErrors(async (req, res) => {
             finalizeReviewGroups: true,
         },
     });
-    appAssert(
-        updateModerationStatus,
-        INTERNAL_SERVER_ERROR,
-        "Something went wront while updating moderationStatus",
-    );
-    const userId = getUserIdFromToken(req.cookies.accessToken) as number;
-    sendNotification(
-        userId,
-        "info",
-        "Review groups finalized",
-        "Box folders are currently being created. Once this is complete, the moderation phase will move to Stage 1: Internal Review, and all module tutors will be notified",
-    );
+    appAssert(updateModerationStatus, INTERNAL_SERVER_ERROR, "Something went wront while updating moderationStatus");
+    sendNotification(userId, "info", "Review groups finalized", "Box folder creation is in progress. Upon completion, the moderation phase will advance to Stage 1: Internal Review, and relevant moderation staff will be notified.");
     return res.status(OK).json("Review groups finalized");
 });
 
-export const getIsFinalizedReviewGroupsHandler = catchErrors(
-    async (req, res) => {
-        const isFinalizedReviewGroups = await prisma.moderationStatus.findFirst(
-            {
-                select: {
-                    finalizeReviewGroups: true,
-                },
-            },
-        );
+export const getIsFinalizedReviewGroupsHandler = catchErrors(async (req, res) => {
+    const isFinalizedReviewGroups = await prisma.moderationStatus.findFirst({
+        select: {
+            finalizeReviewGroups: true,
+        },
+    });
 
-        appAssert(
-            isFinalizedReviewGroups,
-            NOT_FOUND,
-            "Could not find FinalizedReviewGroups",
-        );
-        return res.status(OK).json(isFinalizedReviewGroups);
-    },
-);
+    appAssert(isFinalizedReviewGroups, NOT_FOUND, "Could not find FinalizedReviewGroups");
+    return res.status(OK).json(isFinalizedReviewGroups);
+});

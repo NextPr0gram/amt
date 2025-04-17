@@ -2,18 +2,14 @@ import { BOX_CLIENT_ID, BOX_CLIENT_SECRET } from "../constants/env";
 import { generateStateToken } from "../utils/jwt";
 import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
-import {
-    BAD_REQUEST,
-    INTERNAL_SERVER_ERROR,
-    NOT_FOUND,
-    OK,
-} from "../constants/http";
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK } from "../constants/http";
 const { BoxClient } = require("box-typescript-sdk-gen/lib/client.generated.js");
 import { BoxOAuth, OAuthConfig } from "box-typescript-sdk-gen";
 import { log, warn } from "node:console";
 import AppErrorCode from "../constants/app-error-code";
 import { logMsg, logType } from "../utils/logger";
 import { sendNotification } from "./notification-service";
+import { getCurrentAcademicYear } from "./moderation-status-service";
 
 // In-memory cache for access tokens
 const boxAccessTokens = new Map();
@@ -70,19 +66,11 @@ export const connectBox = async (userId: number, authCode: string) => {
         body,
     });
 
-    appAssert(
-        res.ok,
-        INTERNAL_SERVER_ERROR,
-        "Could not exchange authorization code for tokens",
-    );
+    appAssert(res.ok, INTERNAL_SERVER_ERROR, "Could not exchange authorization code for tokens");
 
     const data = await res.json();
 
-    appAssert(
-        data.access_token,
-        INTERNAL_SERVER_ERROR,
-        "No access token returned",
-    );
+    appAssert(data.access_token, INTERNAL_SERVER_ERROR, "No access token returned");
 
     // Expiry date -10 minutes
     const expiresInDate = Date.now() + (data.expires_in - 600) * 1000;
@@ -99,11 +87,7 @@ export const connectBox = async (userId: number, authCode: string) => {
             boxRefreshToken: data.refresh_token,
         },
     });
-    appAssert(
-        storeBoxRefreshToken,
-        INTERNAL_SERVER_ERROR,
-        "Something went wrong while trying to store the Box refresh token",
-    );
+    appAssert(storeBoxRefreshToken, INTERNAL_SERVER_ERROR, "Something went wrong while trying to store the Box refresh token");
 
     return data.access_token;
 };
@@ -126,13 +110,7 @@ const refreshBoxAccessToken = async (userId: number, refreshToken: string) => {
         body,
     });
 
-    appAssert(
-        res.status,
-        INTERNAL_SERVER_ERROR,
-        "Could not refresh token",
-        AppErrorCode.FailedToRefreshBoxToken,
-        { userId },
-    );
+    appAssert(res.status, INTERNAL_SERVER_ERROR, "Could not refresh token", AppErrorCode.FailedToRefreshBoxToken, { userId });
 
     const data = await res.json();
 
@@ -151,11 +129,7 @@ const refreshBoxAccessToken = async (userId: number, refreshToken: string) => {
             boxRefreshToken: data.refresh_token,
         },
     });
-    appAssert(
-        storeBoxRefreshToken,
-        INTERNAL_SERVER_ERROR,
-        "Something went wrong while trying to store the Box refresh token",
-    );
+    appAssert(storeBoxRefreshToken, INTERNAL_SERVER_ERROR, "Something went wrong while trying to store the Box refresh token");
 };
 
 const getBoxAccessToken = async (userId: number) => {
@@ -167,25 +141,13 @@ const getBoxAccessToken = async (userId: number) => {
             select: { boxRefreshToken: true },
         });
 
-        appAssert(
-            user?.boxRefreshToken,
-            INTERNAL_SERVER_ERROR,
-            "Refresh token not found",
-        );
+        appAssert(user?.boxRefreshToken, INTERNAL_SERVER_ERROR, "Refresh token not found");
 
         await refreshBoxAccessToken(userId, user.boxRefreshToken);
         token = boxAccessTokens.get(userId);
     }
 
     return token?.accessToken;
-};
-
-export const getCurrentAcademicYear = () => {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const nextYear = currentYear + 1;
-
-    return `${currentYear}-${nextYear.toString().slice(-2)}`;
 };
 
 export const createBoxFolders = async (userId: number) => {
@@ -441,7 +403,7 @@ export const createBoxFolders = async (userId: number) => {
     // Function to map modules into the structure
     async function mapModules(modules: moduleType[]) {
         const result: Record<string, Record<string, any>> = {};
-        const currentYear = new Date().getFullYear();
+        const currentAcademicYear = await getCurrentAcademicYear();
         for (const module of modules) {
             const assessments = await prisma.academicYearAssessment.findMany({
                 where: {
@@ -449,7 +411,7 @@ export const createBoxFolders = async (userId: number) => {
                         id: module.id,
                     },
                     academicYear: {
-                        year: currentYear,
+                        id: currentAcademicYear.id,
                     },
                 },
                 select: {
@@ -491,10 +453,7 @@ export const createBoxFolders = async (userId: number) => {
                 typeCategoryCounts[typeKey]++;
 
                 // Add number suffix if this is not the first occurrence
-                const categorySuffix =
-                    typeCategoryCounts[typeKey] > 1
-                        ? ` ${typeCategoryCounts[typeKey]}`
-                        : " 1";
+                const categorySuffix = typeCategoryCounts[typeKey] > 1 ? ` ${typeCategoryCounts[typeKey]}` : " 1";
 
                 const assessmentName = `assessment - ${assessment.tp.name}_${module.code} ${assessment.assessmentType.name} ${assessment.assessmentCategory.name}${categorySuffix} weight: ${Math.round(assessment.weight * 100)}%`;
                 assessmentsObj[assessmentName] = assessment;
@@ -504,28 +463,24 @@ export const createBoxFolders = async (userId: number) => {
         console.log(result);
         for (const moduleKey in result) {
             for (const assessment in result[moduleKey]) {
-                const updateAssessment =
-                    await prisma.academicYearAssessment.update({
-                        where: {
-                            id: result[moduleKey][assessment].id,
-                        },
-                        data: {
-                            name: assessment,
-                        },
-                    });
-                appAssert(
-                    updateAssessment,
-                    INTERNAL_SERVER_ERROR,
-                    "Could not add name to assessment",
-                );
+                const updateAssessment = await prisma.academicYearAssessment.update({
+                    where: {
+                        id: result[moduleKey][assessment].id,
+                    },
+                    data: {
+                        name: assessment,
+                    },
+                });
+                appAssert(updateAssessment, INTERNAL_SERVER_ERROR, "Could not add name to assessment");
             }
         }
         return result;
     }
 
-    const currentAcademicYear = getCurrentAcademicYear();
+    const currentAcademicYear = await getCurrentAcademicYear();
+
     const folderStructure = {
-        [getCurrentAcademicYear()]: {
+        [`${String(currentAcademicYear.year)}-${String(currentAcademicYear.year + 1)}`]: {
             UG: {
                 "Year 1": {
                     tp1: await mapModules(year1tp1modules),
@@ -550,10 +505,12 @@ export const createBoxFolders = async (userId: number) => {
             },
         },
     };
-    const createFoldersRecursively = async (
-        parentId: string,
-        structure: object,
-    ) => {
+    // delete all folders in box from root folder first
+    const cleanupSuccess = await clearFolderContents("0", boxAccessToken);
+    if (!cleanupSuccess) {
+        return false;
+    }
+    const createFoldersRecursively = async (parentId: string, structure: object) => {
         try {
             for (const [folderName, subfolders] of Object.entries(structure)) {
                 // Create folder using Box API
@@ -568,47 +525,29 @@ export const createBoxFolders = async (userId: number) => {
                         parent: { id: parentId },
                     }),
                 });
-                appAssert(
-                    res.status,
-                    INTERNAL_SERVER_ERROR,
-                    `Failed to create folder: ${folderName}`,
-                );
+                appAssert(res.status, INTERNAL_SERVER_ERROR, `Failed to create folder: ${folderName}`);
 
                 const data = await res.json();
-                logMsg(
-                    logType.BOX,
-                    `Created folder: ${data.name} (ID: ${data.id})`,
-                );
+                logMsg(logType.BOX, `Created folder: ${data.name} (ID: ${data.id})`);
 
-                const isAssessment = folderName
-                    .toLowerCase()
-                    .includes("assessment".toLowerCase());
+                const isAssessment = folderName.toLowerCase().includes("assessment".toLowerCase());
 
                 if (isAssessment) {
                     // add folderId from box to the assessment record
                     const { id } = subfolders; // in this case since this is an assessment, subfolders is an assessment object
-                    const updateAcademicYearAssessment =
-                        await prisma.academicYearAssessment.update({
-                            where: {
-                                id,
-                            },
-                            data: {
-                                folderId: data.id,
-                            },
-                        });
-                    appAssert(
-                        updateAcademicYearAssessment,
-                        INTERNAL_SERVER_ERROR,
-                        "Could not add folderId to assessment",
-                    );
+                    const updateAcademicYearAssessment = await prisma.academicYearAssessment.update({
+                        where: {
+                            id,
+                        },
+                        data: {
+                            folderId: data.id,
+                        },
+                    });
+                    appAssert(updateAcademicYearAssessment, INTERNAL_SERVER_ERROR, "Could not add folderId to assessment");
                 }
 
                 // Recursively create subfolders if they exist
-                if (
-                    !isAssessment &&
-                    subfolders &&
-                    Object.keys(subfolders).length > 0
-                ) {
+                if (!isAssessment && subfolders && Object.keys(subfolders).length > 0) {
                     await createFoldersRecursively(data.id, subfolders);
                 }
             }
@@ -619,9 +558,108 @@ export const createBoxFolders = async (userId: number) => {
         }
     };
 
-    const boxFoldersCreated = await createFoldersRecursively(
-        "0",
-        folderStructure,
-    );
+    const boxFoldersCreated = await createFoldersRecursively("0", folderStructure);
     return boxFoldersCreated;
+};
+
+const clearFolderContents = async (folderIdToClear: string, boxAccessToken: string): Promise<boolean> => {
+    logMsg(logType.BOX, `Attempting to clear contents of folder ID: ${folderIdToClear}`);
+
+    try {
+        // 1. Get items within the folder
+        // Increase limit if you expect more than 1000 items directly in the folder
+        // For very large folders, implement pagination using 'marker' from response
+        const listUrl = `https://api.box.com/2.0/folders/${folderIdToClear}/items?limit=1000`;
+
+        const listRes = await fetch(listUrl, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${boxAccessToken}`,
+            },
+        });
+
+        if (!listRes.ok) {
+            // Handle cases like folder not found (404) or permission issues (403)
+            const errorText = await listRes.text();
+            logMsg(logType.ERROR, `Failed to list items in folder ${folderIdToClear}. Status: ${listRes.status}. Response: ${errorText}`);
+            return false;
+        }
+
+        const listData = await listRes.json();
+
+        if (listData.total_count === 0) {
+            logMsg(logType.BOX, `Folder ID: ${folderIdToClear} is already empty.`);
+            return true; // Nothing to delete
+        }
+
+        logMsg(logType.BOX, `Found ${listData.total_count} items in folder ID: ${folderIdToClear}. Starting deletion...`);
+
+        // 2. Iterate and delete each item
+        // Using Promise.all for potentially faster parallel deletion
+        // Be mindful of Box API rate limits if deleting a huge number of items quickly
+        const deletePromises = listData.entries.map(async (item: any) => {
+            let deleteUrl = "";
+            const headers = { Authorization: `Bearer ${boxAccessToken}` };
+            let success = false;
+
+            try {
+                if (item.type === "folder") {
+                    // Use recursive delete for folders
+                    deleteUrl = `https://api.box.com/2.0/folders/${item.id}?recursive=true`;
+                    logMsg(logType.BOX, `Deleting folder: ${item.name} (ID: ${item.id}) recursively`);
+                    const deleteRes = await fetch(deleteUrl, {
+                        method: "DELETE",
+                        headers,
+                    });
+                    // Successful delete returns 204 No Content
+                    success = deleteRes.status === 204;
+                    if (!success) {
+                        const errorText = await deleteRes.text();
+                        logMsg(logType.ERROR, `Failed to delete folder ${item.name} (ID: ${item.id}). Status: ${deleteRes.status}. Response: ${errorText}`);
+                    } else {
+                        logMsg(logType.BOX, `Successfully deleted folder: ${item.name} (ID: ${item.id})`);
+                    }
+                } else if (item.type === "file") {
+                    deleteUrl = `https://api.box.com/2.0/files/${item.id}`;
+                    logMsg(logType.BOX, `Deleting file: ${item.name} (ID: ${item.id})`);
+                    const deleteRes = await fetch(deleteUrl, {
+                        method: "DELETE",
+                        headers,
+                    });
+                    // Successful delete returns 204 No Content
+                    success = deleteRes.status === 204;
+                    if (!success) {
+                        const errorText = await deleteRes.text();
+                        logMsg(logType.ERROR, `Failed to delete file ${item.name} (ID: ${item.id}). Status: ${deleteRes.status}. Response: ${errorText}`);
+                    } else {
+                        logMsg(logType.BOX, `Successfully deleted file: ${item.name} (ID: ${item.id})`);
+                    }
+                } else {
+                    logMsg(logType.ERROR, `Skipping unknown item type: ${item.type} (Name: ${item.name}, ID: ${item.id})`);
+                    success = true; // Consider skipped items as "not failed" for Promise.all
+                }
+            } catch (error) {
+                logMsg(logType.ERROR, `Exception during deletion of ${item.type} ${item.name} (ID: ${item.id}): ${error}`);
+                success = false;
+            }
+            return success;
+        });
+
+        // Wait for all delete operations to complete
+        const results = await Promise.all(deletePromises);
+
+        // Check if any deletion failed
+        const allSucceeded = results.every((result) => result === true);
+
+        if (allSucceeded) {
+            logMsg(logType.BOX, `Successfully cleared contents of folder ID: ${folderIdToClear}`);
+        } else {
+            logMsg(logType.ERROR, `Failed to clear some contents of folder ID: ${folderIdToClear}. Check previous logs.`);
+        }
+
+        return allSucceeded;
+    } catch (error) {
+        logMsg(logType.ERROR, `Error during clearFolderContents for ID ${folderIdToClear}: ${error}`);
+        return false;
+    }
 };

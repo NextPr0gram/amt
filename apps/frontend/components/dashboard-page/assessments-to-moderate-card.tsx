@@ -1,11 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Badge } from "../ui/badge";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { Separator } from "../ui/separator";
 import { Loader } from "../ui/loader";
-import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export type Assessment = {
     id: number;
@@ -25,17 +24,17 @@ export type Assessment = {
     folderId: string;
 };
 
-type AssessmentsCardProps = {
+type AssessmentsToModerateCardProps = {
     className?: string;
 };
 
-const AssessmentsCard = ({ className }: AssessmentsCardProps) => {
+const AssessmentsToModerateCard = ({ className }: AssessmentsToModerateCardProps) => {
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchAssessments = async () => {
-            const res = await protectedFetch("/user/assessments", "GET");
+            const res = await protectedFetch("/user/assessments-to-moderate", "GET");
             res.status === 200 && setAssessments(res.data);
         };
         fetchAssessments();
@@ -44,7 +43,7 @@ const AssessmentsCard = ({ className }: AssessmentsCardProps) => {
 
     if (isLoading) {
         return (
-            <Card className="h-60 flex justify-center items-center">
+            <Card className={cn("h-60 flex justify-center items-center", className)}>
                 <Loader className="mx-auto" variant="circular" />
             </Card>
         );
@@ -52,7 +51,7 @@ const AssessmentsCard = ({ className }: AssessmentsCardProps) => {
     return (
         <Card className={className}>
             <CardHeader className="flex flex-row justify-between">
-                <CardTitle className="text-lg w-fit">Your assessments</CardTitle>
+                <CardTitle className="text-lg w-fit">Assessments to moderate</CardTitle>
             </CardHeader>
             <CardContent className="text-sm">
                 {assessments?.length ? (
@@ -71,11 +70,11 @@ const AssessmentsCard = ({ className }: AssessmentsCardProps) => {
                         ))}
                     </div>
                 ) : (
-                    <p>You do not have any assessments</p>
+                    <p>You do not have any assessments to moderate</p>
                 )}
             </CardContent>{" "}
         </Card>
     );
 };
 
-export default AssessmentsCard;
+export default AssessmentsToModerateCard;
