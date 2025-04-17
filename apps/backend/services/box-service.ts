@@ -132,7 +132,7 @@ const refreshBoxAccessToken = async (userId: number, refreshToken: string) => {
     appAssert(storeBoxRefreshToken, INTERNAL_SERVER_ERROR, "Something went wrong while trying to store the Box refresh token");
 };
 
-const getBoxAccessToken = async (userId: number) => {
+export const getBoxAccessToken = async (userId: number) => {
     let token = boxAccessTokens.get(userId);
 
     if (!token || Date.now() > token.expiresIn) {
@@ -141,7 +141,7 @@ const getBoxAccessToken = async (userId: number) => {
             select: { boxRefreshToken: true },
         });
 
-        appAssert(user?.boxRefreshToken, INTERNAL_SERVER_ERROR, "Refresh token not found");
+        appAssert(user?.boxRefreshToken, INTERNAL_SERVER_ERROR, "Box refresh token not found");
 
         await refreshBoxAccessToken(userId, user.boxRefreshToken);
         token = boxAccessTokens.get(userId);
@@ -550,8 +550,8 @@ export const createBoxFolders = async (userId: number) => {
                     appAssert(updateAcademicYearAssessment, INTERNAL_SERVER_ERROR, "Could not add folderId to assessment");
 
                     if (assessmentCategoryId === 9) {
-                        const createMainFolder = await createSingleBoxBolder(boxAccessToken, folderId, "Main");
-                        const createDeferredFolder = await createSingleBoxBolder(boxAccessToken, folderId, "Deferred");
+                        const createMainFolder = await createSingleBoxFolder(boxAccessToken, folderId, "Main");
+                        const createDeferredFolder = await createSingleBoxFolder(boxAccessToken, folderId, "Deferred");
                     }
                 }
 
@@ -673,7 +673,7 @@ const clearFolderContents = async (folderIdToClear: string, boxAccessToken: stri
     }
 };
 
-const createSingleBoxBolder = async (boxAccessToken: string, parentId: string, folderName: string) => {
+export const createSingleBoxFolder = async (boxAccessToken: string, parentId: string, folderName: string) => {
     const res = await fetch("https://api.box.com/2.0/folders", {
         method: "POST",
         headers: {
@@ -689,6 +689,7 @@ const createSingleBoxBolder = async (boxAccessToken: string, parentId: string, f
 
     const data = await res.json();
     logMsg(logType.BOX, `Created folder: ${data.name} (ID: ${data.id})`);
+    return data;
 };
 
 const checkIfBoxFolderExists = async (name: string, parentId: string, boxAccessToken: string) => {
@@ -729,4 +730,63 @@ const checkIfBoxFolderExists = async (name: string, parentId: string, boxAccessT
     } catch (error) {
         logMsg(logType.ERROR, `Error during checkIfBoxFolderExists for name "${name}" in parent ID ${parentId}: ${error}`);
     }
+};
+
+export type BoxCollaborationRole = "editor" | "viewer" | "previewer" | "uploader" | "previewer uploader" | "viewer uploader" | "co-owner" | "owner";
+
+interface BoxCollaborationItem {
+    id: string;
+    type: "folder";
+}
+
+interface BoxAccessibleBy {
+    type: "user";
+
+    id?: string;
+    login?: string;
+}
+
+interface CreateCollaborationBody {
+    item: BoxCollaborationItem;
+    accessible_by: BoxAccessibleBy;
+    role: BoxCollaborationRole;
+    can_view_path?: boolean;
+    expires_at?: string;
+}
+
+interface BoxCollaborationResponse {
+    id: string;
+    type: "collaboration";
+}
+
+export const addFolderCollaborator = async (accessToken: string, folderId: string, userEmail: string, role: BoxCollaborationRole) => {
+    const apiUrl = "https://api.box.com/2.0/collaborations";
+
+    const requestBody: CreateCollaborationBody = {
+        item: {
+            id: folderId,
+            type: "folder",
+        },
+        accessible_by: {
+            type: "user",
+            login: userEmail,
+        },
+        role: role,
+    };
+
+    logMsg(logType.BOX, `Adding collaborator ${userEmail} to folder ${folderId} with role ${role}`);
+    const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+    });
+
+    appAssert(response.ok, INTERNAL_SERVER_ERROR, `Failed to add collaborator: ${userEmail} to folder: ${folderId}`);
+
+    const collaborationData: BoxCollaborationResponse = await response.json();
+    logMsg(logType.BOX, `Collaboration created successfully: ${collaborationData.id}`);
+    return collaborationData;
 };

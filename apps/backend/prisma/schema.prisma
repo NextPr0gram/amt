@@ -149,15 +149,11 @@ model AcademicYearAssessment {
     assessmentCategory   AssessmentCategory @relation(fields: [assessmentCategoryId], references: [id])
 }
 
-
-
 model AcademicYear {
-  id    Int   @id @default(autoincrement())
-  year  Int   
-  academicyearassessment AcademicYearAssessment[]
+    id                     Int                      @id @default(autoincrement())
+    year                   Int
+    academicyearassessment AcademicYearAssessment[]
 }
-
-
 
 model AssessmentType {
     id   Int    @id @default(autoincrement())
@@ -230,6 +226,7 @@ model ModerationStatus {
     externalModerationDeadline DateTime
     finalDeadline              DateTime
     finalizeReviewGroups       Boolean         @default(false)
+    erFolderId                 String?
     moderationPhase            ModerationPhase @relation(fields: [moderationPhaseId], references: [id])
 }
 
@@ -252,4 +249,10 @@ model PhaseTrigger {
     name String
 
     moderationPhase ModerationPhase[]
+}
+
+model Er {
+    id       Int     @id @default(autoincrement())
+    email    String  @unique
+    folderId String?
 }

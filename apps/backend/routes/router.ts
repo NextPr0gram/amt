@@ -12,6 +12,7 @@ import demoRouter from "./protected/demo-routes";
 import boxRouter from "./protected/box-routes";
 import { boxCallbackHandler } from "../controllers/box-controller";
 import authorizeRouter from "./protected/authorize-page-routes";
+import erRouter from "./protected/er-routes";
 
 const router = Router();
 
@@ -30,4 +31,5 @@ router.use("/moderation", authenticate, moderationRouter);
 router.use("/box", authenticate, boxRouter);
 router.use("/demo", authenticate, demoRouter);
 router.use("/authorize-page", authenticate, authorizeRouter);
+router.use("/er", authenticate, erRouter); // ER routes
 export default router;
