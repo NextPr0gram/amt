@@ -1,0 +1,39 @@
+"use client";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { protectedFetch } from "@/utils/protected-fetch";
+
+export type ERFolder = {
+    id: string;
+    email: string;
+    folderId: string;
+};
+
+type ERFoldersContextType = {
+    erFolders: ERFolder[];
+    fetchERFolders: () => void;
+};
+
+const ERFoldersContext = createContext<ERFoldersContextType | undefined>(undefined);
+
+export const ERFoldersProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [erFolders, setERFolders] = useState<ERFolder[]>([]);
+
+    const fetchERFolders = async () => {
+        const res = await protectedFetch("/er/folders", "GET");
+        setERFolders(res.data);
+    };
+
+    useEffect(() => {
+        fetchERFolders();
+    }, []);
+
+    return <ERFoldersContext.Provider value={{ erFolders, fetchERFolders }}>{children}</ERFoldersContext.Provider>;
+};
+
+export const useERFolders = () => {
+    const context = useContext(ERFoldersContext);
+    if (!context) {
+        throw new Error("useERFolders must be used within a ERFoldersProvider");
+    }
+    return context;
+};

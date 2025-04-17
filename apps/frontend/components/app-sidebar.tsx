@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Command, Settings, Component, Users, UserRoundPen, BookOpenText, LayoutDashboard, Calendar, Bell } from "lucide-react";
+import { Command, Settings, Component, Users, UserRoundPen, BookOpenText, LayoutDashboard, Calendar, Bell, Folder } from "lucide-react";
 import { NavUser } from "@/components/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import Link from "next/link";
@@ -44,11 +44,17 @@ const items = [
         icon: Calendar,
         allowedRoles: [1], // Assessment Lead
     },
+    {
+        title: "External Reviewers Folders",
+        url: "/er-folders",
+        icon: Folder,
+        allowedRoles: [1], // Assessment Lead
+    },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const [userData, setUserData] = useState({ name: "", email: "", avatar: "" });
-    const [isBoxConnected, setIsBoxConnected] = useState(true)
+    const [isBoxConnected, setIsBoxConnected] = useState(true);
     const [userRoles, setUserRoles] = useState<number[]>([]);
 
     useEffect(() => {
@@ -68,12 +74,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         };
 
         const fetchIsBoxConnected = async () => {
-            const res = await protectedFetch("/user/is-box-connected", "GET")
+            const res = await protectedFetch("/user/is-box-connected", "GET");
             if (res.status !== 200) {
-                setIsBoxConnected(false)
+                setIsBoxConnected(false);
             }
-
-        }
+        };
         fetchData();
         fetchIsBoxConnected();
     }, []);
@@ -135,7 +140,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             </Button>
                         </div>
                     </div>
-
                 </SidebarGroup>
                 {!isBoxConnected && <SidebarCard />}
                 <NavUser user={userData} />
