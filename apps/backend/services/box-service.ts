@@ -400,7 +400,6 @@ export const createBoxFolders = async (userId: number) => {
     };
 
     // Function to map modules into the structure
-    // Function to map modules into the structure
     async function mapModules(modules: moduleType[]) {
         const result: Record<string, Record<string, any>> = {};
         const currentAcademicYear = await getCurrentAcademicYear();
@@ -423,6 +422,7 @@ export const createBoxFolders = async (userId: number) => {
                     },
                     assessmentCategory: {
                         select: {
+                            id: true,
                             name: true,
                         },
                     },
@@ -528,22 +528,31 @@ export const createBoxFolders = async (userId: number) => {
                 appAssert(res.status, INTERNAL_SERVER_ERROR, `Failed to create folder: ${folderName}`);
 
                 const data = await res.json();
-                logMsg(logType.BOX, `Created folder: ${data.name} (ID: ${data.id})`);
+                const folderId = data.id;
+                logMsg(logType.BOX, `Created folder: ${data.name} (ID: ${folderId})`);
 
                 const isAssessment = folderName.toLowerCase().includes("assessment".toLowerCase());
 
                 if (isAssessment) {
                     // add folderId from box to the assessment record
-                    const { id } = subfolders; // in this case since this is an assessment, subfolders is an assessment object
+                    const {
+                        id,
+                        assessmentCategory: { id: assessmentCategoryId },
+                    } = subfolders; // in this case since this is an assessment, subfolders is an assessment object
                     const updateAcademicYearAssessment = await prisma.academicYearAssessment.update({
                         where: {
                             id,
                         },
                         data: {
-                            folderId: data.id,
+                            folderId,
                         },
                     });
                     appAssert(updateAcademicYearAssessment, INTERNAL_SERVER_ERROR, "Could not add folderId to assessment");
+
+                    if (assessmentCategoryId === 9) {
+                        const createMainFolder = await createSingleBoxBolder(boxAccessToken, folderId, "Main");
+                        const createDeferredFolder = await createSingleBoxBolder(boxAccessToken, folderId, "Deferred");
+                    }
                 }
 
                 // Recursively create subfolders if they exist
@@ -661,5 +670,63 @@ const clearFolderContents = async (folderIdToClear: string, boxAccessToken: stri
     } catch (error) {
         logMsg(logType.ERROR, `Error during clearFolderContents for ID ${folderIdToClear}: ${error}`);
         return false;
+    }
+};
+
+const createSingleBoxBolder = async (boxAccessToken: string, parentId: string, folderName: string) => {
+    const res = await fetch("https://api.box.com/2.0/folders", {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${boxAccessToken}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            name: folderName,
+            parent: { id: parentId },
+        }),
+    });
+    appAssert(res.status, INTERNAL_SERVER_ERROR, `Failed to create folder: ${folderName}`);
+
+    const data = await res.json();
+    logMsg(logType.BOX, `Created folder: ${data.name} (ID: ${data.id})`);
+};
+
+const checkIfBoxFolderExists = async (name: string, parentId: string, boxAccessToken: string) => {
+    logMsg(logType.BOX, `Checking if folder "${name}" exists in parent folder ID: ${parentId}`);
+    try {
+        const listUrl = `https://api.box.com/2.0/folders/${parentId}/items?fields=id,name,type&limit=1000`; // Request only necessary fields
+
+        const listRes = await fetch(listUrl, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${boxAccessToken}`,
+            },
+        });
+
+        if (!listRes.ok) {
+            const errorText = await listRes.text();
+            if (listRes.status === 404) {
+                logMsg(logType.ERROR, `Parent folder ID ${parentId} not found when checking for folder "${name}". Status: ${listRes.status}. Response: ${errorText}`);
+            } else {
+                logMsg(logType.ERROR, `Failed to list items in parent folder ${parentId} when checking for folder "${name}". Status: ${listRes.status}. Response: ${errorText}`);
+            }
+
+            return false;
+        }
+
+        const listData = await listRes.json();
+
+        for (const item of listData.entries) {
+            // Check if the item is a folder and its name matches the target name
+            if (item.type === "folder" && item.name === name) {
+                logMsg(logType.BOX, `Folder "${name}" found with ID ${item.id} in parent folder ID: ${parentId}`);
+                return true; // Folder found
+            }
+        }
+
+        logMsg(logType.BOX, `Folder "${name}" was not found in parent folder ID: ${parentId}`);
+        return false;
+    } catch (error) {
+        logMsg(logType.ERROR, `Error during checkIfBoxFolderExists for name "${name}" in parent ID ${parentId}: ${error}`);
     }
 };
