@@ -5,6 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ColumnDef } from "@tanstack/react-table";
 import { ERFolder, useERFolders } from "./er-folders-context";
 import { Button } from "@/components/ui/button";
+import { protectedFetch } from "@/utils/protected-fetch";
+import { notify } from "../contexts/websocket-context";
 
 export const columns: ColumnDef<ERFolder>[] = [
     {
@@ -27,7 +29,7 @@ export const columns: ColumnDef<ERFolder>[] = [
 ];
 
 export function DataTable() {
-    const { erFolders } = useERFolders();
+    const { erFolders, fetchERFolders } = useERFolders();
 
     const table = useReactTable({
         data: erFolders,
@@ -55,6 +57,23 @@ export function DataTable() {
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                     ))}
+                                    <TableCell>
+                                        <Button
+                                            variant="destructive"
+                                            size={"sm"}
+                                            onClick={async () => {
+                                                const res = await protectedFetch("/er/folders", "DELETE", {
+                                                    id: row.original.id,
+                                                });
+                                                if (res.status === 200) {
+                                                    notify("info", "Folder deleted successfully");
+                                                    fetchERFolders();
+                                                }
+                                            }}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             ))
                         ) : (

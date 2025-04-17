@@ -790,3 +790,18 @@ export const addFolderCollaborator = async (accessToken: string, folderId: strin
     logMsg(logType.BOX, `Collaboration created successfully: ${collaborationData.id}`);
     return collaborationData;
 };
+
+export const deleteBoxFolder = async (folderId: string, boxAccessToken: string) => {
+    const url = `https://api.box.com/2.0/folders/${folderId}`;
+    const res = await fetch(url, {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${boxAccessToken}`,
+        },
+    });
+    console.log(res);
+    console.log("res", res.status);
+    appAssert(res.status === 204, INTERNAL_SERVER_ERROR, `Failed to delete folder with ID ${folderId}`);
+    logMsg(logType.BOX, `Successfully deleted folder with ID ${folderId}`);
+    return true;
+};

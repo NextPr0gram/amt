@@ -36,6 +36,7 @@ const ERFolderModal = () => {
         });
         setLoading(false);
         if (res.status === 200 || res.status === 201) {
+            notify("info", "Folder added successfully");
             fetchERFolders();
             form.reset();
         } else {

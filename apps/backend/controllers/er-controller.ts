@@ -4,7 +4,7 @@ import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
 import { catchErrors } from "../utils/catch-errors";
 import { getUserIdFromToken } from "../utils/jwt";
-import { addFolderCollaborator, BoxCollaborationRole, createSingleBoxFolder, getBoxAccessToken } from "../services/box-service";
+import { addFolderCollaborator, BoxCollaborationRole, createSingleBoxFolder, deleteBoxFolder, getBoxAccessToken } from "../services/box-service";
 import { logMsg, logType } from "../utils/logger";
 import AppErrorCode from "../constants/app-error-code";
 
@@ -36,7 +36,7 @@ const createErFolderHandlerRequestSchema = z.object({
 
 export const createErFolderHandler = catchErrors(async (req, res) => {
     const { email } = createErFolderHandlerRequestSchema.parse(req.body);
-    const userId = 38;
+    const userId = getUserIdFromToken(req.cookies.accessToken);
     appAssert(userId, INTERNAL_SERVER_ERROR, "User ID is missing or invalid");
 
     const existingEr = await prisma.er.findUnique({
@@ -102,4 +102,30 @@ export const createErFolderHandler = catchErrors(async (req, res) => {
         email: newEr.email,
         folderId: newEr.folderId,
     });
+});
+
+export const deleteErFolderHandler = catchErrors(async (req, res) => {
+    const { id } = req.body;
+    const userId = getUserIdFromToken(req.cookies.accessToken);
+    appAssert(userId, INTERNAL_SERVER_ERROR, "User ID is missing or invalid");
+
+    const er = await prisma.er.findUnique({
+        where: { id: Number(id) },
+        select: { folderId: true },
+    });
+    appAssert(er, NOT_FOUND, `ER with ID ${id} not found`);
+
+    // 3. Delete ER Folder from Box
+    const boxAccessToken = await getBoxAccessToken(userId);
+    appAssert(boxAccessToken, INTERNAL_SERVER_ERROR, "Could not obtain Box access token");
+
+    const deletedFolder = await deleteBoxFolder(er.folderId, boxAccessToken);
+    appAssert(deletedFolder, INTERNAL_SERVER_ERROR, `Failed to delete folder ${er.folderId} in Box`);
+
+    await prisma.er.delete({
+        where: { id: Number(id) },
+    });
+
+    logMsg(logType.MODERATION, `Successfully deleted ER folder and record for ${er.email}`);
+    return res.status(OK).json({ message: `ER folder and record for ${er.email} deleted successfully` });
 });
