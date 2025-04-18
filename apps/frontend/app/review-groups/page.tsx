@@ -5,7 +5,7 @@ import { DataTable } from "@/components/review-groups-page/data-table";
 import { ReviewGroupsProvider } from "@/components/review-groups-page/review-groups-context";
 import { WebsocketProvider } from "@/components/contexts/websocket-context";
 import { ModerationProvider } from "@/components/contexts/moderation-context";
-import CreateReviewGroupDialog from "@/components/review-groups-page/dialog";
+import CreateReviewGroupDialog from "@/components/review-groups-page/create-review-groups-dialog";
 
 export default function Page() {
     return (

@@ -3,10 +3,7 @@ import { ModerationProvider } from "@/components/contexts/moderation-context";
 import { WebsocketProvider } from "@/components/contexts/websocket-context";
 import { DateStage } from "@/components/date-stage";
 import { DeadlinesForm } from "@/components/deadlines-page/deadlines-form";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { DataTable } from "@/components/users-page/data-table";
-import { UsersProvider } from "@/components/users-page/user-context";
 
 export default function Page() {
     return (
