@@ -6,6 +6,6 @@ const usersRouter = Router();
 
 // Prefix: /users
 usersRouter.get("/", authorizeRoles(userRoles.assessmentLead, userRoles.dev), getModuleTutorsHandler);
-usersRouter.post("/notigy", sendNotificationsToUsersHandler);
+usersRouter.post("/notify", authorizeRoles(userRoles.assessmentLead, userRoles.dev), sendNotificationsToUsersHandler);
 
 export default usersRouter;

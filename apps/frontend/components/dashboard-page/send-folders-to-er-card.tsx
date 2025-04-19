@@ -47,6 +47,8 @@ const SendFoldersToErCard = () => {
     // Ensure ERFolder type includes 'id' and 'email'
     const { fetchERFolders, erFolders } = useERFolders();
     const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState("");
+    const [isAssessmentsFetched, setIsAssessmentsFetched] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -69,23 +71,30 @@ const SendFoldersToErCard = () => {
         const fetchExamOnlyAssessments = async () => {
             try {
                 const res = await protectedFetch("/academic-year-assessments/current-ac-year-exams", "GET");
-                if (res.data && Array.isArray(res.data)) {
+                if (res.data && Array.isArray(res.data) && res.status === 200) {
+                    setIsAssessmentsFetched(true);
                     form.reset({
                         assessments: res.data.map((assessment) => ({
                             assessmentId: assessment.id,
                             folderId: assessment.folderId,
                             assessmentName: assessment.name,
                             sendToEr: false,
-                            // Initialize erFolderId as undefined
                             erFolderId: undefined,
                             message: "",
                         })),
                     });
                 } else {
+                    setIsAssessmentsFetched(false);
+                    if (res.data.code === "NotExternalReview") {
+                        setMessage("Cannot retrieve assessments because it is not external review phase yet");
+                    } else {
+                        setMessage("No exam assessments found for the current academic year.");
+                    }
                     console.error("Unexpected data format for assessments:", res.data);
-                    form.reset({ assessments: [] }); // Reset to empty on error
+                    form.reset({ assessments: [] });
                 }
             } catch (error) {
+                form.reset({ assessments: [] });
                 console.error("Error fetching assessments:", error);
             } finally {
                 setLoading(false);
@@ -150,10 +159,17 @@ const SendFoldersToErCard = () => {
     };
 
     if (loading && fields.length === 0) {
-        // Show loader only if loading initial data
         return (
             <Card className="h-60 flex justify-center items-center">
                 <Loader className="mx-auto" variant="circular" />
+            </Card>
+        );
+    }
+
+    if (!isAssessmentsFetched) {
+        return (
+            <Card className=" flex justify-center items-center">
+                <p className="text-sm text-muted-foreground text-center py-4">{message}</p>
             </Card>
         );
     }
@@ -163,12 +179,10 @@ const SendFoldersToErCard = () => {
             <CardHeader className="flex flex-row justify-between p-0">
                 <CardTitle className="text-lg w-fit">Send Folders to ER / Notify Tutors</CardTitle>
             </CardHeader>
-            {/* Use h-[calc(100vh-SOME_OFFSET)] or similar if needed for specific height */}
             <ScrollArea className="h-full w-full">
                 <CardContent className="text-sm p-0 ">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
-                            {fields.length === 0 && !loading && <p className="text-muted-foreground text-center py-4">No exam assessments found for the current academic year.</p>}
                             {fields.map((field, index) => {
                                 const watchSendToEr = form.watch(`assessments.${index}.sendToEr`);
                                 return (

@@ -7,11 +7,24 @@ import { getNOfCommentsInFolder, getNOfFilesInFolder } from "../services/box-ser
 import { getUserIdFromToken } from "../utils/jwt";
 import { getCurrentAcademicYear } from "../services/moderation-status-service";
 import { logMsg, logType } from "../utils/logger";
+import AppErrorCode from "../constants/app-error-code";
 
 export const getAcademicAssessmentsHandler = catchErrors(async (req, res) => {
     return res.status(OK).json();
 });
 export const getCurrentACYearExams = catchErrors(async (req, res) => {
+    const isModerationPhase4 = await prisma.moderationStatus.findFirst({
+        select: {
+            moderationPhaseId: true,
+        },
+    });
+    appAssert(isModerationPhase4, NOT_FOUND, "Could not retrieve assessments becuse it is not external review phase yet");
+    if (!(isModerationPhase4.moderationPhaseId >= 4)) {
+        return res.status(INTERNAL_SERVER_ERROR).json({
+            message: "Canot retrieve assessments because it is not external review phase yet",
+            code: AppErrorCode.NotExternalReview,
+        });
+    }
     const userId = 38;
     appAssert(userId, BAD_REQUEST, "User ID not found in request");
 

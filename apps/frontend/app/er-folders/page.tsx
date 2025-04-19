@@ -15,8 +15,8 @@ export default function Page() {
             <AppSidebar />
             <SidebarInset>
                 <WebsocketProvider>
-                    <ModerationProvider>
-                        <ERFoldersProvider>
+                    <ERFoldersProvider>
+                        <ModerationProvider>
                             <DateStage />
                             <header className="flex h-16 shrink-0 items-center gap-2 px-4">
                                 <div className="flex items-center gap-2 ">
@@ -36,8 +36,8 @@ export default function Page() {
                             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                                 <DataTable />
                             </div>
-                        </ERFoldersProvider>
-                    </ModerationProvider>
+                        </ModerationProvider>
+                    </ERFoldersProvider>
                 </WebsocketProvider>
             </SidebarInset>
         </SidebarProvider>

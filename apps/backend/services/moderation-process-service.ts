@@ -8,6 +8,7 @@ import { broadcastNotification, sendNotification } from "./notification-service"
 const POLL_INTERVAL = 1000;
 let isCannotCreateBoxFolderNotificationSent = false;
 let isReviewGroupsCreatedNotificationSent = false;
+let isBoxFoldersCleared = false;
 
 export const processModerationStatus = async () => {
     logMsg(logType.MODERATION, "Starting processStatus...");
@@ -133,19 +134,22 @@ const handleModerationPhaseOne = async (statusData: any) => {
         // }
         // delete all folders in box from root folder first
         const userId = await getAssessmentLeadId();
-        await clearFolderContents("0", userId);
-        await prisma.academicYearAssessment.deleteMany();
-        await prisma.academicYear.deleteMany();
-        await prisma.er.deleteMany();
-        await prisma.moderationStatus.update({
-            where: {
-                id: 1,
-            },
-            data: {
-                finalizeReviewGroups: false,
-                erFolderId: null,
-            },
-        });
+        if (!isBoxFoldersCleared) {
+            await clearFolderContents("0", userId);
+            await prisma.academicYearAssessment.deleteMany();
+            await prisma.academicYear.deleteMany();
+            await prisma.er.deleteMany();
+            await prisma.moderationStatus.update({
+                where: {
+                    id: 1,
+                },
+                data: {
+                    finalizeReviewGroups: false,
+                    erFolderId: null,
+                },
+            });
+        }
+        isBoxFoldersCleared = true;
     } catch (error: any) {
         logMsg(logType.ERROR, `error in handleModerationPhaseOne: ${error.message}`);
     }
@@ -208,6 +212,8 @@ const handleModerationPhaseThree = async (statusData: any) => {
             broadcastNotification("info", "Review groups have been created, please check the dashboard");
             isReviewGroupsCreatedNotificationSent = true;
         }
+        // if deadline is reached, update the status to 4
+        // await advanceModerationStatus();
     } catch (error: any) {
         logMsg(logType.ERROR, error.message);
     }

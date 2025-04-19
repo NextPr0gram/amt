@@ -9,14 +9,6 @@ import { logMsg, logType } from "../utils/logger";
 import AppErrorCode from "../constants/app-error-code";
 
 export const getErFoldersHandler = catchErrors(async (req, res) => {
-    /* 
-    model Er {
-    id       Int     @id @default(autoincrement())
-    email    String  @unique
-    folderId String?
-}
-
-    */
     const ers = await prisma.er.findMany({
         select: {
             id: true,
@@ -32,7 +24,7 @@ const createErFolderHandlerRequestSchema = z.object({
     email: z.string().email(),
 });
 
-// create zod schema for request body
+
 
 export const createErFolderHandler = catchErrors(async (req, res) => {
     const { email } = createErFolderHandlerRequestSchema.parse(req.body);
@@ -131,6 +123,17 @@ export const deleteErFolderHandler = catchErrors(async (req, res) => {
 });
 
 export const copyExamAssessmentFolderToErHandler = catchErrors(async (req, res) => {
+    const isModerationPhase4 = await prisma.moderationStatus.findFirst({
+        select: {
+            moderationPhaseId: true,
+        },
+    });
+    appAssert(isModerationPhase4, NOT_FOUND, "Could not retrieve assessments becuse it is not external review phase yet");
+    if (!(isModerationPhase4.moderationPhaseId >= 4)) {
+        return res.status(INTERNAL_SERVER_ERROR).json({
+            message: "Canot retrieve assessments because it is not external review phase yet",
+        });
+    }
     const reqBody: { id: number; erFolderId: number }[] = req.body;
     const userId = getUserIdFromToken(req.cookies.accessToken);
     appAssert(userId, INTERNAL_SERVER_ERROR, "User ID is missing or invalid");

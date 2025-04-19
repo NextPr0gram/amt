@@ -4,6 +4,7 @@ const enum AppErrorCode {
     FaiedToCreateBoxFolders = "FaiedToCreateBoxFolders",
     FailedToRefreshBoxToken = "FailedToRefreshBoxToken",
     ResourceAlreadyExists = "ResourceAlreadyExists",
+    NotExternalReview = "NotExternalReview",
 }
 
 export default AppErrorCode;
