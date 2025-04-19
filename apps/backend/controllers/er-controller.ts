@@ -4,7 +4,7 @@ import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
 import { catchErrors } from "../utils/catch-errors";
 import { getUserIdFromToken } from "../utils/jwt";
-import { addFolderCollaborator, BoxCollaborationRole, createSingleBoxFolder, deleteBoxFolder, getBoxAccessToken } from "../services/box-service";
+import { addFolderCollaborator, BoxCollaborationRole, copyBoxFolder, createSingleBoxFolder, deleteBoxFolder, getBoxAccessToken } from "../services/box-service";
 import { logMsg, logType } from "../utils/logger";
 import AppErrorCode from "../constants/app-error-code";
 
@@ -128,4 +128,38 @@ export const deleteErFolderHandler = catchErrors(async (req, res) => {
 
     logMsg(logType.MODERATION, `Successfully deleted ER folder and record for ${er.email}`);
     return res.status(OK).json({ message: `ER folder and record for ${er.email} deleted successfully` });
+});
+
+export const copyExamAssessmentFolderToErHandler = catchErrors(async (req, res) => {
+    const reqBody: { id: number; erFolderId: number }[] = req.body;
+    const userId = getUserIdFromToken(req.cookies.accessToken);
+    appAssert(userId, INTERNAL_SERVER_ERROR, "User ID is missing or invalid");
+    for (const item of reqBody) {
+        const { id, erFolderId } = item;
+
+        appAssert(id && erFolderId, BAD_REQUEST, "ID and ER Folder ID are required");
+
+        const assessmentFolder = await prisma.academicYearAssessment.findUnique({
+            where: { id: Number(id) },
+            select: { folderId: true },
+        });
+
+        appAssert(assessmentFolder?.folderId, NOT_FOUND, `Assessment with ID ${id} or its folderId not found`);
+
+        const erFolder = await prisma.er.findUnique({
+            where: { id: Number(erFolderId) },
+            select: { folderId: true },
+        });
+        appAssert(erFolder?.folderId, NOT_FOUND, `ER with ID ${erFolderId} or its folderId not found`);
+
+        const sourceFolderId = assessmentFolder.folderId;
+        const destinationFolderId = erFolder.folderId;
+
+        logMsg(logType.BOX, `Attempting to copy folder ${sourceFolderId} to ${destinationFolderId} for user ${userId}`);
+        const isBoxFolderCopied = await copyBoxFolder(sourceFolderId, destinationFolderId, userId);
+        appAssert(isBoxFolderCopied, INTERNAL_SERVER_ERROR, `Failed to copy folder ${sourceFolderId} to ${destinationFolderId} in Box`);
+        logMsg(logType.BOX, `Successfully copied folder ${sourceFolderId} to ${destinationFolderId}`);
+    }
+
+    return res.status(OK).json({ message: "Successfully copied folders to ER folders" });
 });

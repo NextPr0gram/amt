@@ -12,4 +12,5 @@ userRouter.get("/assessments", getUserAssessmentsForCurrentAcademicYearHandler);
 userRouter.get("/is-box-connected", getIsBoxConnected);
 userRouter.get("/assessments-to-moderate", getUserAssessmentsToModerateHandler);
 
+
 export default userRouter;

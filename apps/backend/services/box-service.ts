@@ -805,3 +805,33 @@ export const deleteBoxFolder = async (folderId: string, boxAccessToken: string) 
     logMsg(logType.BOX, `Successfully deleted folder with ID ${folderId}`);
     return true;
 };
+
+export const copyBoxFolder = async (sourceFolderId: string, destinationFolderId: string, userId: number) => {
+    const boxAccessToken = await getBoxAccessToken(userId);
+    const url = `https://api.box.com/2.0/folders/${sourceFolderId}/copy`;
+    const body = {
+        parent: {
+            id: destinationFolderId,
+        },
+    };
+
+    const res = await fetch(url, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${boxAccessToken}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+    console.log(res);
+
+    if (res.status !== 201) {
+        const errorText = await res.text();
+        logMsg(logType.ERROR, `Failed to copy folder from ${sourceFolderId} to ${destinationFolderId}. Status: ${res.status}. Response: ${errorText}`);
+        return false;
+    }
+
+    const data = await res.json();
+    logMsg(logType.BOX, `Successfully copied folder from ${sourceFolderId} to ${destinationFolderId}. New folder ID: ${data.id}`);
+    return data;
+};
