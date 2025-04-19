@@ -44,25 +44,20 @@ export const getCurrentACYearExams = catchErrors(async (req, res) => {
                 assessmentId: exam.id,
                 assessmentName: exam.name,
                 folderId: exam.folderId || null,
-                numberOfComments: 0,
                 numberOfFiles: 0,
             });
             continue;
         }
 
         try {
-            logMsg(logType.BOX, `Fetching comments for assessment ${exam.id}, folder ${exam.folderId}`);
-            const numberOfComments = await getNOfCommentsInFolder(userId, exam.folderId);
-
             logMsg(logType.BOX, `Fetching file count for assessment ${exam.id}, folder ${exam.folderId}`);
             const numberOfFiles = await getNOfFilesInFolder(userId, exam.folderId);
 
-            logMsg(logType.SERVER, `Successfully processed assessment ${exam.id}. Comments: ${numberOfComments}, Files: ${numberOfFiles}`);
+            logMsg(logType.SERVER, `Successfully processed assessment ${exam.id}. Files: ${numberOfFiles}`);
             assessmentsWithCounts.push({
                 assessmentId: exam.id,
                 assessmentName: exam.name,
                 folderId: exam.folderId,
-                numberOfComments: numberOfComments,
                 numberOfFiles: numberOfFiles,
             });
         } catch (error) {
@@ -71,7 +66,6 @@ export const getCurrentACYearExams = catchErrors(async (req, res) => {
                 assessmentId: exam.id,
                 assessmentName: exam.name,
                 folderId: exam.folderId,
-                numberOfComments: -1,
                 numberOfFiles: -1,
             });
         }
