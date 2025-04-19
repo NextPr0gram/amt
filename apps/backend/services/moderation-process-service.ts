@@ -1,7 +1,7 @@
 import prisma from "../prisma/primsa-client";
 import { safeExecute } from "../utils/catch-errors";
 import { logMsg, logType } from "../utils/logger";
-import { createBoxFolders } from "./box-service";
+import { createBoxFolders, clearFolderContents } from "./box-service";
 import { advanceModerationStatus, getCurrentAcademicYear } from "./moderation-status-service";
 import { broadcastNotification, sendNotification } from "./notification-service";
 
@@ -11,14 +11,14 @@ let isReviewGroupsCreatedNotificationSent = false;
 
 export const processModerationStatus = async () => {
     logMsg(logType.MODERATION, "Starting processStatus...");
-    // const resetModerationStatus = await prisma.moderationStatus.update({
-    //     where: {
-    //         id: 1,
-    //     },
-    //     data: {
-    //         moderationPhaseId: 1,
-    //     },
-    // });
+    const resetModerationStatus = await prisma.moderationStatus.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            moderationPhaseId: 1,
+        },
+    });
 
     while (true) {
         try {
@@ -74,6 +74,7 @@ export const processModerationStatus = async () => {
         }
     }
 };
+let assessmentLeadId: number;
 const getAssessmentLeadId = async () => {
     return await safeExecute(async () => {
         const assessmentLead = await prisma.user.findFirst({
@@ -88,9 +89,12 @@ const getAssessmentLeadId = async () => {
                 id: true,
             },
         });
-        return assessmentLead?.id as number;
+        assessmentLeadId = assessmentLead?.id as number;
     }, "Could not retreive assessment lead");
 };
+(async () => {
+    await getAssessmentLeadId();
+})();
 const getIsReviewGroupsFinalized = async () => {
     return await safeExecute(async () => {
         const isFinalizedReviewGroups = await prisma.moderationStatus.findFirst({
@@ -129,8 +133,13 @@ const handleModerationPhaseOne = async (statusData: any) => {
         // if (isPastDate(date)) {
         //     await advanceModerationStatus();
         // }
-    } catch (error) {
-        logMsg(logType.ERROR, "custom error");
+        // delete all folders in box from root folder first
+        await clearFolderContents("0", assessmentLeadId);
+        await prisma.academicYearAssessment.deleteMany();
+        await prisma.academicYear.deleteMany();
+        await prisma.er.deleteMany();
+    } catch (error: any) {
+        logMsg(logType.ERROR, `error in handleModerationPhaseOne: ${error.message}`);
     }
 };
 

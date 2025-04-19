@@ -505,11 +505,6 @@ export const createBoxFolders = async (userId: number) => {
             },
         },
     };
-    // delete all folders in box from root folder first
-    const cleanupSuccess = await clearFolderContents("0", boxAccessToken);
-    if (!cleanupSuccess) {
-        return false;
-    }
     const createFoldersRecursively = async (parentId: string, structure: object) => {
         try {
             for (const [folderName, subfolders] of Object.entries(structure)) {
@@ -571,7 +566,8 @@ export const createBoxFolders = async (userId: number) => {
     return boxFoldersCreated;
 };
 
-const clearFolderContents = async (folderIdToClear: string, boxAccessToken: string): Promise<boolean> => {
+export const clearFolderContents = async (folderIdToClear: string, userId: number): Promise<boolean> => {
+    const boxAccessToken = await getBoxAccessToken(userId);
     logMsg(logType.BOX, `Attempting to clear contents of folder ID: ${folderIdToClear}`);
 
     try {
