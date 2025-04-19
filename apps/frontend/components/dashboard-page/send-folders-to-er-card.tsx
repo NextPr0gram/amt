@@ -64,48 +64,46 @@ const SendFoldersToErCard = () => {
         name: "assessments",
     });
 
+    const fetchExamOnlyAssessments = async () => {
+        try {
+            const res = await protectedFetch("/academic-year-assessments/current-ac-year-exams", "GET");
+            if (res.data && Array.isArray(res.data) && res.status === 200) {
+                setIsAssessmentsFetched(true);
+                form.reset({
+                    assessments: res.data.map((assessment) => ({
+                        assessmentId: assessment.id,
+                        folderId: assessment.folderId,
+                        assessmentName: assessment.name,
+                        sendToEr: false,
+                        erFolderId: undefined,
+                        message: "",
+                    })),
+                });
+            } else {
+                setIsAssessmentsFetched(false);
+                if (res.data.code === "NotExternalReview") {
+                    setMessage("Cannot retrieve assessments because it is not external review phase yet");
+                } else {
+                    setMessage("No exam assessments found for the current academic year.");
+                }
+                console.error("Unexpected data format for assessments:", res.data);
+                form.reset({ assessments: [] });
+            }
+        } catch (error) {
+            form.reset({ assessments: [] });
+            console.error("Error fetching assessments:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Fetch ER Folders and assessments when the component mounts
     useEffect(() => {
         setLoading(true);
         fetchERFolders(); // Fetch ER Folders first
-
-        const fetchExamOnlyAssessments = async () => {
-            try {
-                const res = await protectedFetch("/academic-year-assessments/current-ac-year-exams", "GET");
-                if (res.data && Array.isArray(res.data) && res.status === 200) {
-                    setIsAssessmentsFetched(true);
-                    form.reset({
-                        assessments: res.data.map((assessment) => ({
-                            assessmentId: assessment.id,
-                            folderId: assessment.folderId,
-                            assessmentName: assessment.name,
-                            sendToEr: false,
-                            erFolderId: undefined,
-                            message: "",
-                        })),
-                    });
-                } else {
-                    setIsAssessmentsFetched(false);
-                    if (res.data.code === "NotExternalReview") {
-                        setMessage("Cannot retrieve assessments because it is not external review phase yet");
-                    } else {
-                        setMessage("No exam assessments found for the current academic year.");
-                    }
-                    console.error("Unexpected data format for assessments:", res.data);
-                    form.reset({ assessments: [] });
-                }
-            } catch (error) {
-                form.reset({ assessments: [] });
-                console.error("Error fetching assessments:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchExamOnlyAssessments();
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Removed form from dependencies as reset should only happen once
+    }, []);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setSendingForm(true);
@@ -146,6 +144,7 @@ const SendFoldersToErCard = () => {
                 await Promise.all(requests);
                 notify("success", "Actions submitted successfully");
                 fetchERFolders(); // Refresh ER folders list if needed
+
                 // Optionally reset form or close modal here
             } else {
                 notify("info", "No actions to submit");
@@ -155,6 +154,7 @@ const SendFoldersToErCard = () => {
             console.error("Submission error:", error);
             notify("error", "Error submitting actions", error?.message || "An unknown error occurred");
         } finally {
+            fetchExamOnlyAssessments();
             setSendingForm(false);
         }
     };
