@@ -810,12 +810,13 @@ export const getNOfCommentsInFolder = async (userId: number, folderId: string): 
     const boxAccessToken = await getBoxAccessToken(userId);
     let totalComments = 0;
 
+    // Recursive function to traverse folders and count comments
     const countCommentsRecursive = async (currentFolderId: string, token: string): Promise<number> => {
         let commentsInCurrentScope = 0;
-        logMsg(logType.BOX, `Counting comments in folder: ${currentFolderId} (Optimized)`);
+        logMsg(logType.BOX, `Counting comments in folder: ${currentFolderId}`);
 
         try {
-            // 1. Get comments directly on the current folder (still required)
+            // 1. Get comments directly on the current folder
             const folderCommentsUrl = `https://api.box.com/2.0/folders/${currentFolderId}/comments?fields=total_count`;
             const folderCommentsRes = await fetch(folderCommentsUrl, {
                 method: "GET",
@@ -824,62 +825,66 @@ export const getNOfCommentsInFolder = async (userId: number, folderId: string): 
 
             if (folderCommentsRes.ok) {
                 const folderCommentsData = await folderCommentsRes.json();
-                const folderCommentCount = folderCommentsData.total_count || 0;
-                commentsInCurrentScope += folderCommentCount;
-                logMsg(logType.BOX, `Found ${folderCommentCount} comments directly on folder ${currentFolderId}`);
+                commentsInCurrentScope += folderCommentsData.total_count || 0;
+                logMsg(logType.BOX, `Found ${folderCommentsData.total_count || 0} comments directly on folder ${currentFolderId}`);
             } else {
+                // Log error but continue if possible (e.g., permissions issue on comments but not items)
                 const errorText = await folderCommentsRes.text();
                 logMsg(logType.ERROR, `Failed to get comments for folder ${currentFolderId}. Status: ${folderCommentsRes.status}. Response: ${errorText}`);
-                // Decide how to handle: continue, return error (-1), or throw
+                // Optionally throw an error or return a specific value like -1 if this is critical
             }
 
-            // 2. Get items, requesting comment_count for files directly
-            // Use marker-based pagination if folders can exceed 1000 items
-            let marker = null;
-            do {
-                const listUrl = new URL(`https://api.box.com/2.0/folders/${currentFolderId}/items`);
-                listUrl.searchParams.append("fields", "type,id,name,comment_count"); // Request comment_count!
-                listUrl.searchParams.append("limit", "1000"); // Max limit
-                listUrl.searchParams.append("usemarker", "true");
-                if (marker) {
-                    listUrl.searchParams.append("marker", marker);
-                }
+            // 2. Get items (files and subfolders) in the current folder
+            const listUrl = `https://api.box.com/2.0/folders/${currentFolderId}/items?fields=id,type,name&limit=1000`; // Adjust limit if needed, add pagination for >1000 items
+            const listRes = await fetch(listUrl, {
+                method: "GET",
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-                const listRes = await fetch(listUrl.toString(), {
-                    method: "GET",
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+            if (!listRes.ok) {
+                const errorText = await listRes.text();
+                logMsg(logType.ERROR, `Failed to list items in folder ${currentFolderId}. Status: ${listRes.status}. Response: ${errorText}`);
+                // If we can't list items, we can't recurse further or count comments on files in this folder
+                // Throw an error or return the count found so far? Let's throw for clarity.
+                appAssert(listRes.ok, INTERNAL_SERVER_ERROR, `Failed to list items in folder ${currentFolderId}`);
+                return commentsInCurrentScope; // Should not be reached due to appAssert
+            }
 
-                if (!listRes.ok) {
-                    const errorText = await listRes.text();
-                    logMsg(logType.ERROR, `Failed to list items in folder ${currentFolderId}. Status: ${listRes.status}. Response: ${errorText}`);
-                    appAssert(listRes.ok, INTERNAL_SERVER_ERROR, `Failed to list items in folder ${currentFolderId}`);
-                    return commentsInCurrentScope; // Should not be reached
-                }
+            const listData = await listRes.json();
 
-                const listData = await listRes.json();
-                marker = listData.next_marker; // For pagination
+            // 3. Process each item sequentially
+            for (const item of listData.entries) {
+                if (item.type === "file") {
+                    // Get comments for the file
+                    const fileCommentsUrl = `https://api.box.com/2.0/files/${item.id}/comments?fields=total_count`;
+                    const fileCommentsRes = await fetch(fileCommentsUrl, {
+                        method: "GET",
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
 
-                // 3. Process items sequentially
-                for (const item of listData.entries) {
-                    if (item.type === "file") {
-                        // Add comment count directly from the item data
-                        const fileCommentCount = item.comment_count || 0;
+                    if (fileCommentsRes.ok) {
+                        const fileCommentsData = await fileCommentsRes.json();
+                        const fileCommentCount = fileCommentsData.total_count || 0;
                         commentsInCurrentScope += fileCommentCount;
-                        logMsg(logType.BOX, `Found ${fileCommentCount} comments on file ${item.name} (ID: ${item.id}) via item listing`);
-                        // *** No separate API call needed for file comments! ***
-                    } else if (item.type === "folder") {
-                        // Recurse into subfolders
-                        logMsg(logType.BOX, `Entering subfolder ${item.name} (ID: ${item.id})`);
-                        const commentsInSubfolder = await countCommentsRecursive(item.id, token);
-                        commentsInCurrentScope += commentsInSubfolder;
-                        logMsg(logType.BOX, `Exiting subfolder ${item.name} (ID: ${item.id}), accumulated ${commentsInSubfolder} comments.`);
+                        logMsg(logType.BOX, `Found ${fileCommentCount} comments on file ${item.name} (ID: ${item.id})`);
+                    } else {
+                        const errorText = await fileCommentsRes.text();
+                        logMsg(logType.ERROR, `Failed to get comments for file ${item.name} (ID: ${item.id}). Status: ${fileCommentsRes.status}. Response: ${errorText}`);
+                        // Continue to next item
                     }
+                } else if (item.type === "folder") {
+                    // Recursively count comments in the subfolder
+                    logMsg(logType.BOX, `Entering subfolder ${item.name} (ID: ${item.id})`);
+                    const commentsInSubfolder = await countCommentsRecursive(item.id, token);
+                    commentsInCurrentScope += commentsInSubfolder;
+                    logMsg(logType.BOX, `Exiting subfolder ${item.name} (ID: ${item.id}), found ${commentsInSubfolder} comments within it.`);
                 }
-            } while (marker); // Continue if there are more pages
+            }
         } catch (error) {
             logMsg(logType.ERROR, `Error processing folder ${currentFolderId} for comments: ${error}`);
-            throw error; // Re-throw to indicate failure
+            // Re-throw or handle as appropriate. If we re-throw, the total count might be incomplete.
+            // Let's re-throw to indicate failure.
+            throw error;
         }
 
         return commentsInCurrentScope;
@@ -890,7 +895,8 @@ export const getNOfCommentsInFolder = async (userId: number, folderId: string): 
         logMsg(logType.BOX, `Total comments found in folder ${folderId} (and subfolders): ${totalComments}`);
     } catch (error) {
         logMsg(logType.ERROR, `Failed to complete comment count for folder ${folderId}: ${error}`);
-        return -1; // Indicate error
+        // Return -1 or throw error based on how the calling function should handle failures
+        return -1; // Indicate an error occurred during counting
     }
 
     return totalComments;

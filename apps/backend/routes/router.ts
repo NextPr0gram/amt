@@ -13,6 +13,7 @@ import boxRouter from "./protected/box-routes";
 import { boxCallbackHandler } from "../controllers/box-controller";
 import authorizeRouter from "./protected/authorize-page-routes";
 import erRouter from "./protected/er-routes";
+import AcademicYearAssessmentsRouter from "./protected/academic-year-assessments";
 
 const router = Router();
 
@@ -27,6 +28,7 @@ router.use("/modules", authenticate, modulesRouter);
 router.use("/years", authenticate, yearsRouter);
 router.use("/review-groups", authenticate, reviewGroupsRouter);
 router.use("/assessments", authenticate, assessmentsRouter);
+router.use("/academic-year-assessments", authenticate, AcademicYearAssessmentsRouter); // Academic year assessments
 router.use("/moderation", authenticate, moderationRouter);
 router.use("/box", authenticate, boxRouter);
 router.use("/demo", authenticate, demoRouter);
