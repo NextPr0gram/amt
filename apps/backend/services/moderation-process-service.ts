@@ -74,7 +74,7 @@ export const processModerationStatus = async () => {
         }
     }
 };
-let assessmentLeadId: number;
+
 const getAssessmentLeadId = async () => {
     return await safeExecute(async () => {
         const assessmentLead = await prisma.user.findFirst({
@@ -89,12 +89,10 @@ const getAssessmentLeadId = async () => {
                 id: true,
             },
         });
-        assessmentLeadId = assessmentLead?.id as number;
+        return assessmentLead?.id as number;
     }, "Could not retreive assessment lead");
 };
-(async () => {
-    await getAssessmentLeadId();
-})();
+
 const getIsReviewGroupsFinalized = async () => {
     return await safeExecute(async () => {
         const isFinalizedReviewGroups = await prisma.moderationStatus.findFirst({
@@ -134,10 +132,20 @@ const handleModerationPhaseOne = async (statusData: any) => {
         //     await advanceModerationStatus();
         // }
         // delete all folders in box from root folder first
-        await clearFolderContents("0", assessmentLeadId);
+        const userId = await getAssessmentLeadId();
+        await clearFolderContents("0", userId);
         await prisma.academicYearAssessment.deleteMany();
         await prisma.academicYear.deleteMany();
         await prisma.er.deleteMany();
+        await prisma.moderationStatus.update({
+            where: {
+                id: 1,
+            },
+            data: {
+                finalizeReviewGroups: false,
+                erFolderId: null,
+            },
+        });
     } catch (error: any) {
         logMsg(logType.ERROR, `error in handleModerationPhaseOne: ${error.message}`);
     }

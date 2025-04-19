@@ -10,6 +10,7 @@ import AssessmentsToModerateCard from "@/components/dashboard-page/assessments-t
 import SendFoldersToErDialog from "@/components/dashboard-page/send-folders-to-er-dialog";
 import { ERFoldersProvider } from "../../components/external-reviewers-folders-page/er-folders-context";
 import SendFoldersToErCard from "@/components/dashboard-page/send-folders-to-er-card";
+import DashboardTabs from "@/components/dashboard-page/dashboard-tabs";
 
 export default function Page() {
     return (
@@ -27,26 +28,7 @@ export default function Page() {
                                 </div>
                             </header>
                             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                                <Tabs defaultValue="overview" className="space-y-4">
-                                    <TabsList>
-                                        <TabsTrigger value="overview">Overview</TabsTrigger>
-                                        <TabsTrigger value="er">External Review</TabsTrigger>
-                                    </TabsList>
-                                    <TabsContent value="overview" className="space-y-4">
-                                        <div className="flex flex-col gap-4">
-                                            <div className="grid lg:grid-cols-2 gap-4">
-                                                <AssessmentsCard className="" />
-                                                <AssessmentsToModerateCard className="" />
-                                            </div>
-                                            <ReviewGroupCard />
-                                        </div>
-                                    </TabsContent>
-                                    <TabsContent value="er" className="space-y-4">
-                                        <div className="">
-                                            <SendFoldersToErCard />
-                                        </div>
-                                    </TabsContent>
-                                </Tabs>
+                                <DashboardTabs />
                             </div>
                         </ERFoldersProvider>
                     </ModerationProvider>

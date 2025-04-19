@@ -83,12 +83,10 @@ const SendFoldersToErCard = () => {
                     });
                 } else {
                     console.error("Unexpected data format for assessments:", res.data);
-                    notify("error", "Failed to load assessments data.");
                     form.reset({ assessments: [] }); // Reset to empty on error
                 }
             } catch (error) {
                 console.error("Error fetching assessments:", error);
-                notify("error", "Failed to fetch assessments.");
             } finally {
                 setLoading(false);
             }
