@@ -23,17 +23,14 @@ import { ScrollArea } from "../ui/scroll-area";
 interface AssessmentFolder {
     assessmentId: number;
     assessmentName: string;
-    folderId: string; // Assuming this might be needed, though not explicitly used in display
-    numberOfComments: number;
-    numberOfFiles: number;
+    folderId: string;
 }
 
 // Define the schema for a single assessment item within the form
 const assessmentItemSchema = z.object({
     assessmentId: z.number(),
     folderId: z.string(),
-    assessmentName: z.string(), // Keep name for display purposes if needed
-    numberOfComments: z.number(),
+    assessmentName: z.string(),
     numberOfFiles: z.number(),
     sendToEr: z.boolean().default(false),
     erFolderEmail: z.string().optional(), // Optional email if sendToEr is true
@@ -45,30 +42,14 @@ const formSchema = z.object({
     assessments: z.array(assessmentItemSchema),
 });
 
-// Mock assessment data - replace with actual data fetching or props
-const MOCK_ASSESSMENTS: AssessmentFolder[] = [
-    { assessmentId: 1, assessmentName: "Assessment Alpha", folderId: "f1", numberOfComments: 5, numberOfFiles: 10 },
-    { assessmentId: 2, assessmentName: "Assessment Beta", folderId: "f2", numberOfComments: 2, numberOfFiles: 3 },
-    { assessmentId: 3, assessmentName: "Assessment Gamma", folderId: "f3", numberOfComments: 0, numberOfFiles: 7 },
-];
-
 const SendFoldersToErCard = () => {
-    // Assuming assessments are passed as props or fetched here
-    // For demonstration, using mock data
-    const [assessmentsData] = useState<AssessmentFolder[]>(MOCK_ASSESSMENTS);
     const { fetchERFolders, erFolders } = useERFolders();
     const [loading, setLoading] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            // Initialize form with assessment data
-            assessments: assessmentsData.map((assessment) => ({
-                ...assessment,
-                sendToEr: false,
-                erFolderEmail: "",
-                message: "",
-            })),
+            assessments: [], // Start with an empty array
         },
     });
 
@@ -80,8 +61,22 @@ const SendFoldersToErCard = () => {
 
     // Fetch ER Folders when the component mounts
     useEffect(() => {
+        setLoading(true);
         fetchERFolders();
-        //fetch assessments
+        const fetchExamOnlyAssessments = async () => {
+            const res = await protectedFetch("/academic-year-assessments/current-ac-year-exams", "GET");
+            form.reset({
+                assessments: res.data.map((assessment) => ({
+                    ...assessment,
+                    sendToEr: false,
+                    erFolderEmail: "",
+                    message: "",
+                })),
+            });
+            setLoading(false);
+        };
+        fetchExamOnlyAssessments();
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -148,16 +143,12 @@ const SendFoldersToErCard = () => {
                                             <TableHeader>
                                                 <TableRow>
                                                     <TableHead>Assessment Name</TableHead>
-                                                    <TableHead className="text-center">Files</TableHead>
-                                                    <TableHead className="text-center">Comments</TableHead>
                                                     <TableHead>Folder Link</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
                                                 <TableRow>
                                                     <TableCell className="font-medium">{field.assessmentName}</TableCell>
-                                                    <TableCell className="text-center">{field.numberOfFiles}</TableCell>
-                                                    <TableCell className="text-center">{field.numberOfComments}</TableCell>
                                                     <TableCell>
                                                         {/* Placeholder for folder link - adjust as needed */}
                                                         <a href={`https://app.box.com/folder/${field.folderId}`} target="_blank" rel="noopener noreferrer" className=" hover:underline">
