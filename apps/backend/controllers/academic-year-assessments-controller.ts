@@ -32,44 +32,5 @@ export const getCurrentACYearExams = catchErrors(async (req, res) => {
 
     appAssert(currentAcademicYearExams.length > 0, NOT_FOUND, "Exam assessments not found for the current academic year");
 
-    const assessmentsWithCounts = [];
-
-    logMsg(logType.SERVER, `Starting sequential processing for ${currentAcademicYearExams.length} assessments.`);
-    for (const exam of currentAcademicYearExams) {
-        logMsg(logType.SERVER, `Processing assessment ${exam.id} (${exam.name}) sequentially.`);
-
-        if (!exam.folderId) {
-            console.warn(`Assessment ${exam.id} (${exam.name}) is missing a folderId. Skipping Box calls.`);
-            assessmentsWithCounts.push({
-                assessmentId: exam.id,
-                assessmentName: exam.name,
-                folderId: exam.folderId || null,
-                numberOfFiles: 0,
-            });
-            continue;
-        }
-
-        try {
-            logMsg(logType.BOX, `Fetching file count for assessment ${exam.id}, folder ${exam.folderId}`);
-            const numberOfFiles = await getNOfFilesInFolder(userId, exam.folderId);
-
-            logMsg(logType.SERVER, `Successfully processed assessment ${exam.id}. Files: ${numberOfFiles}`);
-            assessmentsWithCounts.push({
-                assessmentId: exam.id,
-                assessmentName: exam.name,
-                folderId: exam.folderId,
-                numberOfFiles: numberOfFiles,
-            });
-        } catch (error) {
-            console.error(`Error fetching Box data sequentially for assessment ${exam.id} (folder: ${exam.folderId}):`, error);
-            assessmentsWithCounts.push({
-                assessmentId: exam.id,
-                assessmentName: exam.name,
-                folderId: exam.folderId,
-                numberOfFiles: -1,
-            });
-        }
-    }
-
-    return res.status(OK).json(assessmentsWithCounts);
+    return res.status(OK).json(currentAcademicYearExams);
 });

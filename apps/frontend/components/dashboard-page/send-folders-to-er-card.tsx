@@ -67,7 +67,9 @@ const SendFoldersToErCard = () => {
             const res = await protectedFetch("/academic-year-assessments/current-ac-year-exams", "GET");
             form.reset({
                 assessments: res.data.map((assessment) => ({
-                    ...assessment,
+                    assessmentId: assessment.id,
+                    folderId: assessment.folderId,
+                    assessmentName: assessment.name,
                     sendToEr: false,
                     erFolderEmail: "",
                     message: "",
