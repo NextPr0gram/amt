@@ -40,6 +40,7 @@ export const getCurrentACYearExams = catchErrors(async (req, res) => {
         where: {
             academicYearId: currentAcademicYear.id,
             assessmentCategoryId: 9,
+            sentToEr: false,
         },
     });
 

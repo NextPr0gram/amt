@@ -47,6 +47,7 @@ const SendFoldersToErCard = () => {
     // Ensure ERFolder type includes 'id' and 'email'
     const { fetchERFolders, erFolders } = useERFolders();
     const [loading, setLoading] = useState(false);
+    const [sendingForm, setSendingForm] = useState(false);
     const [message, setMessage] = useState("");
     const [isAssessmentsFetched, setIsAssessmentsFetched] = useState(false);
 
@@ -107,7 +108,7 @@ const SendFoldersToErCard = () => {
     }, []); // Removed form from dependencies as reset should only happen once
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        setLoading(true);
+        setSendingForm(true);
         console.log("Form Values:", values); // Log form values for debugging
 
         // Filter assessments to send to ER, ensuring erFolderId is present
@@ -154,7 +155,7 @@ const SendFoldersToErCard = () => {
             console.error("Submission error:", error);
             notify("error", "Error submitting actions", error?.message || "An unknown error occurred");
         } finally {
-            setLoading(false);
+            setSendingForm(false);
         }
     };
 
@@ -283,11 +284,9 @@ const SendFoldersToErCard = () => {
                                     </div>
                                 );
                             })}
-                            {fields.length > 0 && ( // Only show submit button if there are fields
-                                <Button size="sm" type="submit" disabled={loading}>
-                                    {loading ? "Processing..." : "Submit Actions"}
-                                </Button>
-                            )}
+                            <Button size="sm" type="submit" disabled={sendingForm}>
+                                {sendingForm ? "Submitting..." : "Submit"}
+                            </Button>
                         </form>
                     </Form>
                 </CardContent>

@@ -16,6 +16,7 @@ export const getErFoldersHandler = catchErrors(async (req, res) => {
             folderId: true,
         },
     });
+    console.log(ers);
     appAssert(ers, NOT_FOUND, "ERs not found");
     return res.status(OK).json(ers);
 });
@@ -23,8 +24,6 @@ export const getErFoldersHandler = catchErrors(async (req, res) => {
 const createErFolderHandlerRequestSchema = z.object({
     email: z.string().email(),
 });
-
-
 
 export const createErFolderHandler = catchErrors(async (req, res) => {
     const { email } = createErFolderHandlerRequestSchema.parse(req.body);
@@ -161,6 +160,12 @@ export const copyExamAssessmentFolderToErHandler = catchErrors(async (req, res) 
         logMsg(logType.BOX, `Attempting to copy folder ${sourceFolderId} to ${destinationFolderId} for user ${userId}`);
         const isBoxFolderCopied = await copyBoxFolder(sourceFolderId, destinationFolderId, userId);
         appAssert(isBoxFolderCopied, INTERNAL_SERVER_ERROR, `Failed to copy folder ${sourceFolderId} to ${destinationFolderId} in Box`);
+
+        const updateAssessment = await prisma.academicYearAssessment.update({
+            where: { id: Number(id) },
+            data: { sentToEr: true },
+        });
+        appAssert(updateAssessment, INTERNAL_SERVER_ERROR, `Failed to update assessment with ID ${id} to sentToEr`);
         logMsg(logType.BOX, `Successfully copied folder ${sourceFolderId} to ${destinationFolderId}`);
     }
 

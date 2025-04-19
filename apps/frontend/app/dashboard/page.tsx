@@ -3,13 +3,7 @@ import { DateStage } from "@/components/date-stage";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { WebsocketProvider } from "@/components/contexts/websocket-context";
 import { ModerationProvider } from "@/components/contexts/moderation-context";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ReviewGroupCard from "@/components/dashboard-page/review-group-card";
-import AssessmentsCard from "@/components/dashboard-page/assessments-card";
-import AssessmentsToModerateCard from "@/components/dashboard-page/assessments-to-moderate-card";
-import SendFoldersToErDialog from "@/components/dashboard-page/send-folders-to-er-dialog";
 import { ERFoldersProvider } from "../../components/external-reviewers-folders-page/er-folders-context";
-import SendFoldersToErCard from "@/components/dashboard-page/send-folders-to-er-card";
 import DashboardTabs from "@/components/dashboard-page/dashboard-tabs";
 
 export default function Page() {

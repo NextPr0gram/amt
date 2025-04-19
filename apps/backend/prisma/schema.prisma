@@ -136,6 +136,7 @@ model AcademicYearAssessment {
     tp                   TP                 @relation(fields: [tpId], references: [id])
     academicYearId       Int
     academicYear         AcademicYear       @relation(fields: [academicYearId], references: [id])
+    sentToEr             Boolean            @default(false)
     moduleId             Int
     weight               Float
     assessmentTypeId     Int
