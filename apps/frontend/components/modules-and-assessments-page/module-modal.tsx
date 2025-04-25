@@ -18,7 +18,7 @@ import { Alert, AlertDescription } from "../ui/alert";
 import MultiSelect from "../multi-select";
 import ModalAlert from "../modal-alert";
 import { Module, useModules } from "./module-context";
-import { useAssessments } from "./assessment-context"
+import { useAssessments } from "./assessment-context";
 import AddAssessmentsInModuleModal from "./add-assessments-in-module-modal";
 import { toast } from "sonner";
 import { notify } from "../contexts/websocket-context";
@@ -107,8 +107,8 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [showError, setShowError] = useState(false);
     const [moduleAssessments, setModuleAssessments] = useState<ModuleAssessment[]>([]);
-    const [assessmentTypes, setAssessmentTypes] = useState<AssessmentType[]>([])
-    const [assessmentCategories, setAssessmentCategories] = useState<AssessmentCategory[]>([])
+    const [assessmentTypes, setAssessmentTypes] = useState<AssessmentType[]>([]);
+    const [assessmentCategories, setAssessmentCategories] = useState<AssessmentCategory[]>([]);
 
     useEffect(() => {
         const fetchTps = async () => {
@@ -143,7 +143,6 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
         fetchYears();
         fetchAssessmentTypes();
         fetchAssessmentCategories();
-
     }, []);
 
     useEffect(() => {
@@ -259,7 +258,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
         setModuleAssessments(assessments);
     };
     useEffect(() => {
-        form.setValue('assessments', moduleAssessments);
+        form.setValue("assessments", moduleAssessments);
     }, [moduleAssessments, form]);
 
     const getModuleTps = () => {
@@ -268,7 +267,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        console.log("submit button pressed")
+        console.log("submit button pressed");
         if (modules.some((module: Module) => module.code === values.moduleCode)) {
             form.setError("moduleCode", {
                 type: "manual",
@@ -277,66 +276,59 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
             return;
         }
         const body = { id: moduleId, code: values.moduleCode, tpIds: values.tpIds, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId, moduleTutors: values.moduleTutors };
-        let isModuleCreated = true
-        let isAssessmentCreated = true
-        let createdModuleId
-        let assessmentsFailedToCreate = []
+        let isModuleCreated = true;
+        let isAssessmentCreated = true;
+        let createdModuleId;
+        let assessmentsFailedToCreate = [];
 
         if (type === "viewOrEdit") {
             const res = await protectedFetch(`/modules`, "PATCH", body);
             if (res.status !== 200) {
-                isModuleCreated = false
+                isModuleCreated = false;
             } else {
-                createdModuleId = res.data.id
+                createdModuleId = res.data.id;
             }
         } else if (type === "add") {
             const res = await protectedFetch("/modules", "POST", body);
             if (res.status !== 200) {
-                isModuleCreated = false
+                isModuleCreated = false;
             } else {
-                createdModuleId = res.data.id
+                createdModuleId = res.data.id;
             }
 
             if (values.assessments.length > 0) {
-                console.log("assessments", values.assessments)
+                console.log("assessments", values.assessments);
                 for (const assessment of values.assessments) {
-                    const body = { moduleId: createdModuleId, tpId: assessment.tpId, typeId: assessment.typeId, categoryId: assessment.categoryId, weight: assessment.weight / 100, durationInMinutes: assessment.durationInMinutes }
+                    const body = { moduleId: createdModuleId, tpId: assessment.tpId, typeId: assessment.typeId, categoryId: assessment.categoryId, weight: assessment.weight / 100, durationInMinutes: assessment.durationInMinutes };
                     const res = await protectedFetch("/assessments", "POST", body);
                     if (res.status !== 200) {
-                        isAssessmentCreated = false
-                        assessmentsFailedToCreate.push(body)
+                        isAssessmentCreated = false;
+                        assessmentsFailedToCreate.push(body);
                     }
                 }
             }
-
         }
         if (isModuleCreated) {
-            notify("info", "Module created")
+            notify("info", "Module created");
             setIsEditing(true);
+            fetchModules();
         } else {
             fetchModules();
             fetchAssessments();
             setIsEditing(false);
         }
         if (isAssessmentCreated) {
-            notify("info", "Assessment/s created")
+            notify("info", "Assessment/s created");
         } else {
-            notify("error", `Failed to create ${assessmentsFailedToCreate.length} assessment/s`,
-                assessmentsFailedToCreate.map(assessment =>
-                    `[${tps.find(tp => tp.id === assessment.tpId)?.name}, ${assessmentTypes.find(at => at.id === assessment.typeId)?.name}, ${assessmentCategories.find(ac => ac.id === assessment.categoryId)?.name} weight: ${assessment.weight}% Duration: ${assessment.durationInMinutes} minutes]`
-                ).join('\n')
-            );
+            notify("error", `Failed to create ${assessmentsFailedToCreate.length} assessment/s`, assessmentsFailedToCreate.map((assessment) => `[${tps.find((tp) => tp.id === assessment.tpId)?.name}, ${assessmentTypes.find((at) => at.id === assessment.typeId)?.name}, ${assessmentCategories.find((ac) => ac.id === assessment.categoryId)?.name} weight: ${assessment.weight}% Duration: ${assessment.durationInMinutes} minutes]`).join("\n"));
         }
-
-
-
     };
     return (
         <>
             <DialogTitle>{type === "add" ? "Add new module" : isEditing ? "Edit module information" : "View module information"}</DialogTitle>
             {showSuccess && <ModalAlert type="success" message={type === "add" ? "Module added successfully" : "Module updated successfully"} />}
             {showError && <ModalAlert type="error" message="Something went wrong" />}
-            <Form {...form} >
+            <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <FormField
                         control={form.control}
