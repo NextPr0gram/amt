@@ -5,9 +5,10 @@ import { advanceModerationStatus, moveToPreviousModerationStatus, updateClients 
 import { createBoxFolders } from "../services/box-service";
 import { BOX_DEV_TOKEN } from "../constants/env";
 import appAssert from "../utils/app-assert";
-import { broadcastNotification } from "../services/notification-service";
+import { broadcastNotification, sendNotification } from "../services/notification-service";
 import AppErrorCode from "../constants/app-error-code";
 import { getUserIdFromRequest } from "../services/user-service";
+import { getUserIdFromToken } from "../utils/jwt";
 
 export const prevPhaseHandler = catchErrors(async (req, res) => {
     const changeToPrevPhase = await moveToPreviousModerationStatus();
@@ -28,4 +29,19 @@ export const createBoxFoldersHandler = catchErrors(async (req, res) => {
     isBoxfolderCreated && (await broadcastNotification("info", "Box folders created successfully"));
 
     return res.status(OK).json({ message: "box folders created" });
+});
+
+export const unfinalizeReviewGroupsHandler = catchErrors(async (req, res) => {
+    const userId = getUserIdFromToken(req.cookies.accessToken) as number;
+
+    const updateModerationStatus = await prisma.moderationStatus.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            finalizeReviewGroups: false,
+        },
+    });
+    appAssert(updateModerationStatus, INTERNAL_SERVER_ERROR, "Something went wront while updating moderationStatus");
+    sendNotification(userId, "info", "Review groups unfinalized");
 });
