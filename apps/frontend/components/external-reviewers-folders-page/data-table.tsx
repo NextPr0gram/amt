@@ -7,6 +7,8 @@ import { ERFolder, useERFolders } from "./er-folders-context";
 import { Button } from "@/components/ui/button";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { notify } from "../contexts/websocket-context";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { VariantProps } from "class-variance-authority";
 
 export const columns: ColumnDef<ERFolder>[] = [
     {
@@ -58,21 +60,43 @@ export function DataTable() {
                                         <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                     ))}
                                     <TableCell>
-                                        <Button
-                                            variant="destructive"
-                                            size={"sm"}
-                                            onClick={async () => {
-                                                const res = await protectedFetch("/er/folders", "DELETE", {
-                                                    id: row.original.id,
-                                                });
-                                                if (res.status === 200) {
-                                                    notify("info", "Folder deleted successfully");
-                                                    fetchERFolders();
-                                                }
-                                            }}
-                                        >
-                                            Delete
-                                        </Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="destructive" size={"sm"}>
+                                                    Delete
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you sure you want to delete the follwing ER folder?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Email: {row.original.email}
+                                                        <br />
+                                                        URL: https://app.box.com/folder/{row.original.folderId}
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction asChild>
+                                                        <Button
+                                                            onClick={async () => {
+                                                                const res = await protectedFetch("/er/folders", "DELETE", {
+                                                                    id: row.original.id,
+                                                                });
+                                                                if (res.status === 200) {
+                                                                    notify("info", "Folder deleted successfully");
+                                                                    fetchERFolders();
+                                                                }
+                                                            }}
+                                                            variant="destructive"
+                                                            size={"sm"}
+                                                        >
+                                                            Delete
+                                                        </Button>
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </TableCell>
                                 </TableRow>
                             ))
