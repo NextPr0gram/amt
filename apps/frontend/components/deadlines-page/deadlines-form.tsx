@@ -8,12 +8,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, MoveRight } from "lucide-react";
 import { Calendar } from "../ui/calendar";
 import { useEffect, useState } from "react";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { Loader } from "../ui/loader";
 import { Card, CardContent } from "../ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const formSchema = z
     .object({
@@ -357,16 +358,107 @@ export const DeadlinesForm = () => {
                             )}
                         />
 
-                        <Button className="w-fit" type="submit" disabled={isSaving}>
-                            {isSaving ? (
-                                <>
-                                    <Loader className="mx-auto" variant="circular" />
-                                    Saving...
-                                </>
-                            ) : (
-                                "Submit"
-                            )}
-                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button className="w-fit" disabled={isSaving}>
+                                    {isSaving ? (
+                                        <>
+                                            <Loader className="mx-auto" variant="circular" />
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        "Submit"
+                                    )}
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirm deadlines changes</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        {changedFields.internalModerationTp1 && (
+                                            <div className="text-sm text-muted-foreground">
+                                                <div>
+                                                    <p className="font-bold text-slate-900">Internal Moderation TP1:</p>{" "}
+                                                    <div className="flex items-center gap-1">
+                                                        {format(originalValues.internalModerationTp1, "PPP")} <MoveRight /> {format(formValues.internalModerationTp1 as Date, "PPP")}{" "}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {changedFields.externalModerationTp1 && (
+                                            <div className="text-sm text-muted-foreground">
+                                                <div>
+                                                    <p className="font-bold text-slate-900">External Moderation TP1:</p>{" "}
+                                                    <div className="flex items-center gap-1">
+                                                        {" "}
+                                                        {format(originalValues.externalModerationTp1, "PPP")} <MoveRight /> {format(formValues.externalModerationTp1 as Date, "PPP")}{" "}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {changedFields.finalDeadlineTp1 && (
+                                            <div className="text-sm text-muted-foreground">
+                                                <div>
+                                                    <p className="font-bold text-slate-900">Final Deadline TP1:</p>{" "}
+                                                    <div className="flex items-center gap-1">
+                                                        {" "}
+                                                        {format(originalValues.finalDeadlineTp1, "PPP")} <MoveRight /> {format(formValues.finalDeadlineTp1 as Date, "PPP")}{" "}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {changedFields.internalModerationTp2 && (
+                                            <div className="text-sm text-muted-foreground">
+                                                <div>
+                                                    <p className="font-bold text-slate-900">Internal Moderation TP2:</p>{" "}
+                                                    <div className="flex items-center gap-1">
+                                                        {" "}
+                                                        {format(originalValues.internalModerationTp2, "PPP")} <MoveRight /> {format(formValues.internalModerationTp2 as Date, "PPP")}{" "}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {changedFields.externalModerationTp2 && (
+                                            <div className="text-sm text-muted-foreground">
+                                                <div>
+                                                    <p className="font-bold text-slate-900">External Moderation TP2:</p>{" "}
+                                                    <div className="flex items-center gap-1">
+                                                        {" "}
+                                                        {format(originalValues.externalModerationTp2, "PPP")} <MoveRight /> {format(formValues.externalModerationTp2 as Date, "PPP")}{" "}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {changedFields.finalDeadlineTp2 && (
+                                            <div className="text-sm text-muted-foreground">
+                                                <div>
+                                                    <p className="font-bold text-slate-900">Final Deadline TP2:</p>{" "}
+                                                    <div className="flex items-center gap-1">
+                                                        {" "}
+                                                        {format(originalValues.finalDeadlineTp2, "PPP")} <MoveRight /> {format(formValues.finalDeadlineTp2 as Date, "PPP")}{" "}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction asChild>
+                                        <Button className="w-fit" type="submit" disabled={isSaving}>
+                                            {isSaving ? (
+                                                <>
+                                                    <Loader className="mx-auto" variant="circular" />
+                                                    Saving...
+                                                </>
+                                            ) : (
+                                                "Submit"
+                                            )}
+                                        </Button>
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </form>
                 </Form>
             </CardContent>
