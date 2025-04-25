@@ -14,9 +14,9 @@ import { protectedFetch } from "@/utils/protected-fetch";
 import { FinalizeReviewGroups } from "./finalize-review-groups";
 
 type ModuleIdentifier = {
-    reviewGroupId: number
-    moduleCode: string
-}
+    reviewGroupId: number;
+    moduleCode: string;
+};
 
 // Columns are define the core of what the table will look like. They define the data that will be displayed, how it will be formatted, sorted and filtered.
 const columns: ColumnDef<ReviewGroup>[] = [
@@ -58,7 +58,7 @@ const columns: ColumnDef<ReviewGroup>[] = [
                 <div className="flex flex-col justify-evenly gap-2">
                     <div>
                         <div className="inline xl:hidden">{row.original.shortConvener}</div>
-                        <div className="hidden xl:inline">{row.original.convener}</div>
+                        <div className="hidden xl:inline">{row.original.convenerName}</div>
                     </div>
                 </div>
             );
@@ -83,7 +83,7 @@ const columns: ColumnDef<ReviewGroup>[] = [
 export function DataTable() {
     const { reviewGroups, fetchReviewGroups, finalizeReviewGroups } = useReviewGroups();
     const [selectedReviewGroup, setSelectedReviewGroup] = useState<number>();
-    const [hoveredModule, setHoveredModule] = useState<ModuleIdentifier | null>(null)
+    const [hoveredModule, setHoveredModule] = useState<ModuleIdentifier | null>(null);
 
     const table = useReactTable({
         data: reviewGroups,
@@ -104,19 +104,10 @@ export function DataTable() {
         return (
             <Fragment>
                 {row.original.modules.map((module) => {
-                    const isHovered =
-                        hoveredModule !== null &&
-                        hoveredModule.reviewGroupId === row.original.id &&
-                        hoveredModule.moduleCode === module.code &&
-                        !finalizeReviewGroups;
+                    const isHovered = hoveredModule !== null && hoveredModule.reviewGroupId === row.original.id && hoveredModule.moduleCode === module.code && !finalizeReviewGroups;
 
                     return (
-                        <div
-                            className="grid grid-cols-2 grid-rows-1 gap-4 py-2 relative"
-                            key={module.code}
-                            onMouseEnter={() => setHoveredModule({ reviewGroupId: row.original.id, moduleCode: module.code })}
-                            onMouseLeave={() => setHoveredModule(null)}
-                        >
+                        <div className="grid grid-cols-2 grid-rows-1 gap-4 py-2 relative" key={module.code} onMouseEnter={() => setHoveredModule({ reviewGroupId: row.original.id, moduleCode: module.code })} onMouseLeave={() => setHoveredModule(null)}>
                             {/* Module code and name */}
                             <div className="self-center">
                                 {module.code}
@@ -147,7 +138,7 @@ export function DataTable() {
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             e.preventDefault();
-                                            deleteModule(module.id,);
+                                            deleteModule(module.id);
                                         }}
                                     >
                                         Delete
@@ -163,11 +154,11 @@ export function DataTable() {
 
     const deleteModule = async (moduleId: number) => {
         const res = await protectedFetch("/review-groups", "DELETE", {
-            moduleId
-        })
+            moduleId,
+        });
 
         fetchReviewGroups();
-    }
+    };
 
     // Calculate the total number of columns including the actions column
     const totalColumnCount = columns.length;
@@ -196,11 +187,7 @@ export function DataTable() {
                                                 {flexRender(row.getVisibleCells()[0].column.columnDef.cell, row.getVisibleCells()[0].getContext())}
                                             </TableCell>
                                         ) : (
-                                            row.getVisibleCells().map((cell) => <TableCell key={cell.id}>
-                                                {cell.column.id === "moduleCodeAndTutors"
-                                                    ? renderModuleCodeAndTutors(row)
-                                                    : flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </TableCell>)
+                                            row.getVisibleCells().map((cell) => <TableCell key={cell.id}>{cell.column.id === "moduleCodeAndTutors" ? renderModuleCodeAndTutors(row) : flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)
                                         )}
                                     </TableRow>
                                 ))
