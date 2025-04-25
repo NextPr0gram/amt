@@ -221,14 +221,17 @@ model ReviewType {
 }
 
 model ModerationStatus {
-    id                         Int             @id @default(autoincrement())
-    moderationPhaseId          Int
-    internalModerationDeadline DateTime
-    externalModerationDeadline DateTime
-    finalDeadline              DateTime
-    finalizeReviewGroups       Boolean         @default(false)
-    erFolderId                 String?
-    moderationPhase            ModerationPhase @relation(fields: [moderationPhaseId], references: [id])
+    id                            Int             @id @default(autoincrement())
+    moderationPhaseId             Int
+    internalModerationDeadlineTp1 DateTime
+    externalModerationDeadlineTp1 DateTime
+    finalDeadlineTp1              DateTime
+    internalModerationDeadlineTp2 DateTime
+    externalModerationDeadlineTp2 DateTime
+    finalDeadlineTp2              DateTime
+    finalizeReviewGroups          Boolean         @default(false)
+    erFolderId                    String?
+    moderationPhase               ModerationPhase @relation(fields: [moderationPhaseId], references: [id])
 }
 
 model ModerationPhase {

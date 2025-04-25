@@ -10,13 +10,7 @@ const getRandomInt = (max: number) => {
 };
 async function main() {
     const tps = await prisma.tP.createMany({
-        data: [
-            { name: "TP 1" },
-            { name: "TP 2" },
-            { name: "Resit" },
-            { name: "none" },
-            { name: "TP 3" },
-        ],
+        data: [{ name: "TP 1" }, { name: "TP 2" }, { name: "Resit" }, { name: "none" }, { name: "TP 3" }],
     });
 
     const createusers = await prisma.user.createMany({
@@ -265,14 +259,7 @@ async function main() {
     });
 
     const createRoles = await prisma.role.createMany({
-        data: [
-            { name: "Assessment Lead" },
-            { name: "Module Lead" },
-            { name: "Module Tutor" },
-            { name: "Office Staff" },
-            { name: "External Reviewer" },
-            { name: "Dev" },
-        ],
+        data: [{ name: "Assessment Lead" }, { name: "Module Lead" }, { name: "Module Tutor" }, { name: "Office Staff" }, { name: "External Reviewer" }, { name: "Dev" }],
     });
 
     const AssignRoles = await prisma.userRole.createMany({
@@ -329,12 +316,7 @@ async function main() {
     });
 
     const createYears = await prisma.year.createMany({
-        data: [
-            { name: "Year 1" },
-            { name: "Year 2" },
-            { name: "Year 3" },
-            { name: "Postgraduate" },
-        ],
+        data: [{ name: "Year 1" }, { name: "Year 2" }, { name: "Year 3" }, { name: "Postgraduate" }],
     });
 
     const reviewGroups = await prisma.reviewGroup.createMany({
@@ -512,30 +494,11 @@ async function main() {
     });
 
     const assessmentCategory = await prisma.assessmentCategory.createMany({
-        data: [
-            { name: "CA" },
-            { name: "Project" },
-            { name: "Coursework" },
-            { name: "Report" },
-            { name: "Lit. Review" },
-            { name: "Presentation" },
-            { name: "BB Assessment" },
-            { name: "Quiz" },
-            { name: "Examination" },
-            { name: "Portfolio" },
-            { name: "Refl. Learning" },
-            { name: "Res. Proposal" },
-            { name: "Practical" },
-        ],
+        data: [{ name: "CA" }, { name: "Project" }, { name: "Coursework" }, { name: "Report" }, { name: "Lit. Review" }, { name: "Presentation" }, { name: "BB Assessment" }, { name: "Quiz" }, { name: "Examination" }, { name: "Portfolio" }, { name: "Refl. Learning" }, { name: "Res. Proposal" }, { name: "Practical" }],
     });
 
     const assessmentTypes = await prisma.assessmentType.createMany({
-        data: [
-            { name: "Individual" },
-            { name: "Open-Book" },
-            { name: "Closed-Book" },
-            { name: "Group" },
-        ],
+        data: [{ name: "Individual" }, { name: "Open-Book" }, { name: "Closed-Book" }, { name: "Group" }],
     });
 
     const assessments = await prisma.assessment.createMany({
@@ -731,9 +694,12 @@ async function main() {
     const moderationStatus = await prisma.moderationStatus.create({
         data: {
             moderationPhaseId: 1,
-            internalModerationDeadline: new Date("2025-05-15"), // May 15, 2025
-            externalModerationDeadline: new Date("2025-06-01"), // June 1, 2025
-            finalDeadline: new Date("2025-06-15"), // June 15, 2025
+            internalModerationDeadlineTp1: new Date("2025-11-28"),
+            externalModerationDeadlineTp1: new Date("2025-11-15"),
+            finalDeadlineTp1: new Date("2025-12-30"),
+            internalModerationDeadlineTp2: new Date("2026-01-28"),
+            externalModerationDeadlineTp2: new Date("2026-02-15"),
+            finalDeadlineTp2: new Date("2026-02-25"),
             finalizeReviewGroups: false,
         },
     });

@@ -31,9 +31,12 @@ export const getModerationStatusHandler = catchErrors(async (req, res) => {
                     },
                 },
             },
-            internalModerationDeadline: true,
-            externalModerationDeadline: true,
-            finalDeadline: true,
+            internalModerationDeadlineTp1: true,
+            externalModerationDeadlineTp1: true,
+            finalDeadlineTp1: true,
+            internalModerationDeadlineTp2: true,
+            externalModerationDeadlineTp2: true,
+            finalDeadlineTp2: true,
         },
     });
 
@@ -60,45 +63,7 @@ export const getTpsHandler = catchErrors(async (req, res) => {
     return res.status(OK).json(tps);
 });
 
-export const updateInternalModerationDeadlineHandler = catchErrors(
-    async (req, res) => {
-        const { deadlineDate } = req.body;
-        appAssert(deadlineDate, 400, "Deadline date is required");
-
-        const updatedStatus = await prisma.moderationStatus.update({
-            where: {
-                id: 1, // Assuming we're updating the first moderation status
-            },
-            data: {
-                internalModerationDeadline: new Date(deadlineDate),
-            },
-        });
-
-        appAssert(updatedStatus, NOT_FOUND, "Moderation status not found");
-        return res.status(OK).json(updatedStatus);
-    },
-);
-
-export const updateExternalModerationDeadlineHandler = catchErrors(
-    async (req, res) => {
-        const { deadlineDate } = req.body;
-        appAssert(deadlineDate, 400, "Deadline date is required");
-
-        const updatedStatus = await prisma.moderationStatus.update({
-            where: {
-                id: 1, // Assuming we're updating the first moderation status
-            },
-            data: {
-                externalModerationDeadline: new Date(deadlineDate),
-            },
-        });
-
-        appAssert(updatedStatus, NOT_FOUND, "Moderation status not found");
-        return res.status(OK).json(updatedStatus);
-    },
-);
-
-export const updateFinalDeadlineHandler = catchErrors(async (req, res) => {
+export const updateInternalModerationDeadlineTp1Handler = catchErrors(async (req, res) => {
     const { deadlineDate } = req.body;
     appAssert(deadlineDate, 400, "Deadline date is required");
 
@@ -107,7 +72,92 @@ export const updateFinalDeadlineHandler = catchErrors(async (req, res) => {
             id: 1, // Assuming we're updating the first moderation status
         },
         data: {
-            finalDeadline: new Date(deadlineDate),
+            internalModerationDeadlineTp1: new Date(deadlineDate),
+        },
+    });
+
+    appAssert(updatedStatus, NOT_FOUND, "Moderation status not found");
+    return res.status(OK).json(updatedStatus);
+});
+
+export const updateExternalModerationDeadlineTp1Handler = catchErrors(async (req, res) => {
+    const { deadlineDate } = req.body;
+    appAssert(deadlineDate, 400, "Deadline date is required");
+
+    const updatedStatus = await prisma.moderationStatus.update({
+        where: {
+            id: 1, // Assuming we're updating the first moderation status
+        },
+        data: {
+            externalModerationDeadlineTp1: new Date(deadlineDate),
+        },
+    });
+
+    appAssert(updatedStatus, NOT_FOUND, "Moderation status not found");
+    return res.status(OK).json(updatedStatus);
+});
+
+export const updateFinalDeadlineTp1Handler = catchErrors(async (req, res) => {
+    const { deadlineDate } = req.body;
+    appAssert(deadlineDate, 400, "Deadline date is required");
+
+    const updatedStatus = await prisma.moderationStatus.update({
+        where: {
+            id: 1, // Assuming we're updating the first moderation status
+        },
+        data: {
+            finalDeadlineTp1: new Date(deadlineDate),
+        },
+    });
+
+    appAssert(updatedStatus, NOT_FOUND, "Moderation status not found");
+    return res.status(OK).json(updatedStatus);
+});
+
+export const updateInternalModerationDeadlineTp2Handler = catchErrors(async (req, res) => {
+    const { deadlineDate } = req.body;
+    appAssert(deadlineDate, 400, "Deadline date is required");
+
+    const updatedStatus = await prisma.moderationStatus.update({
+        where: {
+            id: 1, // Assuming we're updating the first moderation status
+        },
+        data: {
+            internalModerationDeadlineTp2: new Date(deadlineDate),
+        },
+    });
+
+    appAssert(updatedStatus, NOT_FOUND, "Moderation status not found");
+    return res.status(OK).json(updatedStatus);
+});
+
+export const updateExternalModerationDeadlineTp2Handler = catchErrors(async (req, res) => {
+    const { deadlineDate } = req.body;
+    appAssert(deadlineDate, 400, "Deadline date is required");
+
+    const updatedStatus = await prisma.moderationStatus.update({
+        where: {
+            id: 1, // Assuming we're updating the first moderation status
+        },
+        data: {
+            externalModerationDeadlineTp2: new Date(deadlineDate),
+        },
+    });
+
+    appAssert(updatedStatus, NOT_FOUND, "Moderation status not found");
+    return res.status(OK).json(updatedStatus);
+});
+
+export const updateFinalDeadlineTp2Handler = catchErrors(async (req, res) => {
+    const { deadlineDate } = req.body;
+    appAssert(deadlineDate, 400, "Deadline date is required");
+
+    const updatedStatus = await prisma.moderationStatus.update({
+        where: {
+            id: 1, // Assuming we're updating the first moderation status
+        },
+        data: {
+            finalDeadlineTp2: new Date(deadlineDate),
         },
     });
 
