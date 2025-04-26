@@ -268,13 +268,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         console.log("submit button pressed");
-        if (modules.some((module: Module) => module.code === values.moduleCode)) {
-            form.setError("moduleCode", {
-                type: "manual",
-                message: "Module with the given code already exists",
-            });
-            return;
-        }
+
         const body = { id: moduleId, code: values.moduleCode, tpIds: values.tpIds, name: values.moduleName, yearId: values.yearId, moduleLeadId: values.moduleTutorId, moduleTutors: values.moduleTutors };
         let isModuleCreated = true;
         let isAssessmentCreated = true;
@@ -467,7 +461,7 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
                             </FormItem>
                         )}
                     />
-                    {isEditing && form.watch("tpIds") && form.watch("tpIds").length > 0 && (
+                    {type !== "viewOrEdit" && isEditing && form.watch("tpIds") && form.watch("tpIds").length > 0 && (
                         <div className="mt-6">
                             <AddAssessmentsInModuleModal onAssessmentsChange={handleAssessmentsChange} tps={getModuleTps()} />
                         </div>

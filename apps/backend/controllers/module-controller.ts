@@ -10,7 +10,7 @@ const moduleSchema = z.object({
         .min(1)
         .max(255)
         .refine((s) => !s.includes(" "), "Id cannot have spaces"),
-    tpIds: z.array(z.number().int()),
+    tpIds: z.array(z.number().int()), // Changed from tpId to tpIds
     name: z.string().min(1).max(255),
     yearId: z.number().int(),
     moduleLeadId: z.number().int(),
@@ -58,8 +58,7 @@ export const getModulesHandler = catchErrors(async (req, res) => {
 });
 
 export const createModuleHandler = catchErrors(async (req, res) => {
-    const { code, tpIds, name, yearId, moduleLeadId, moduleTutors } =
-        moduleSchema.parse(req.body);
+    const { code, tpIds, name, yearId, moduleLeadId, moduleTutors } = moduleSchema.parse(req.body);
 
     const assignTutors: { userId: number }[] = moduleTutors.map((userId) => ({
         userId,
@@ -79,11 +78,7 @@ export const createModuleHandler = catchErrors(async (req, res) => {
         },
     });
 
-    appAssert(
-        createModule,
-        UNPROCESSABLE_CONTENT,
-        "Module with the given ID already exists",
-    );
+    appAssert(createModule, UNPROCESSABLE_CONTENT, "Module with the given ID already exists");
 
     return res.status(OK).json(createModule);
 });
@@ -120,38 +115,58 @@ export const getModuleTpsHandler = catchErrors(async (req, res) => {
 });
 
 export const updateModuleHandler = catchErrors(async (req, res) => {
-    const { id, code, tpId, name, yearId, moduleLeadId, moduleTutors } =
-        moduleSchemaWithId.parse(req.body);
+    // Destructure tpIds instead of tpId
+    const { id, code, tpIds, name, yearId, moduleLeadId, moduleTutors } = moduleSchemaWithId.parse(req.body);
 
-    const updateAssignTutors: { moduleId: number; userId: number }[] =
-        moduleTutors.map((userId) => ({ moduleId: id, userId }));
+    // Prepare data for creating new ModuleTutor entries
+    const updateAssignTutors: { userId: number }[] = moduleTutors.map((userId) => ({ userId }));
+    // Prepare data for creating new ModuleTP entries
+    const updateAssignTps: { tpId: number }[] = tpIds.map((tpId) => ({ tpId }));
 
-    const [updateModule, deleteModuleTutors, createModuleTutors] =
-        await prisma.$transaction([
-            prisma.module.update({
-                where: { id },
-                data: {
-                    code,
-                    tpId,
-                    name,
-                    yearId,
-                    moduleLeadId,
-                },
-            }),
-            prisma.moduleTutor.deleteMany({
-                where: {
-                    moduleId: id,
-                },
-            }),
-            prisma.moduleTutor.createMany({
-                data: updateAssignTutors,
-            }),
-        ]);
+    // Use a transaction to ensure atomicity
+    const [updateModule, deleteModuleTps, createModuleTps, deleteModuleTutors, createModuleTutors] = await prisma.$transaction([
+        prisma.module.update({
+            where: { id },
+            data: {
+                code,
+                name,
+                yearId,
+                moduleLeadId,
+            },
+        }),
 
-    appAssert(
-        [updateModule, deleteModuleTutors, createModuleTutors],
-        NOT_FOUND,
-        "Module not found",
-    );
-    return res.status(OK).json(updateModule);
+        prisma.moduleTP.deleteMany({
+            where: {
+                moduleId: id,
+            },
+        }),
+
+        prisma.moduleTP.createMany({
+            data: updateAssignTps.map((tp) => ({ ...tp, moduleId: id })),
+        }),
+
+        prisma.moduleTutor.deleteMany({
+            where: {
+                moduleId: id,
+            },
+        }),
+
+        prisma.moduleTutor.createMany({
+            data: updateAssignTutors.map((tutor) => ({ ...tutor, moduleId: id })),
+        }),
+    ]);
+
+    appAssert(updateModule, NOT_FOUND, "Module not found");
+
+    const updatedModuleWithRelations = await prisma.module.findUnique({
+        where: { id },
+        include: {
+            tps: { include: { tp: true } },
+            moduleTutors: { include: { user: true } },
+            moduleLead: true,
+            year: true,
+        },
+    });
+
+    return res.status(OK).json(updatedModuleWithRelations);
 });
