@@ -3,6 +3,7 @@ import { DemoDateProvider } from "@/components/contexts/demo-date-context";
 import { ModerationProvider } from "@/components/contexts/moderation-context";
 import { WebsocketProvider } from "@/components/contexts/websocket-context";
 import { DateStage } from "@/components/date-stage";
+import DemoControlBar from "@/components/demo-control-bar";
 import { DraggableDemoControl } from "@/components/draggable-demo-control";
 import { DataTable } from "@/components/external-reviewers-folders-page/data-table";
 import { ERFoldersProvider } from "@/components/external-reviewers-folders-page/er-folders-context";
@@ -39,7 +40,7 @@ export default function Page() {
                                 <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                                     <DataTable />
                                 </div>
-                                <DraggableDemoControl />
+                                <DemoControlBar />
                             </ModerationProvider>
                         </ERFoldersProvider>
                     </WebsocketProvider>

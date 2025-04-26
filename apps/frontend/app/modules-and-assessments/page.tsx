@@ -14,6 +14,7 @@ import AssessmentModal from "@/components/modules-and-assessments-page/assessmen
 import { AssessmentsProvider } from "@/components/modules-and-assessments-page/assessment-context";
 import { DemoDateProvider } from "@/components/contexts/demo-date-context";
 import { DraggableDemoControl } from "@/components/draggable-demo-control";
+import DemoControlBar from "@/components/demo-control-bar";
 
 export default function Page() {
     return (
@@ -78,7 +79,7 @@ export default function Page() {
                                     </Tabs>
                                 </AssessmentsProvider>
                             </ModulesProvider>
-                            <DraggableDemoControl />
+                            <DemoControlBar />
                         </ModerationProvider>
                     </WebsocketProvider>
                 </SidebarInset>

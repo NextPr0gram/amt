@@ -21,7 +21,7 @@ const DemoControl = () => {
                             fetchDate();
                             fetchModerationStatus();
                         }}
-                        className="flex-1"
+                        className="text-xs p-0 h-6 flex-1"
                         variant="outline"
                     >
                         +1
@@ -32,7 +32,7 @@ const DemoControl = () => {
                             fetchDate();
                             fetchModerationStatus();
                         }}
-                        className="flex-1"
+                        className="text-xs p-0 h-6 flex-1"
                         variant="outline"
                     >
                         +5
@@ -43,7 +43,7 @@ const DemoControl = () => {
                             fetchDate();
                             fetchModerationStatus();
                         }}
-                        className="flex-1"
+                        className="text-xs p-0 h-6 flex-1"
                         variant="outline"
                     >
                         +10
@@ -56,7 +56,7 @@ const DemoControl = () => {
                             fetchDate();
                             fetchModerationStatus();
                         }}
-                        className="flex-1"
+                        className="text-xs p-0 h-6 flex-1"
                         variant="outline"
                     >
                         -1
@@ -67,7 +67,7 @@ const DemoControl = () => {
                             fetchDate();
                             fetchModerationStatus();
                         }}
-                        className="flex-1"
+                        className="text-xs p-0 h-6 flex-1"
                         variant="outline"
                     >
                         -5
@@ -78,23 +78,23 @@ const DemoControl = () => {
                             fetchDate();
                             fetchModerationStatus();
                         }}
-                        className="flex-1"
+                        className="text-xs p-0 h-6 flex-1"
                         variant="outline"
                     >
                         -10
                     </Button>
                 </div>
-                <Button className="w-full" variant="outline" onClick={() => protectedFetch("/demo/unfinalize-review-groups", "POST")}>
+                <Button className="text-xs p-0 h-6 w-full" variant="outline" onClick={() => protectedFetch("/demo/unfinalize-review-groups", "POST")}>
                     Unfinalize RGs
                 </Button>
-                <Button className="w-full" variant="outline" onClick={() => toast.error("Toast title", { icon: <Bell className="size-5 mx-2" />, description: "toast description", descriptionClassName: cn("text-red-500") })}>
+                <Button className="text-xs p-0 h-6 w-full" variant="outline" onClick={() => toast.error("Toast title", { icon: <Bell className="size-5 mx-2" />, description: "toast description", descriptionClassName: cn("text-red-500") })}>
                     Toast
                 </Button>
                 <div className="flex space-x-2">
-                    <Button onClick={() => protectedFetch("/demo/prev-phase", "POST")} className="flex-1" variant="outline">
+                    <Button onClick={() => protectedFetch("/demo/prev-phase", "POST")} className="text-xs p-0 h-6 flex-1" variant="outline">
                         P Phase
                     </Button>
-                    <Button onClick={() => protectedFetch("/demo/next-phase", "POST")} className="flex-1" variant="outline">
+                    <Button onClick={() => protectedFetch("/demo/next-phase", "POST")} className="text-xs p-0 h-6 flex-1" variant="outline">
                         N Phase
                     </Button>
                 </div>

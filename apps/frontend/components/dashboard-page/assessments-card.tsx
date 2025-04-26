@@ -6,6 +6,7 @@ import { protectedFetch } from "@/utils/protected-fetch";
 import { Separator } from "../ui/separator";
 import { Loader } from "../ui/loader";
 import Link from "next/link";
+import { useModeration } from "../contexts/moderation-context";
 
 export type Assessment = {
     id: number;
@@ -32,6 +33,7 @@ type AssessmentsCardProps = {
 const AssessmentsCard = ({ className }: AssessmentsCardProps) => {
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { moderationStatus, fetchModerationStatus } = useModeration();
 
     useEffect(() => {
         const fetchAssessments = async () => {
@@ -55,7 +57,7 @@ const AssessmentsCard = ({ className }: AssessmentsCardProps) => {
                 <CardTitle className="text-lg w-fit">Your assessments</CardTitle>
             </CardHeader>
             <CardContent className="text-sm">
-                {assessments?.length ? (
+                {assessments?.length && (moderationStatus?.moderationPhase.id > 1 && moderationStatus?.moderationPhase.id <= 3) || (moderationStatus?.moderationPhase.id > 4 && moderationStatus?.moderationPhase.id <= 6) ? (
                     <div>
                         <Separator />
                         {assessments.map((assessment) => (

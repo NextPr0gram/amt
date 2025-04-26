@@ -3,6 +3,7 @@ import { DemoDateProvider } from "@/components/contexts/demo-date-context";
 import { ModerationProvider } from "@/components/contexts/moderation-context";
 import { WebsocketProvider } from "@/components/contexts/websocket-context";
 import { DateStage } from "@/components/date-stage";
+import DemoControlBar from "@/components/demo-control-bar";
 import { DraggableDemoControl } from "@/components/draggable-demo-control";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -28,7 +29,7 @@ export default function Page() {
                                     <DataTable />
                                 </UsersProvider>
                             </div>
-                            <DraggableDemoControl />
+                            <DemoControlBar />
                         </ModerationProvider>
                     </WebsocketProvider>
                 </SidebarInset>

@@ -8,6 +8,7 @@ import { ModerationProvider } from "@/components/contexts/moderation-context";
 import CreateReviewGroupDialog from "@/components/review-groups-page/create-review-groups-dialog";
 import { DemoDateProvider } from "@/components/contexts/demo-date-context";
 import { DraggableDemoControl } from "@/components/draggable-demo-control";
+import DemoControlBar from "@/components/demo-control-bar";
 
 export default function Page() {
     return (
@@ -29,7 +30,7 @@ export default function Page() {
                                     <DataTable />
                                 </div>
                             </ReviewGroupsProvider>
-                            <DraggableDemoControl />
+                            <DemoControlBar />
                         </ModerationProvider>
                     </WebsocketProvider>
                 </SidebarInset>
