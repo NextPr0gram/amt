@@ -13,7 +13,7 @@ import boxRouter from "./protected/box-routes";
 import { boxCallbackHandler } from "../controllers/box-controller";
 import authorizeRouter from "./protected/authorize-page-routes";
 import erRouter from "./protected/er-routes";
-import AcademicYearAssessmentsRouter from "./protected/academic-year-assessments";
+import AcademicYearAssessmentsRouter from "./protected/academic-year-assessments-routes";
 
 const router = Router();
 
