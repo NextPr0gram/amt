@@ -91,10 +91,6 @@ export const sendNotificationsToUsersHandler = catchErrors(async (req, res) => {
             } catch (error) {
                 // Log error and potentially decide whether to continue or stop
                 console.error(`Failed to send notification to user ${userId} for assessment ${assessmentData.id}:`, error);
-                // Depending on requirements, you might want to:
-                // 1. Continue to the next user (current behavior)
-                // 2. Stop processing this assessment and move to the next
-                // 3. Stop the entire request and return an error
             }
         }
     }

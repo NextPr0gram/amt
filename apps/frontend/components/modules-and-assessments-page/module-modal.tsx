@@ -312,7 +312,9 @@ const ModuleModal = ({ type, moduleId }: ModuleModalProps) => {
             setIsEditing(false);
         }
         if (isAssessmentCreated) {
-            notify("info", "Assessment/s created");
+            if (type === "add") {
+                notify("info", "Assessments created");
+            }
         } else {
             notify("error", `Failed to create ${assessmentsFailedToCreate.length} assessment/s`, assessmentsFailedToCreate.map((assessment) => `[${tps.find((tp) => tp.id === assessment.tpId)?.name}, ${assessmentTypes.find((at) => at.id === assessment.typeId)?.name}, ${assessmentCategories.find((ac) => ac.id === assessment.categoryId)?.name} weight: ${assessment.weight}% Duration: ${assessment.durationInMinutes} minutes]`).join("\n"));
         }

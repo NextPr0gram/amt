@@ -4,6 +4,7 @@ import { logMsg, logType } from "../utils/logger";
 import { createBoxFolders, clearFolderContents } from "./box-service";
 import { advanceModerationStatus, getCurrentAcademicYear } from "./moderation-status-service";
 import { broadcastNotification, sendNotification } from "./notification-service";
+import { removeModeratorRoleFromUsers } from "./review-group-service";
 
 const POLL_INTERVAL = 1000;
 let isCannotCreateBoxFolderNotificationSent = false;
@@ -19,6 +20,7 @@ let externalReviewTp2Notifications = { notification1Sent: false, notification2Se
 let finalTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
 let flagsReset = false;
 let lastResetAcademicYearId: number | null = null;
+let moderatorRoleRemoved = false;
 
 export const processModerationStatus = async () => {
     logMsg(logType.MODERATION, "Starting processStatus...");
@@ -194,6 +196,7 @@ const resetFlags = async () => {
     internalReviewTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
     externalReviewTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
     finalTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
+    moderatorRoleRemoved = false;
 
     await prisma.moderationStatus.update({
         where: {
@@ -213,6 +216,7 @@ const resetFlags = async () => {
 const handleModerationPhaseOne = async (statusData: any) => {
     try {
         logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+        await removeModeratorRoleFromUsers();
         const currentAcademicYear = await getCurrentAcademicYear();
         if (!currentAcademicYear) {
             logMsg(logType.ERROR, "Could not determine current academic year in handleModerationPhaseTwo. Cannot reset flags.");

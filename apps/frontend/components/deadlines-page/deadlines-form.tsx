@@ -134,9 +134,6 @@ export const DeadlinesForm = () => {
         }
     };
 
-    // Note: Removed form dependency from useEffect to prevent potential infinite loop
-    // if form instance changes unnecessarily. fetchDeadlines depends on form.reset,
-    // so calling it once on mount is usually sufficient unless form needs external reset triggers.
     useEffect(() => {
         fetchDeadlines();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -156,9 +153,8 @@ export const DeadlinesForm = () => {
 
             if (internalTp1Response.status === 200 && externalTp1Response.status === 200 && finalTp1Response.status === 200 && internalTp2Response.status === 200 && externalTp2Response.status === 200 && finalTp2Response.status === 200) {
                 toast.success("Deadlines updated successfully");
-                fetchDeadlines(); // Refetch to update originalValues and reset form state
+                fetchDeadlines();
             } else {
-                // Potentially provide more specific error feedback based on which requests failed
                 toast.error("Failed to update some deadlines");
             }
         } catch (error) {
@@ -484,16 +480,12 @@ export const DeadlinesForm = () => {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    {/*
-                    Using form.handleSubmit here inside the onClick ensures validation runs
-                    *before* the onSubmit logic is executed when clicking the confirmation button.
-                    We prevent the default form submission triggered by the outer form tag.
-                   */}
+
                                     <AlertDialogAction
                                         asChild
                                         onClick={(e) => {
-                                            e.preventDefault(); // Prevent default dialog close/form submit
-                                            form.handleSubmit(onSubmit)(); // Trigger validation and submit
+                                            e.preventDefault();
+                                            form.handleSubmit(onSubmit)();
                                         }}
                                     >
                                         <Button className="w-fit" type="button" disabled={isSaving}>

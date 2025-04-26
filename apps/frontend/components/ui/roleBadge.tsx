@@ -20,7 +20,7 @@ const RoleBadgeVariants = cva("inline-flex items-center rounded-full border bord
 });
 
 export interface RoleBadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof RoleBadgeVariants> {
-    role: "Assessment Lead" | "Module Lead" | "Module Tutor";
+    role: "Assessment Lead" | "Module Lead" | "Module Tutor" | "Moderator";
 }
 
 function RoleBadge({ className, variant, ...props }: RoleBadgeProps) {
@@ -31,6 +31,8 @@ function RoleBadge({ className, variant, ...props }: RoleBadgeProps) {
         color = "bg-blue-300 text-blue-950 dark:bg-blue-500 dark:text-blue-50";
     } else if (props.role === "Module Tutor") {
         color = "bg-green-300 text-green-950 dark:bg-green-500 dark:text-green-50";
+    } else if (props.role === "Moderator") {
+        color = "bg-yellow-300 text-yellow-950 dark:bg-yellow-500 dark:text-yellow-50";
     }
     return (
         <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2 dark:border-zinc-800 dark:focus:ring-zinc-300 ${color} ${className}`} {...props}>

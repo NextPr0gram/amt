@@ -578,9 +578,7 @@ export const clearFolderContents = async (folderIdToClear: string, userId: numbe
     logMsg(logType.BOX, `Attempting to clear contents of folder ID: ${folderIdToClear}`);
 
     try {
-        // 1. Get items within the folder
-        // Increase limit if you expect more than 1000 items directly in the folder
-        // For very large folders, implement pagination using 'marker' from response
+        // Get items within the folder
         const listUrl = `https://api.box.com/2.0/folders/${folderIdToClear}/items?limit=1000`;
 
         const listRes = await fetch(listUrl, {
@@ -606,9 +604,7 @@ export const clearFolderContents = async (folderIdToClear: string, userId: numbe
 
         logMsg(logType.BOX, `Found ${listData.total_count} items in folder ID: ${folderIdToClear}. Starting deletion...`);
 
-        // 2. Iterate and delete each item
-        // Using Promise.all for potentially faster parallel deletion
-        // Be mindful of Box API rate limits if deleting a huge number of items quickly
+        // Iterate and delete each item
         const deletePromises = listData.entries.map(async (item: any) => {
             let deleteUrl = "";
             const headers = { Authorization: `Bearer ${boxAccessToken}` };

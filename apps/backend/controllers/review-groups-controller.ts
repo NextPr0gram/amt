@@ -120,6 +120,7 @@ export const createReviewGroupHandler = catchErrors(async (req, res) => {
             reviewGroupId: reviewGroup.id,
         },
     });
+
     return res.status(OK).json(reviewGroup);
 });
 
@@ -236,6 +237,36 @@ export const finalizeReviewGroupsHandler = catchErrors(async (req, res) => {
         },
     });
     appAssert(updateModerationStatus, INTERNAL_SERVER_ERROR, "Something went wrong while updating moderationStatus");
+
+    const modules = await prisma.module.findMany({
+        where: {
+            reviewGroupId: { not: null },
+        },
+        include: {
+            moduleTutors: {
+                select: {
+                    user: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+    const users = modules.flatMap((module) => module.moduleTutors.map((tutor) => tutor.user));
+    const uniqueUsers = Array.from(new Set(users.map((user) => user.id))).map((id) => users.find((user) => user.id === id));
+    const userIds = uniqueUsers.map((user) => user.id);
+    const assignRoleToUsers = await prisma.userRole.createMany({
+        data: userIds.map((userId) => ({
+            userId,
+            roleId: 7,
+        })),
+    });
+    appAssert(assignRoleToUsers, INTERNAL_SERVER_ERROR, "Something went wrong while assigning roles to users");
+
     sendNotification(userId, "info", "Review groups finalized");
     return res.status(OK).json("Review groups finalized");
 });

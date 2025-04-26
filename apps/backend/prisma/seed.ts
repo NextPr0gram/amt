@@ -259,7 +259,7 @@ async function main() {
     });
 
     const createRoles = await prisma.role.createMany({
-        data: [{ name: "Assessment Lead" }, { name: "Module Lead" }, { name: "Module Tutor" }, { name: "Office Staff" }, { name: "External Reviewer" }, { name: "Dev" }],
+        data: [{ name: "Assessment Lead" }, { name: "Module Lead" }, { name: "Module Tutor" }, { name: "Office Staff" }, { name: "External Reviewer" }, { name: "Dev" }, { name: "Moderator" }],
     });
 
     const AssignRoles = await prisma.userRole.createMany({

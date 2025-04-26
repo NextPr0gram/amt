@@ -9,43 +9,39 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-import { DialogTitle } from "../ui/dialog"; // Assuming this is correct path
+import { DialogTitle } from "../ui/dialog";
 import { protectedFetch } from "@/utils/protected-fetch";
-import { notify } from "../contexts/websocket-context"; // Assuming this is correct path
-import { Loader } from "../ui/loader"; // Assuming this is correct path
+import { notify } from "../contexts/websocket-context";
+import { Loader } from "../ui/loader";
 import { useState, useEffect } from "react";
-import { useERFolders, ERFolder } from "../external-reviewers-folders-page/er-folders-context"; // Assuming this is correct path and ERFolder type is exported
+import { useERFolders, ERFolder } from "../external-reviewers-folders-page/er-folders-context";
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "../ui/table";
-// Removed unused SendFoldersToErDialog import
+
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
 import { useModeration } from "../contexts/moderation-context";
 
-// Assuming AssessmentFolder structure based on previous context
 interface AssessmentFolder {
     assessmentId: number;
     assessmentName: string;
     folderId: string;
 }
 
-// Define the schema for a single assessment item within the form
 const assessmentItemSchema = z.object({
     assessmentId: z.number(),
     folderId: z.string(),
     assessmentName: z.string(),
     sendToEr: z.boolean().default(false),
-    // Changed from erFolderEmail to erFolderId, now expects a number ID
+
     erFolderId: z.number().int().positive().optional(),
-    message: z.string().optional(), // Optional message if sendToEr is false
+    message: z.string().optional(),
 });
 
-// Define the main form schema containing an array of assessment items
 const formSchema = z.object({
     assessments: z.array(assessmentItemSchema),
 });
 
 const SendFoldersToErCard = () => {
-    // Ensure ERFolder type includes 'id' and 'email'
     const { fetchERFolders, erFolders } = useERFolders();
     const [loading, setLoading] = useState(false);
     const [sendingForm, setSendingForm] = useState(false);
@@ -56,11 +52,10 @@ const SendFoldersToErCard = () => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            assessments: [], // Start with an empty array
+            assessments: [],
         },
     });
 
-    // Use useFieldArray to manage the dynamic list of assessments in the form
     const { fields } = useFieldArray({
         control: form.control,
         name: "assessments",
@@ -108,24 +103,22 @@ const SendFoldersToErCard = () => {
         }
     };
 
-    // Fetch ER Folders and assessments when the component mounts
     useEffect(() => {
         setLoading(true);
-        fetchERFolders(); // Fetch ER Folders first
+        fetchERFolders();
         fetchExamOnlyAssessments();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setSendingForm(true);
-        console.log("Form Values:", values); // Log form values for debugging
+        console.log("Form Values:", values);
 
-        // Filter assessments to send to ER, ensuring erFolderId is present
         const assessmentsToSendToEr = values.assessments
             .filter((a) => a.sendToEr && a.erFolderId)
             .map((a) => ({
                 id: a.assessmentId,
-                // Send the erFolderId
+
                 erFolderId: a.erFolderId as number,
             }));
 
@@ -143,7 +136,6 @@ const SendFoldersToErCard = () => {
             const requests: Promise<any>[] = [];
 
             if (assessmentsToSendToEr.length > 0) {
-                // Ensure the backend endpoint /er/send-to-er expects 'erFolderId'
                 requests.push(protectedFetch("/er/send-to-er", "POST", assessmentsToSendToEr));
             }
 
@@ -154,14 +146,11 @@ const SendFoldersToErCard = () => {
             if (requests.length > 0) {
                 await Promise.all(requests);
                 notify("success", "Actions submitted successfully");
-                fetchERFolders(); // Refresh ER folders list if needed
-
-                // Optionally reset form or close modal here
+                fetchERFolders();
             } else {
                 notify("info", "No actions to submit");
             }
         } catch (error: any) {
-            // Catch specific error type if possible
             console.error("Submission error:", error);
             notify("error", "Error submitting actions", error?.message || "An unknown error occurred");
         } finally {
@@ -210,12 +199,7 @@ const SendFoldersToErCard = () => {
                                                 <TableRow>
                                                     <TableCell className="font-medium">{field.assessmentName}</TableCell>
                                                     <TableCell>
-                                                        <a
-                                                            href={`https://app.box.com/folder/${field.folderId}`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-blue-600 hover:underline" // Added basic styling
-                                                        >
+                                                        <a href={`https://app.box.com/folder/${field.folderId}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                                                             View Folder
                                                         </a>
                                                     </TableCell>
@@ -238,17 +222,11 @@ const SendFoldersToErCard = () => {
                                         {watchSendToEr ? (
                                             <FormField
                                                 control={form.control}
-                                                // Use the renamed field: erFolderId
                                                 name={`assessments.${index}.erFolderId`}
                                                 render={({ field: selectField }) => (
                                                     <FormItem>
                                                         <FormLabel>Select ER Folder (by Email)</FormLabel>
-                                                        <Select
-                                                            // Convert number ID to string for Select value
-                                                            onValueChange={(value) => selectField.onChange(parseInt(value, 10))} // Parse back to number on change
-                                                            // Convert number ID to string for Select defaultValue
-                                                            defaultValue={selectField.value ? selectField.value.toString() : undefined}
-                                                        >
+                                                        <Select onValueChange={(value) => selectField.onChange(parseInt(value, 10))} defaultValue={selectField.value ? selectField.value.toString() : undefined}>
                                                             <FormControl>
                                                                 <SelectTrigger>
                                                                     <SelectValue placeholder="Select an ER folder..." />
@@ -257,13 +235,8 @@ const SendFoldersToErCard = () => {
                                                             <SelectContent>
                                                                 {erFolders && erFolders.length > 0 ? (
                                                                     erFolders.map((folder: ERFolder) => (
-                                                                        // Use folder.id as the key and value
-                                                                        // Display folder.email to the user
-                                                                        <SelectItem
-                                                                            key={folder.id}
-                                                                            value={folder.id.toString()} // Value must be a string
-                                                                        >
-                                                                            {folder.email} {/* Display email */}
+                                                                        <SelectItem key={folder.id} value={folder.id.toString()}>
+                                                                            {folder.email}
                                                                         </SelectItem>
                                                                     ))
                                                                 ) : (
