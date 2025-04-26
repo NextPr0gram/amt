@@ -1,12 +1,12 @@
-"use client"
-import React, { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
-import { Badge } from '../ui/badge'
-import { protectedFetch } from '@/utils/protected-fetch';
-import { Separator } from '../ui/separator';
-import { Loader2 } from 'lucide-react';
-import { Loader } from '../ui/loader';
-
+"use client";
+import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Badge } from "../ui/badge";
+import { protectedFetch } from "@/utils/protected-fetch";
+import { Separator } from "../ui/separator";
+import { Loader2 } from "lucide-react";
+import { Loader } from "../ui/loader";
+import { useModeration } from "../contexts/moderation-context";
 
 export type ReviewGroup = {
     id: number;
@@ -42,78 +42,90 @@ export type ReviewGroup = {
 };
 
 const ReviewGroupCard = () => {
-    const [reviewGroup, setReviewGroup] = useState<ReviewGroup | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
+    const [reviewGroups, setReviewGroups] = useState<ReviewGroup[] | null>(null); // Changed state name and type
+    const [isLoading, setIsLoading] = useState(true);
+    const { moderationStatus } = useModeration();
 
     useEffect(() => {
-        const fetchReviewGroup = async () => {
-            const res = await protectedFetch("/user/review-group", "GET")
-            res.status === 200 && setReviewGroup(res.data)
-        }
-        fetchReviewGroup()
-        setIsLoading(false)
-    }, [])
+        const fetchReviewGroups = async () => {
+            setIsLoading(true);
+            try {
+                const res = await protectedFetch("/user/review-group", "GET");
+                if (res.status === 200) {
+                    setReviewGroups(res.data);
+                } else {
+                    setReviewGroups([]);
+                }
+            } catch (error) {
+                console.error("Failed to fetch review groups:", error);
+                setReviewGroups([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchReviewGroups();
+    }, [moderationStatus]);
 
     if (isLoading) {
         return (
-            <Card className='h-60 flex justify-center items-center'>
+            <Card className="h-60 flex justify-center items-center">
                 <Loader className="mx-auto" variant="circular" />
             </Card>
         );
     }
     return (
-        <Card >
-            <CardHeader className='flex flex-row justify-between'>
-                <CardTitle className="text-lg w-fit">Your review group</CardTitle>
-                {
-                    reviewGroup ? (
-                        <Badge variant="outline" className="text-sm  w-fit">
-                            {reviewGroup.year.name}, Group {reviewGroup.group}
-                        </Badge>
-                    ) : ""
-                }
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-lg">Your review groups</CardTitle>
             </CardHeader>
-            <CardContent className='text-sm'>
-
-                {
-                    reviewGroup ? (
-                        <div>
-                            {
-                                reviewGroup.modules.map((module) => (
-                                    <div key={module.id}>
-                                        <div className='flex gap-2'>
-                                            <p className='text-base font-medium'>{module.name}</p>
-                                            <Badge variant="outline">{module.code}</Badge>
-                                        </div>
-                                        <div className="mt-2 p-0 pb-4 ">
-                                            Module Lead: {module.moduleLead.firstName} {module.moduleLead.lastName}
-
-                                            <div>
-                                                {
-                                                    module.moduleTutors.length > 0 && (
-                                                        <div>
-                                                            Module Tutors:{" "}
-                                                            {module.moduleTutors.map((tutor, index) => {
-                                                                const tutorName = `${tutor.user.firstName} ${tutor.user.lastName}`;
-                                                                // Add a comma if it's not the last tutor
-                                                                return index < module.moduleTutors.length - 1 ? tutorName + ', ' : tutorName;
-                                                            })}
-                                                        </div>
-                                                    )
-                                                }
-                                            </div>
-                                        </div>
-                                        <Separator className='mb-4' />
+            <CardContent className="text-sm space-y-4">
+                {" "}
+                {reviewGroups && reviewGroups.length > 0 ? (
+                    reviewGroups.map((reviewGroup) => (
+                        <Card key={reviewGroup.id} className="p-4">
+                            {" "}
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-base font-semibold">
+                                    {reviewGroup.year.name}, Group {reviewGroup.group}
+                                </h3>
+                                <Badge variant="outline" className="text-sm">
+                                    Convener: {reviewGroup.convener.firstName} {reviewGroup.convener.lastName}
+                                </Badge>
+                            </div>
+                            <Separator className="mb-4" />
+                            {reviewGroup.modules.map((module) => (
+                                <div key={module.id}>
+                                    <div className="flex gap-2 items-center">
+                                        {" "}
+                                        <p className="text-base font-medium">{module.name}</p>
+                                        <Badge variant="outline">{module.code}</Badge>
                                     </div>
-                                ))
-                            }
-                            <div className='flex gap-1 pt-2'><div className='font-semibold'>Convener:</div> <div>{reviewGroup.convener.firstName} {reviewGroup.convener.lastName}</div></div>
-                        </div>
-                    ) : <p >You are not in any review group</p>
-                }
-            </CardContent>
-        </Card >
-    )
-}
+                                    <div className="mt-2 p-0 pb-4 text-sm text-muted-foreground">
+                                        {" "}
+                                        Module Lead: {module.moduleLead.firstName} {module.moduleLead.lastName}
+                                        <div>
+                                            {module.moduleTutors.length > 0 && (
+                                                <div>
+                                                    Module Tutors:{" "}
+                                                    {module.moduleTutors.map((tutor, index) => {
+                                                        const tutorName = `${tutor.user.firstName} ${tutor.user.lastName}`;
 
-export default ReviewGroupCard
+                                                        return index < module.moduleTutors.length - 1 ? tutorName + ", " : tutorName;
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </Card>
+                    ))
+                ) : (
+                    <p>You are not assigned to any review group for the current phase.</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+};
+
+export default ReviewGroupCard;

@@ -838,3 +838,63 @@ export const copyBoxFolder = async (sourceFolderId: string, destinationFolderId:
     logMsg(logType.BOX, `Successfully copied folder from ${sourceFolderId} to ${destinationFolderId}. New folder ID: ${data.id}`);
     return data;
 };
+
+export const findOrCreateFolder = async (parentId: string, folderName: string, userId: number): Promise<string> => {
+    const boxAccessToken = await getBoxAccessToken(userId);
+    appAssert(boxAccessToken, INTERNAL_SERVER_ERROR, "Could not obtain Box access token for findOrCreateFolder");
+
+    logMsg(logType.BOX, `Attempting to find or create folder "${folderName}" in parent ID: ${parentId}`);
+
+    try {
+        const listUrl = `https://api.box.com/2.0/folders/${parentId}/items?fields=id,name,type&limit=1000`; // Adjust limit if needed
+        const listRes = await fetch(listUrl, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${boxAccessToken}` },
+        });
+
+        if (listRes.ok) {
+            const listData = await listRes.json();
+            for (const item of listData.entries) {
+                if (item.type === "folder" && item.name === folderName) {
+                    logMsg(logType.BOX, `Found existing folder "${folderName}" with ID: ${item.id}`);
+                    return item.id;
+                }
+            }
+        } else if (listRes.status !== 404) {
+            const errorText = await listRes.text();
+            logMsg(logType.BOX, `Failed to list items in parent folder ${parentId} when checking for "${folderName}". Status: ${listRes.status}. Response: ${errorText}. Proceeding to create.`);
+        }
+    } catch (error: any) {
+        logMsg(logType.BOX, `Error listing items in parent folder ${parentId} when checking for "${folderName}": ${error.message}. Proceeding to create.`);
+    }
+
+    logMsg(logType.BOX, `Folder "${folderName}" not found in parent ID: ${parentId}. Creating it now.`);
+    try {
+        const createdFolder = await createSingleBoxFolder(boxAccessToken, parentId, folderName);
+        appAssert(createdFolder?.id, INTERNAL_SERVER_ERROR, `Failed to create folder "${folderName}" in parent ID ${parentId}`);
+        logMsg(logType.BOX, `Successfully created folder "${folderName}" with ID: ${createdFolder.id}`);
+        return createdFolder.id;
+    } catch (error: any) {
+        if (error.message && error.message.includes("item_name_in_use")) {
+            logMsg(logType.BOX, `Folder "${folderName}" likely created by another process. Attempting to find it again.`);
+
+            try {
+                const listUrl = `https://api.box.com/2.0/folders/${parentId}/items?fields=id,name,type&limit=1000`;
+                const listRes = await fetch(listUrl, { method: "GET", headers: { Authorization: `Bearer ${boxAccessToken}` } });
+                if (listRes.ok) {
+                    const listData = await listRes.json();
+                    for (const item of listData.entries) {
+                        if (item.type === "folder" && item.name === folderName) {
+                            logMsg(logType.BOX, `Found existing folder "${folderName}" on retry with ID: ${item.id}`);
+                            return item.id;
+                        }
+                    }
+                }
+            } catch (retryError: any) {
+                logMsg(logType.ERROR, `Error finding folder "${folderName}" on retry: ${retryError.message}`);
+            }
+        }
+        logMsg(logType.ERROR, `Failed to find or create folder "${folderName}" in parent ID ${parentId}: ${error.message}`);
+        throw new Error(`Failed to find or create folder "${folderName}"`);
+    }
+};

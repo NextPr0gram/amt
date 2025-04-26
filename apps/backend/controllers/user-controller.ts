@@ -90,7 +90,7 @@ export const getReviewGroupHandler = catchErrors(async (req, res) => {
     const userId = getUserIdFromToken(req.cookies.accessToken);
     appAssert(userId, NOT_FOUND, "Could not get userId from accessToken");
 
-    const reviewGroup = await prisma.reviewGroup.findFirst({
+    const reviewGroups = await prisma.reviewGroup.findMany({
         where: {
             modules: {
                 some: {
@@ -144,9 +144,9 @@ export const getReviewGroupHandler = catchErrors(async (req, res) => {
         },
     });
 
-    appAssert(reviewGroup, NOT_FOUND, "Could not retrieve review group");
+    appAssert(reviewGroups, NOT_FOUND, "Could not retrieve review group");
 
-    return res.status(OK).json(reviewGroup);
+    return res.status(OK).json(reviewGroups);
 });
 
 export const getUserAssessmentsForCurrentAcademicYearTp1Handler = catchErrors(async (req, res) => {
@@ -212,7 +212,7 @@ export const getUserAssessmentsToModerateTp1Handler = catchErrors(async (req, re
     const userId = getUserIdFromToken(req.cookies.accessToken);
     appAssert(userId, NOT_FOUND, "Could not get userId from accessToken");
 
-    const userReviewGroup = await prisma.reviewGroup.findFirst({
+    const userReviewGroups = await prisma.reviewGroup.findMany({
         where: {
             modules: {
                 some: {
@@ -222,11 +222,13 @@ export const getUserAssessmentsToModerateTp1Handler = catchErrors(async (req, re
         },
         select: { id: true },
     });
-    appAssert(userReviewGroup, NOT_FOUND, "User is not part of any review group or review group not found");
+    appAssert(userReviewGroups, NOT_FOUND, "User is not part of any review group or review group not found");
 
     const modulesToModerate = await prisma.module.findMany({
         where: {
-            reviewGroupId: userReviewGroup.id,
+            reviewGroupId: {
+                in: userReviewGroups.map((group) => group.id),
+            },
             NOT: {
                 OR: [{ moduleLeadId: userId }, { moduleTutors: { some: { userId } } }],
             },
@@ -334,7 +336,7 @@ export const getUserAssessmentsToModerateTp2Handler = catchErrors(async (req, re
     const userId = getUserIdFromToken(req.cookies.accessToken);
     appAssert(userId, NOT_FOUND, "Could not get userId from accessToken");
 
-    const userReviewGroup = await prisma.reviewGroup.findFirst({
+    const userReviewGroups = await prisma.reviewGroup.findMany({
         where: {
             modules: {
                 some: {
@@ -344,11 +346,13 @@ export const getUserAssessmentsToModerateTp2Handler = catchErrors(async (req, re
         },
         select: { id: true },
     });
-    appAssert(userReviewGroup, NOT_FOUND, "User is not part of any review group or review group not found");
+    appAssert(userReviewGroups, NOT_FOUND, "User is not part of any review group or review group not found");
 
     const modulesToModerate = await prisma.module.findMany({
         where: {
-            reviewGroupId: userReviewGroup.id,
+            reviewGroupId: {
+                in: userReviewGroups.map((group) => group.id),
+            },
             NOT: {
                 OR: [{ moduleLeadId: userId }, { moduleTutors: { some: { userId } } }],
             },

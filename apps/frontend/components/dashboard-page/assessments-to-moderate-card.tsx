@@ -74,7 +74,7 @@ const AssessmentsToModerateCard = ({ className }: AssessmentsToModerateCardProps
                             <div key={assessment.id}>
                                 <div className="flex justify-between py-4 px-2">
                                     {assessment.name ? assessment.name : `${assessment.module.code} - ${assessment.assessmentCategory.name} ${assessment.assessmentType.name} weight: ${Math.round(assessment.weight * 100)}%`}
-                                    <a className="hover:underline" href={"https://app.box.com/folder/" + assessment.folderId} target="_blank" rel="noopener noreferrer">
+                                    <a className="text-blue-600 hover:underline" href={"https://app.box.com/folder/" + assessment.folderId} target="_blank" rel="noopener noreferrer">
                                         View folder
                                     </a>
                                 </div>
