@@ -694,8 +694,8 @@ async function main() {
     const moderationStatus = await prisma.moderationStatus.create({
         data: {
             moderationPhaseId: 1,
-            internalModerationDeadlineTp1: new Date("2025-11-28"),
-            externalModerationDeadlineTp1: new Date("2025-11-15"),
+            internalModerationDeadlineTp1: new Date("2025-10-28"),
+            externalModerationDeadlineTp1: new Date("2025-11-25"),
             finalDeadlineTp1: new Date("2025-12-30"),
             internalModerationDeadlineTp2: new Date("2026-02-28"),
             externalModerationDeadlineTp2: new Date("2026-03-15"),
