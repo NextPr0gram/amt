@@ -697,12 +697,22 @@ async function main() {
             internalModerationDeadlineTp1: new Date("2025-11-28"),
             externalModerationDeadlineTp1: new Date("2025-11-15"),
             finalDeadlineTp1: new Date("2025-12-30"),
-            internalModerationDeadlineTp2: new Date("2026-01-28"),
-            externalModerationDeadlineTp2: new Date("2026-02-15"),
+            internalModerationDeadlineTp2: new Date("2026-02-28"),
+            externalModerationDeadlineTp2: new Date("2026-03-15"),
             finalDeadlineTp2: new Date("2026-02-25"),
+            tp1StartDate: new Date("2025-09-16"),
+            tp2StartDate: new Date("2026-01-06"),
+            tp2EndDate: new Date("2026-04-30"),
             finalizeReviewGroups: false,
         },
     });
+
+    const DateDemo = await prisma.dateDemo.create({
+        data: {
+            date: new Date("2025-08-1"),
+        },
+    });
+
     const notificationTypes = await prisma.notificationType.createMany({
         data: [{ name: "info" }, { name: "warning" }, { name: "error" }],
     });

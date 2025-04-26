@@ -57,7 +57,6 @@ const AddAssessmentsInModuleModal: React.FC<AddAssessmentsInModuleModalProps> = 
     };
 
     const addAssessment = () => {
-        // Generate a unique ID using timestamp
         const newAssessment = {
             ...currentAssessment,
             id: Date.now(),
@@ -73,7 +72,6 @@ const AddAssessmentsInModuleModal: React.FC<AddAssessmentsInModuleModalProps> = 
             weight: 0,
             durationInMinutes: undefined,
         });
-
     };
 
     const removeAssessment = (id: number) => {
@@ -86,11 +84,11 @@ const AddAssessmentsInModuleModal: React.FC<AddAssessmentsInModuleModalProps> = 
     };
 
     const getTypeName = (typeId: number) => {
-        return assessmentTypes.find(type => type.id === typeId)?.name || '';
+        return assessmentTypes.find((type) => type.id === typeId)?.name || "";
     };
 
     const getCategoryName = (categoryId: number) => {
-        return assessmentCategories.find(category => category.id === categoryId)?.name || '';
+        return assessmentCategories.find((category) => category.id === categoryId)?.name || "";
     };
 
     return (
@@ -145,10 +143,7 @@ const AddAssessmentsInModuleModal: React.FC<AddAssessmentsInModuleModalProps> = 
                     <div className="flex flex-col lg:flex-row gap-4">
                         <div className="flex-1">
                             <Label htmlFor="assessmentTP">TP</Label>
-                            <Select
-                                value={currentAssessment.tpId ? String(currentAssessment.tpId) : ""}
-                                onValueChange={(value) => handleAssessmentChange("tpId", Number(value))}
-                            >
+                            <Select value={currentAssessment.tpId ? String(currentAssessment.tpId) : ""} onValueChange={(value) => handleAssessmentChange("tpId", Number(value))}>
                                 <SelectTrigger className="h-9" id="assessmentTP">
                                     <SelectValue placeholder="Select TP" />
                                 </SelectTrigger>
@@ -164,10 +159,7 @@ const AddAssessmentsInModuleModal: React.FC<AddAssessmentsInModuleModalProps> = 
 
                         <div className="flex-1">
                             <Label htmlFor="assessmentType">Type</Label>
-                            <Select
-                                value={currentAssessment.typeId ? String(currentAssessment.typeId) : ""}
-                                onValueChange={(value) => handleAssessmentChange("typeId", Number(value))}
-                            >
+                            <Select value={currentAssessment.typeId ? String(currentAssessment.typeId) : ""} onValueChange={(value) => handleAssessmentChange("typeId", Number(value))}>
                                 <SelectTrigger className="h-9" id="assessmentType">
                                     <SelectValue placeholder="Select type" />
                                 </SelectTrigger>
@@ -183,10 +175,7 @@ const AddAssessmentsInModuleModal: React.FC<AddAssessmentsInModuleModalProps> = 
 
                         <div className="flex-1">
                             <Label htmlFor="assessmentCategory">Category</Label>
-                            <Select
-                                value={currentAssessment.categoryId ? String(currentAssessment.categoryId) : ""}
-                                onValueChange={(value) => handleAssessmentChange("categoryId", Number(value))}
-                            >
+                            <Select value={currentAssessment.categoryId ? String(currentAssessment.categoryId) : ""} onValueChange={(value) => handleAssessmentChange("categoryId", Number(value))}>
                                 <SelectTrigger className="h-9" id="assessmentCategory">
                                     <SelectValue placeholder="Select category" />
                                 </SelectTrigger>
@@ -203,43 +192,18 @@ const AddAssessmentsInModuleModal: React.FC<AddAssessmentsInModuleModalProps> = 
                         <div className="flex-1">
                             <Label htmlFor="assessmentWeight">Weight (%)</Label>
                             <div className="flex items-center gap-2">
-                                <Input
-                                    id="assessmentWeight"
-                                    type="number"
-                                    min="0"
-                                    max={remainingWeight}
-                                    value={currentAssessment.weight || ''}
-                                    onChange={(e) => handleAssessmentChange("weight", Number(e.target.value) || 0)}
-                                />
+                                <Input id="assessmentWeight" type="number" min="0" max={remainingWeight} value={currentAssessment.weight || ""} onChange={(e) => handleAssessmentChange("weight", Number(e.target.value) || 0)} />
                             </div>
                         </div>
                         <div className="flex-1">
                             <Label htmlFor="assessmentWeight">DurationInMinutes</Label>
                             <div className="flex items-center gap-2">
-                                <Input
-                                    id="assessmentDurationInMinutes"
-                                    type="number"
-                                    min="0"
-                                    value={currentAssessment.durationInMinutes || ''}
-                                    onChange={(e) => handleAssessmentChange("durationInMinutes", Number(e.target.value) || 0)}
-                                />
+                                <Input id="assessmentDurationInMinutes" type="number" min="0" value={currentAssessment.durationInMinutes || ""} onChange={(e) => handleAssessmentChange("durationInMinutes", Number(e.target.value) || 0)} />
                             </div>
                         </div>
                     </div>
 
-                    <Button
-                        type="button"
-                        variant="outline"
-                        className="mt-2"
-                        onClick={addAssessment}
-                        disabled={
-                            !currentAssessment.tpId ||
-                            !currentAssessment.typeId ||
-                            !currentAssessment.categoryId ||
-                            currentAssessment.weight <= 0 ||
-                            currentAssessment.weight > remainingWeight
-                        }
-                    >
+                    <Button type="button" variant="outline" className="mt-2" onClick={addAssessment} disabled={!currentAssessment.tpId || !currentAssessment.typeId || !currentAssessment.categoryId || currentAssessment.weight <= 0 || currentAssessment.weight > remainingWeight}>
                         <Plus className="h-4 w-4 mr-2" />
                         Add Assessment
                     </Button>

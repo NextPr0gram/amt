@@ -229,7 +229,12 @@ model ModerationStatus {
     internalModerationDeadlineTp2 DateTime
     externalModerationDeadlineTp2 DateTime
     finalDeadlineTp2              DateTime
+    tp1StartDate                  DateTime
+    tp2StartDate                  DateTime
+    tp2EndDate                    DateTime
     finalizeReviewGroups          Boolean         @default(false)
+    tp1DeadlinesSet               Boolean         @default(false)
+    tp2DeadlinesSet               Boolean         @default(false)
     erFolderId                    String?
     moderationPhase               ModerationPhase @relation(fields: [moderationPhaseId], references: [id])
 }
@@ -246,6 +251,11 @@ model ModerationPhase {
     trigger      PhaseTrigger @relation(fields: [triggerId], references: [id])
 
     moderationStatus ModerationStatus[]
+}
+
+model DateDemo {
+    id   Int      @id @default(autoincrement())
+    date DateTime
 }
 
 model PhaseTrigger {

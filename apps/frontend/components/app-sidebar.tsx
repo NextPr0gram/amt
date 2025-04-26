@@ -11,6 +11,7 @@ import SidebarCard from "./sidebar-card";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useDemoDate } from "./contexts/demo-date-context";
 
 // Menu items with role-based visibility.
 const items = [
@@ -56,6 +57,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const [userData, setUserData] = useState({ name: "", email: "", avatar: "" });
     const [isBoxConnected, setIsBoxConnected] = useState(true);
     const [userRoles, setUserRoles] = useState<number[]>([]);
+    const { date, fetchDate } = useDemoDate();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -128,6 +130,70 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarGroup>
                     <SidebarGroupLabel>Demo controls</SidebarGroupLabel>
                     <div className="space-y-2 ">
+                        <div className="flex space-x-2">
+                            <Button
+                                onClick={async () => {
+                                    await protectedFetch("/demo/add-1-day", "POST");
+                                    fetchDate();
+                                }}
+                                className="flex-1"
+                                variant="outline"
+                            >
+                                +1
+                            </Button>
+                            <Button
+                                onClick={async () => {
+                                    await protectedFetch("/demo/add-5-days", "POST");
+                                    fetchDate();
+                                }}
+                                className="flex-1"
+                                variant="outline"
+                            >
+                                +5
+                            </Button>
+                            <Button
+                                onClick={async () => {
+                                    await protectedFetch("/demo/add-10-days", "POST");
+                                    fetchDate();
+                                }}
+                                className="flex-1"
+                                variant="outline"
+                            >
+                                +10
+                            </Button>
+                        </div>
+                        <div className="flex space-x-2">
+                            <Button
+                                onClick={async () => {
+                                    await protectedFetch("/demo/subtract-1-day", "POST");
+                                    fetchDate();
+                                }}
+                                className="flex-1"
+                                variant="outline"
+                            >
+                                -1
+                            </Button>
+                            <Button
+                                onClick={async () => {
+                                    await protectedFetch("/demo/subtract-5-days", "POST");
+                                    fetchDate();
+                                }}
+                                className="flex-1"
+                                variant="outline"
+                            >
+                                -5
+                            </Button>
+                            <Button
+                                onClick={async () => {
+                                    await protectedFetch("/demo/subtract-10-days", "POST");
+                                    fetchDate();
+                                }}
+                                className="flex-1"
+                                variant="outline"
+                            >
+                                -10
+                            </Button>
+                        </div>
                         <Button className="w-full" variant="outline" onClick={() => protectedFetch("/demo/unfinalize-review-groups", "POST")}>
                             Unfinalize RGs
                         </Button>

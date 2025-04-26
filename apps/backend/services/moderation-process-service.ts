@@ -9,6 +9,12 @@ const POLL_INTERVAL = 1000;
 let isCannotCreateBoxFolderNotificationSent = false;
 let isReviewGroupsCreatedNotificationSent = false;
 let isBoxFoldersCleared = false;
+let internalReviewTp1Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false }; // 5 days, 2 days, on deadline
+let externalReviewTp1Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
+let finalTp1Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
+let internalReviewTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
+let externalReviewTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
+let finalTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
 
 export const processModerationStatus = async () => {
     logMsg(logType.MODERATION, "Starting processStatus...");
@@ -94,6 +100,21 @@ const getAssessmentLeadId = async () => {
     }, "Could not retreive assessment lead");
 };
 
+export const getCurrentDateTime = async () => {
+    if (process.env.DEMO === "true") {
+        const date = await prisma.dateDemo.findFirst({
+            select: {
+                date: true,
+            },
+        });
+        return date.date;
+    } else if (process.env.DEMO === "false") {
+        const date = new Date();
+        return date;
+    }
+    return new Date();
+};
+
 const getIsReviewGroupsFinalized = async () => {
     return await safeExecute(async () => {
         const isFinalizedReviewGroups = await prisma.moderationStatus.findFirst({
@@ -119,20 +140,50 @@ const getCurrentStatusFromDB = async () => {
     }
 };
 
-const isPastDate = (date: Date) => {
-    return Date.now() > date.getTime();
+const isPastDate = async (date: Date) => {
+    return (await getCurrentDateTime()).getTime() > date.getTime();
+};
+
+interface DeadlineNotificationState {
+    notification1Sent: boolean; // 5 days before
+    notification2Sent: boolean; // 2 days before
+    notification3Sent: boolean; // On deadline (optional)
+}
+
+const sendDeadlineNotifications = async (deadline: Date, notificationState: DeadlineNotificationState, phaseDescription: string): DeadlineNotificationState => {
+    const now = await getCurrentDateTime();
+    const fiveDaysInMillis = 5 * 24 * 60 * 60 * 1000;
+    const twoDaysInMillis = 2 * 24 * 60 * 60 * 1000;
+
+    const fiveDaysBefore = new Date(deadline.getTime() - fiveDaysInMillis);
+    const twoDaysBefore = new Date(deadline.getTime() - twoDaysInMillis);
+
+    const updatedState = { ...notificationState };
+
+    if (!updatedState.notification1Sent && now >= fiveDaysBefore && now < deadline) {
+        broadcastNotification("warning", `${phaseDescription} deadline is approaching in 5 days (${deadline.toLocaleDateString()}).`);
+        updatedState.notification1Sent = true;
+        logMsg(logType.MODERATION, `Sent 5-day ${phaseDescription} deadline notification.`);
+    }
+    if (!updatedState.notification2Sent && now >= twoDaysBefore && now < deadline) {
+        broadcastNotification("warning", `${phaseDescription} deadline is approaching in 2 days (${deadline.toLocaleDateString()}).`);
+        updatedState.notification2Sent = true;
+        logMsg(logType.MODERATION, `Sent 2-day ${phaseDescription} deadline notification.`);
+    }
+    if (!updatedState.notification3Sent && now.toDateString() === deadline.toDateString()) {
+        broadcastNotification("warning", `${phaseDescription} deadline is today (${deadline.toLocaleDateString()}).`);
+        updatedState.notification3Sent = true;
+        logMsg(logType.MODERATION, `Sent deadline day ${phaseDescription} notification.`);
+    }
+    return updatedState;
 };
 
 // Outside moderation
 const handleModerationPhaseOne = async (statusData: any) => {
     try {
         logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
-        const date = new Date("2025-03-24T01:56:00Z");
+        const date = await getCurrentDateTime();
 
-        // if (isPastDate(date)) {
-        //     await advanceModerationStatus();
-        // }
-        // delete all folders in box from root folder first
         const userId = await getAssessmentLeadId();
         if (!isBoxFoldersCleared) {
             await clearFolderContents("0", userId);
@@ -150,6 +201,22 @@ const handleModerationPhaseOne = async (statusData: any) => {
             });
         }
         isBoxFoldersCleared = true;
+        const tp1StartDate = await prisma.moderationStatus.findFirst({
+            select: {
+                tp1StartDate: true,
+            },
+        });
+        if (!tp1StartDate || !tp1StartDate.tp1StartDate) {
+            logMsg(logType.ERROR, "tp1StartDate not found");
+            return;
+        }
+        const tp1StartDateWithYear = new Date(tp1StartDate.tp1StartDate);
+        const currentYear = (await getCurrentDateTime()).getFullYear();
+        tp1StartDateWithYear.setFullYear(currentYear);
+        if ((await isPastDate(tp1StartDateWithYear)) && !isBoxFoldersCleared) {
+            await broadcastNotification("info", "Moderation Phase", "Moderation phase advanced to TP 1 - Stage 1");
+            await advanceModerationStatus();
+        }
     } catch (error: any) {
         logMsg(logType.ERROR, `error in handleModerationPhaseOne: ${error.message}`);
     }
@@ -161,10 +228,19 @@ const handleModerationPhaseTwo = async (statusData: any) => {
         logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
         // get userid of the user who's role is assessment lead
         const isReviewGroupFinalized = await getIsReviewGroupsFinalized();
+        const isTp1DeadlinesSet = await prisma.moderationStatus.findFirst({
+            select: {
+                tp1DeadlinesSet: true,
+            },
+        });
+        if (!isTp1DeadlinesSet || !isTp1DeadlinesSet.tp1DeadlinesSet) {
+            logMsg(logType.ERROR, "TP1 deadlines are not set");
+            return;
+        }
         let isboxFoldersCreated;
         const userId = await getAssessmentLeadId();
 
-        if (!isReviewGroupFinalized) {
+        if (!isReviewGroupFinalized || !isTp1DeadlinesSet.tp1DeadlinesSet) {
             return;
         }
 
@@ -197,6 +273,7 @@ const handleModerationPhaseTwo = async (statusData: any) => {
             }
         } else {
             await sendNotification(userId, "info", "Box folders created");
+            await broadcastNotification("info", "Moderation Phase", "Moderation phase advanced to TP 1 - Stage 1 - Internal Review");
             await advanceModerationStatus();
         }
     } catch (error: any) {
@@ -212,8 +289,26 @@ const handleModerationPhaseThree = async (statusData: any) => {
             broadcastNotification("info", "Review groups have been created, please check the dashboard");
             isReviewGroupsCreatedNotificationSent = true;
         }
-        // if deadline is reached, update the status to 4
-        // await advanceModerationStatus();
+
+        const deadlineData = await prisma.moderationStatus.findFirst({
+            select: {
+                internalModerationDeadlineTp1: true,
+            },
+        });
+
+        if (!deadlineData || !deadlineData.internalModerationDeadlineTp1) {
+            logMsg(logType.ERROR, "Internal moderation deadline TP1 not found for phase 3");
+            return;
+        }
+
+        const deadline = deadlineData.internalModerationDeadlineTp1;
+
+        internalReviewTp1Notifications = await sendDeadlineNotifications(deadline, internalReviewTp1Notifications, "Internal moderation TP1");
+
+        if (await isPastDate(deadline)) {
+            await broadcastNotification("info", "Moderation Phase", "Moderation phase advanced to TP 1 - Stage 1 - External Review");
+            await advanceModerationStatus();
+        }
     } catch (error: any) {
         logMsg(logType.ERROR, error.message);
     }
@@ -221,17 +316,107 @@ const handleModerationPhaseThree = async (statusData: any) => {
 
 // tp 1, stage 1, external review
 const handleModerationPhaseFour = async (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+    try {
+        logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+        const deadlineData = await prisma.moderationStatus.findFirst({
+            select: {
+                externalModerationDeadlineTp1: true,
+            },
+        });
+
+        if (!deadlineData || !deadlineData.externalModerationDeadlineTp1) {
+            logMsg(logType.ERROR, "Internal moderation deadline TP1 not found for phase 3");
+            return;
+        }
+
+        const deadline = deadlineData.externalModerationDeadlineTp1;
+
+        externalReviewTp1Notifications = await sendDeadlineNotifications(deadline, externalReviewTp1Notifications, "External moderation TP1");
+
+        if (await isPastDate(deadline)) {
+            await broadcastNotification("info", "Moderation Phase", "Moderation phase advanced to TP 1 - Stage 2");
+            await advanceModerationStatus();
+        }
+    } catch (error: any) {
+        logMsg(logType.ERROR, error.message);
+    }
 };
 
 // tp 1, stage 2
 const handleModerationPhaseFive = async (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+    try {
+        logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+        const deadlineData = await prisma.moderationStatus.findFirst({
+            select: {
+                finalDeadlineTp1: true,
+            },
+        });
+
+        if (!deadlineData || !deadlineData.finalDeadlineTp1) {
+            logMsg(logType.ERROR, "Internal moderation deadline TP1 not found for phase 3");
+            return;
+        }
+
+        const deadline = deadlineData.finalDeadlineTp1;
+
+        finalTp1Notifications = await sendDeadlineNotifications(deadline, finalTp1Notifications, "Final deadline");
+
+        const currentAcademicYear = await prisma.academicYear.findFirst({
+            orderBy: {
+                year: "desc",
+            },
+            select: {
+                year: true,
+            },
+        });
+        if (!currentAcademicYear) {
+            logMsg(logType.ERROR, "No academic year found");
+            return;
+        }
+        const academicYear = currentAcademicYear.year;
+        const nextYear = academicYear + 1;
+        const tp2startDate = await prisma.moderationStatus.findFirst({
+            select: {
+                tp2StartDate: true,
+            },
+        });
+        if (!tp2startDate || !tp2startDate.tp2StartDate) {
+            logMsg(logType.ERROR, "tp2StartDate not found");
+            return;
+        }
+
+        const tp2startDateWithYear = new Date(tp2startDate.tp2StartDate);
+        tp2startDateWithYear.setFullYear(nextYear);
+        if (await isPastDate(tp2startDateWithYear)) {
+            await broadcastNotification("info", "Moderation Phase", "Moderation phase advanced to TP 2 - Stage 1");
+            await advanceModerationStatus();
+        }
+    } catch (error: any) {
+        logMsg(logType.ERROR, error.message);
+    }
 };
 
 // tp 2, stage 1
 const handleModerationPhaseSix = async (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+    try {
+        logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+        // check if deadlines are set
+        const isTp2DeadlinesSet = await prisma.moderationStatus.findFirst({
+            select: {
+                tp2DeadlinesSet: true,
+            },
+        });
+        if (!isTp2DeadlinesSet || !isTp2DeadlinesSet.tp2DeadlinesSet) {
+            logMsg(logType.ERROR, "TP2 deadlines are not set");
+            return;
+        }
+        if (isTp2DeadlinesSet.tp2DeadlinesSet) {
+            await broadcastNotification("info", "Moderation Phase", "Moderation phase advanced to TP 2 - Stage 1 - Internal Review");
+            await advanceModerationStatus();
+        }
+    } catch (error: any) {
+        logMsg(logType.ERROR, error.message);
+    }
 };
 
 // tp 2, stage 1, internal review

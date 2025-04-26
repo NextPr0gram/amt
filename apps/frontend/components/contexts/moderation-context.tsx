@@ -44,9 +44,7 @@ export const ModerationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         fetchModerationStatus();
     }, []);
 
-    // Create socket only when we have userId
 
-    // Second effect: handle socket notifications
     useEffect(() => {
         if (!socket) return;
 

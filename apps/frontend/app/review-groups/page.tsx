@@ -6,29 +6,32 @@ import { ReviewGroupsProvider } from "@/components/review-groups-page/review-gro
 import { WebsocketProvider } from "@/components/contexts/websocket-context";
 import { ModerationProvider } from "@/components/contexts/moderation-context";
 import CreateReviewGroupDialog from "@/components/review-groups-page/create-review-groups-dialog";
+import { DemoDateProvider } from "@/components/contexts/demo-date-context";
 
 export default function Page() {
     return (
         <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <WebsocketProvider>
-                    <ModerationProvider>
-                        <DateStage />
-                        <ReviewGroupsProvider>
-                            <header className="flex h-16 shrink-0 items-center gap-2 px-4">
-                                <div className="flex items-center gap-2">
-                                    <h1 className="text-2xl font-bold tracking-tight">Review Groups</h1>
+            <DemoDateProvider>
+                <AppSidebar />
+                <SidebarInset>
+                    <WebsocketProvider>
+                        <ModerationProvider>
+                            <DateStage />
+                            <ReviewGroupsProvider>
+                                <header className="flex h-16 shrink-0 items-center gap-2 px-4">
+                                    <div className="flex items-center gap-2">
+                                        <h1 className="text-2xl font-bold tracking-tight">Review Groups</h1>
+                                    </div>
+                                    <CreateReviewGroupDialog />
+                                </header>
+                                <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+                                    <DataTable />
                                 </div>
-                                <CreateReviewGroupDialog />
-                            </header>
-                            <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                                <DataTable />
-                            </div>
-                        </ReviewGroupsProvider>
-                    </ModerationProvider>
-                </WebsocketProvider>
-            </SidebarInset>
+                            </ReviewGroupsProvider>
+                        </ModerationProvider>
+                    </WebsocketProvider>
+                </SidebarInset>
+            </DemoDateProvider>
         </SidebarProvider>
     );
 }

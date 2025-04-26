@@ -45,3 +45,143 @@ export const unfinalizeReviewGroupsHandler = catchErrors(async (req, res) => {
     appAssert(updateModerationStatus, INTERNAL_SERVER_ERROR, "Something went wront while updating moderationStatus");
     sendNotification(userId, "info", "Review groups unfinalized");
 });
+
+/*
+demoRouter.get("/get-date", authorizeRoles(userRoles.assessmentLead, userRoles.dev, userRoles.moduleTutor, userRoles.moduleTutor), getCurrentDateHandler);
+demoRouter.post("/add-1-day", authorizeRoles(userRoles.assessmentLead, userRoles.dev, userRoles.moduleTutor, userRoles.moduleTutor), add1DayHandler);
+demoRouter.post("/add-5-days", authorizeRoles(userRoles.assessmentLead, userRoles.dev, userRoles.moduleTutor, userRoles.moduleTutor), add5DaysHandler);
+demoRouter.post("/add-10-days", authorizeRoles(userRoles.assessmentLead, userRoles.dev, userRoles.moduleTutor, userRoles.moduleTutor), add10DaysHandler);
+demoRouter.post("/subtract-1-day", authorizeRoles(userRoles.assessmentLead, userRoles.dev, userRoles.moduleTutor, userRoles.moduleTutor), subtract1DayHandler);
+demoRouter.post("/subtract-5-days", authorizeRoles(userRoles.assessmentLead, userRoles.dev, userRoles.moduleTutor, userRoles.moduleTutor), subtract5DaysHandler);
+demoRouter.post("/subtract-10-days", authorizeRoles(userRoles.assessmentLead, userRoles.dev, userRoles.moduleTutor, userRoles.moduleTutor), subtract10DaysHandler);
+*/
+
+export const getCurrentDateHandler = catchErrors(async (req, res) => {
+    const currentDate = await prisma.dateDemo.findFirst({
+        select: {
+            date: true,
+        },
+    });
+    appAssert(currentDate, NOT_FOUND, "Date not found");
+    return res.status(OK).json(currentDate.date);
+});
+
+export const add1DayHandler = catchErrors(async (req, res) => {
+    const currentDate = await prisma.dateDemo.findFirst({
+        select: {
+            date: true,
+        },
+    });
+    appAssert(currentDate, NOT_FOUND, "Date not found");
+    const newDate = new Date(currentDate.date);
+    newDate.setDate(currentDate.date.getDate() + 1);
+    await prisma.dateDemo.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            date: newDate,
+        },
+    });
+    return res.status(OK).json(newDate);
+});
+
+export const add5DaysHandler = catchErrors(async (req, res) => {
+    const currentDate = await prisma.dateDemo.findFirst({
+        select: {
+            date: true,
+        },
+    });
+    appAssert(currentDate, NOT_FOUND, "Date not found");
+    const newDate = new Date(currentDate.date);
+    newDate.setDate(currentDate.date.getDate() + 5);
+    await prisma.dateDemo.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            date: newDate,
+        },
+    });
+    return res.status(OK).json(newDate);
+});
+
+export const add10DaysHandler = catchErrors(async (req, res) => {
+    const currentDate = await prisma.dateDemo.findFirst({
+        select: {
+            date: true,
+        },
+    });
+    appAssert(currentDate, NOT_FOUND, "Date not found");
+    const newDate = new Date(currentDate.date);
+    newDate.setDate(currentDate.date.getDate() + 10);
+    await prisma.dateDemo.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            date: newDate,
+        },
+    });
+    return res.status(OK).json(newDate);
+});
+
+export const subtract1DayHandler = catchErrors(async (req, res) => {
+    const currentDate = await prisma.dateDemo.findFirst({
+        select: {
+            date: true,
+        },
+    });
+    appAssert(currentDate, NOT_FOUND, "Date not found");
+    const newDate = new Date(currentDate.date);
+    newDate.setDate(currentDate.date.getDate() - 1);
+    await prisma.dateDemo.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            date: newDate,
+        },
+    });
+    return res.status(OK).json(newDate);
+});
+
+export const subtract5DaysHandler = catchErrors(async (req, res) => {
+    const currentDate = await prisma.dateDemo.findFirst({
+        select: {
+            date: true,
+        },
+    });
+    appAssert(currentDate, NOT_FOUND, "Date not found");
+    const newDate = new Date(currentDate.date);
+    newDate.setDate(currentDate.date.getDate() - 5);
+    await prisma.dateDemo.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            date: newDate,
+        },
+    });
+    return res.status(OK).json(newDate);
+});
+
+export const subtract10DaysHandler = catchErrors(async (req, res) => {
+    const currentDate = await prisma.dateDemo.findFirst({
+        select: {
+            date: true,
+        },
+    });
+    appAssert(currentDate, NOT_FOUND, "Date not found");
+    const newDate = new Date(currentDate.date);
+    newDate.setDate(currentDate.date.getDate() - 10);
+    await prisma.dateDemo.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            date: newDate,
+        },
+    });
+    return res.status(OK).json(newDate);
+});

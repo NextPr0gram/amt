@@ -3,6 +3,7 @@ import { NOT_FOUND } from "../constants/http";
 import prisma from "../prisma/primsa-client";
 import { io } from "../server";
 import { logMsg, logType } from "../utils/logger";
+import { getCurrentDateTime } from "./moderation-process-service";
 
 // update all clients via websocket
 export const updateClients = async () => {
@@ -63,7 +64,7 @@ export const advanceModerationStatus = async () => {
 
 // ...existing code...
 export const getCurrentAcademicYear = async () => {
-    const now = new Date();
+    const now = await getCurrentDateTime();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
