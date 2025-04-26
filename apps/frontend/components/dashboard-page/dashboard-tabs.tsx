@@ -56,7 +56,7 @@ const DashboardTabs = () => {
             </TabsList>
             <TabsContent value="overview" className="space-y-4">
                 <div className="flex flex-col gap-4">
-                    {(moderationStatus?.moderationPhase?.id === 2 || moderationStatus?.moderationPhase?.id === 6) && <ProceesToNextPhaseCard cname="" />}
+                    {isAssessmentLead && (moderationStatus?.moderationPhase?.id === 2 || moderationStatus?.moderationPhase?.id === 6) && <ProceesToNextPhaseCard cname="" />}
                     <div className="grid lg:grid-cols-2 gap-4">
                         <AssessmentsCard className="" />
                         <AssessmentsToModerateCard className="" />
