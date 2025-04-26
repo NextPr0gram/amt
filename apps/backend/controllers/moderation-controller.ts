@@ -11,6 +11,7 @@ export const getModerationStatusHandler = catchErrors(async (req, res) => {
         select: {
             moderationPhase: {
                 select: {
+                    id: true,
                     tP: {
                         select: {
                             id: true,

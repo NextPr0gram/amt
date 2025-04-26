@@ -141,7 +141,11 @@ export const getBoxAccessToken = async (userId: number) => {
             select: { boxRefreshToken: true },
         });
 
-        appAssert(user?.boxRefreshToken, INTERNAL_SERVER_ERROR, "Box refresh token not found");
+        appAssert(user, INTERNAL_SERVER_ERROR, "User not found");
+        if (!user.boxRefreshToken) {
+            logMsg(logType.BOX, "Box refresh token not found");
+            return false;
+        }
 
         await refreshBoxAccessToken(userId, user.boxRefreshToken);
         token = boxAccessTokens.get(userId);
@@ -152,6 +156,9 @@ export const getBoxAccessToken = async (userId: number) => {
 
 export const createBoxFolders = async (userId: number) => {
     const boxAccessToken = await getBoxAccessToken(userId);
+    if (!boxAccessToken) {
+        return false;
+    }
 
     // Year 1 modules
     const year1tp1modules = await prisma.module.findMany({

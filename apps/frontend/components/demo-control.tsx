@@ -6,9 +6,11 @@ import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useDemoDate } from "./contexts/demo-date-context";
+import { useModeration } from "./contexts/moderation-context";
 
 const DemoControl = () => {
     const { fetchDate } = useDemoDate();
+    const { moderationStatus, fetchModerationStatus } = useModeration();
     return (
         <Card className="p-4">
             <div className="space-y-2 ">
@@ -17,6 +19,7 @@ const DemoControl = () => {
                         onClick={async () => {
                             await protectedFetch("/demo/add-1-day", "POST");
                             fetchDate();
+                            fetchModerationStatus();
                         }}
                         className="flex-1"
                         variant="outline"
@@ -27,6 +30,7 @@ const DemoControl = () => {
                         onClick={async () => {
                             await protectedFetch("/demo/add-5-days", "POST");
                             fetchDate();
+                            fetchModerationStatus();
                         }}
                         className="flex-1"
                         variant="outline"
@@ -37,6 +41,7 @@ const DemoControl = () => {
                         onClick={async () => {
                             await protectedFetch("/demo/add-10-days", "POST");
                             fetchDate();
+                            fetchModerationStatus();
                         }}
                         className="flex-1"
                         variant="outline"
@@ -49,6 +54,7 @@ const DemoControl = () => {
                         onClick={async () => {
                             await protectedFetch("/demo/subtract-1-day", "POST");
                             fetchDate();
+                            fetchModerationStatus();
                         }}
                         className="flex-1"
                         variant="outline"
@@ -59,6 +65,7 @@ const DemoControl = () => {
                         onClick={async () => {
                             await protectedFetch("/demo/subtract-5-days", "POST");
                             fetchDate();
+                            fetchModerationStatus();
                         }}
                         className="flex-1"
                         variant="outline"
@@ -69,6 +76,7 @@ const DemoControl = () => {
                         onClick={async () => {
                             await protectedFetch("/demo/subtract-10-days", "POST");
                             fetchDate();
+                            fetchModerationStatus();
                         }}
                         className="flex-1"
                         variant="outline"

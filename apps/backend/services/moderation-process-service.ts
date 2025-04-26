@@ -8,6 +8,8 @@ import { broadcastNotification, sendNotification } from "./notification-service"
 const POLL_INTERVAL = 1000;
 let isCannotCreateBoxFolderNotificationSent = false;
 let isReviewGroupsCreatedNotificationSent = false;
+let isBoxfoldersAreBeingCreatedNotificationSent = false;
+let assessmentsCopied = false;
 let isBoxFoldersCleared = false;
 let internalReviewTp1Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false }; // 5 days, 2 days, on deadline
 let externalReviewTp1Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
@@ -243,30 +245,35 @@ const handleModerationPhaseTwo = async (statusData: any) => {
         if (!isReviewGroupFinalized || !isTp1DeadlinesSet.tp1DeadlinesSet) {
             return;
         }
+        if (!isBoxfoldersAreBeingCreatedNotificationSent) {
+            sendNotification(userId, "info", "BOX", "BOX folders are being created, after which the moderation phase will be advanced to TP 1 - Stage 1 - Internal Review");
+            isBoxfoldersAreBeingCreatedNotificationSent = true;
+        }
+        if (!assessmentsCopied) {
+            // Copy all assessments to AcademicYearAssessment table
+            const assessments = await prisma.assessment.findMany();
 
-        broadcastNotification("info", "BOX folders are being created, after which the moderation phase will be advanced to TP 1 - Stage 1 - Internal Review");
-        // Copy all assessments to AcademicYearAssessment table
-        const assessments = await prisma.assessment.findMany();
+            const academicYear = await getCurrentAcademicYear();
 
-        const academicYear = await getCurrentAcademicYear();
-
-        const academicYearAssessmentData = assessments.map((assessment) => ({
-            tpId: assessment.tpId,
-            moduleId: assessment.moduleId,
-            weight: assessment.weight,
-            assessmentTypeId: assessment.assessmentTypeId,
-            assessmentCategoryId: assessment.assessmentCategoryId,
-            durationInMinutes: assessment.durationInMinutes,
-            academicYearId: academicYear?.id,
-        }));
-        logMsg(logType.MODERATION, "Copying assessments to academicYearAssessments");
-        const academicYearAssessments = await prisma.academicYearAssessment.createMany({
-            data: academicYearAssessmentData,
-        });
+            const academicYearAssessmentData = assessments.map((assessment) => ({
+                tpId: assessment.tpId,
+                moduleId: assessment.moduleId,
+                weight: assessment.weight,
+                assessmentTypeId: assessment.assessmentTypeId,
+                assessmentCategoryId: assessment.assessmentCategoryId,
+                durationInMinutes: assessment.durationInMinutes,
+                academicYearId: academicYear?.id,
+            }));
+            logMsg(logType.MODERATION, "Copying assessments to academicYearAssessments");
+            const academicYearAssessments = await prisma.academicYearAssessment.createMany({
+                data: academicYearAssessmentData,
+            });
+            assessmentsCopied = true;
+        }
 
         // Create box folders
         isboxFoldersCreated = await createBoxFolders(userId);
-
+        // isboxFoldersCreated is either number or null, if it is null, then the folders were not created
         if (!isboxFoldersCreated) {
             if (!isCannotCreateBoxFolderNotificationSent) {
                 await sendNotification(userId, "error", "Could not create folders in box", "Box may not be connected to AMT, please connect Box to amt");
@@ -360,7 +367,7 @@ const handleModerationPhaseFive = async (statusData: any) => {
 
         const deadline = deadlineData.finalDeadlineTp1;
 
-        finalTp1Notifications = await sendDeadlineNotifications(deadline, finalTp1Notifications, "Final deadline");
+        finalTp1Notifications = await sendDeadlineNotifications(deadline, finalTp1Notifications, "Final");
 
         const currentAcademicYear = await prisma.academicYear.findFirst({
             orderBy: {

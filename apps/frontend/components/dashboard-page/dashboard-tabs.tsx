@@ -7,11 +7,14 @@ import ReviewGroupCard from "./review-group-card";
 import SendFoldersToErCard from "./send-folders-to-er-card";
 import { protectedFetch } from "@/utils/protected-fetch";
 import { Loader } from "../ui/loader";
+import ProceesToNextPhaseCard from "./proceed-to-next-phase";
+import { useModeration } from "../contexts/moderation-context";
 
 const DashboardTabs = () => {
     const [isAssessmentLead, setIsAssessmentLead] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const [isLoadingRole, setIsLoadingRole] = useState(true);
+    const { moderationStatus, fetchModerationStatus } = useModeration();
 
     useEffect(() => {
         setIsMounted(true);
@@ -53,6 +56,7 @@ const DashboardTabs = () => {
             </TabsList>
             <TabsContent value="overview" className="space-y-4">
                 <div className="flex flex-col gap-4">
+                    {moderationStatus?.moderationPhase?.id === 2 && <ProceesToNextPhaseCard cname="" />}
                     <div className="grid lg:grid-cols-2 gap-4">
                         <AssessmentsCard className="" />
                         <AssessmentsToModerateCard className="" />

@@ -5,7 +5,7 @@ import { useWebsocket } from "./websocket-context";
 
 type ModerationStatus = {
     moderationPhase: {
-
+        id: number;
         tP: {
             id: number;
             name: string;
@@ -22,7 +22,6 @@ type ModerationStatus = {
     internalModerationDeadline: Date;
     externalModerationDeadline: Date;
     finalDeadline: Date;
-
 };
 type ModerationContextType = {
     moderationStatus: ModerationStatus | null;
@@ -43,7 +42,6 @@ export const ModerationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     useEffect(() => {
         fetchModerationStatus();
     }, []);
-
 
     useEffect(() => {
         if (!socket) return;
