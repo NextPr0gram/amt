@@ -6,6 +6,7 @@ import { DateStage } from "@/components/date-stage";
 import { DeadlinesForm } from "@/components/deadlines-page/deadlines-form";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { DemoDateProvider } from "@/components/contexts/demo-date-context";
+import { DraggableDemoControl } from "@/components/draggable-demo-control";
 
 export default function Page() {
     return (
@@ -27,6 +28,7 @@ export default function Page() {
                                         <DeadlinesForm />
                                     </div>
                                 </div>
+                                <DraggableDemoControl />
                             </ModerationProvider>
                         </ERFoldersProvider>
                     </WebsocketProvider>

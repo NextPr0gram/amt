@@ -224,3 +224,49 @@ export const updateFinalDeadlineTp2Handler = catchErrors(async (req, res) => {
 
     return res.status(OK).json(updatedStatus);
 });
+
+export const getIsTp1DeadlinesSetHandler = catchErrors(async (req, res) => {
+    const moderationStatus = await prisma.moderationStatus.findFirst({
+        select: {
+            tp1DeadlinesSet: true,
+        },
+    });
+    appAssert(moderationStatus, NOT_FOUND, "Moderation status not found");
+    res.status(OK).json(moderationStatus.tp1DeadlinesSet);
+});
+
+export const getIsTp2DeadlinesSetHandler = catchErrors(async (req, res) => {
+    const moderationStatus = await prisma.moderationStatus.findFirst({
+        select: {
+            tp2DeadlinesSet: true,
+        },
+    });
+    appAssert(moderationStatus, NOT_FOUND, "Moderation status not found");
+    res.status(OK).json(moderationStatus.tp2DeadlinesSet);
+});
+
+export const setIsTp1DeadlinesSetHandler = catchErrors(async (req, res) => {
+    const moderationStatus = await prisma.moderationStatus.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            tp1DeadlinesSet: true,
+        },
+    });
+    appAssert(moderationStatus, NOT_FOUND, "Moderation status not found");
+    res.status(OK).json(true);
+});
+
+export const setIsTp2DeadlinesSetHandler = catchErrors(async (req, res) => {
+    const moderationStatus = await prisma.moderationStatus.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            tp2DeadlinesSet: true,
+        },
+    });
+    appAssert(moderationStatus, NOT_FOUND, "Moderation status not found");
+    res.status(OK).json(true);
+});

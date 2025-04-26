@@ -185,7 +185,7 @@ const handleModerationPhaseOne = async (statusData: any) => {
         const date = await getCurrentDateTime();
 
         const userId = await getAssessmentLeadId();
-        if (!isBoxFoldersCleared) {
+        /* if (!isBoxFoldersCleared) {
             await clearFolderContents("0", userId);
             await prisma.academicYearAssessment.deleteMany();
             await prisma.academicYear.deleteMany();
@@ -200,7 +200,7 @@ const handleModerationPhaseOne = async (statusData: any) => {
                 },
             });
         }
-        isBoxFoldersCleared = true;
+        isBoxFoldersCleared = true; */
         const tp1StartDate = await prisma.moderationStatus.findFirst({
             select: {
                 tp1StartDate: true,
@@ -213,7 +213,7 @@ const handleModerationPhaseOne = async (statusData: any) => {
         const tp1StartDateWithYear = new Date(tp1StartDate.tp1StartDate);
         const currentYear = (await getCurrentDateTime()).getFullYear();
         tp1StartDateWithYear.setFullYear(currentYear);
-        if ((await isPastDate(tp1StartDateWithYear)) && !isBoxFoldersCleared) {
+        if (await isPastDate(tp1StartDateWithYear)) {
             await broadcastNotification("info", "Moderation Phase", "Moderation phase advanced to TP 1 - Stage 1");
             await advanceModerationStatus();
         }
@@ -244,6 +244,7 @@ const handleModerationPhaseTwo = async (statusData: any) => {
             return;
         }
 
+        broadcastNotification("info", "BOX folders are being created, after which the moderation phase will be advanced to TP 1 - Stage 1 - Internal Review");
         // Copy all assessments to AcademicYearAssessment table
         const assessments = await prisma.assessment.findMany();
 

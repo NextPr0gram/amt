@@ -226,20 +226,6 @@ export const deleteReviewGroupHandler = catchErrors(async (req, res) => {
 
 export const finalizeReviewGroupsHandler = catchErrors(async (req, res) => {
     const userId = getUserIdFromToken(req.cookies.accessToken) as number;
-    const boxRefreshToken = await prisma.user.findUnique({
-        select: {
-            boxRefreshToken: true,
-        },
-        where: {
-            id: userId,
-        },
-    });
-    if (boxRefreshToken == null) {
-        sendNotification(userId, "error", "Box folders not created", "Box folders cannot be created because your Box account is not connected. Please connect your Box account in the settings page.");
-        return res.status(INTERNAL_SERVER_ERROR).json({
-            message: "Box is not connected",
-        });
-    }
 
     const updateModerationStatus = await prisma.moderationStatus.update({
         where: {
@@ -249,8 +235,8 @@ export const finalizeReviewGroupsHandler = catchErrors(async (req, res) => {
             finalizeReviewGroups: true,
         },
     });
-    appAssert(updateModerationStatus, INTERNAL_SERVER_ERROR, "Something went wront while updating moderationStatus");
-    sendNotification(userId, "info", "Review groups finalized", "Box folder creation is in progress. Upon completion, the moderation phase will advance to Stage 1: Internal Review, and relevant moderation staff will be notified.");
+    appAssert(updateModerationStatus, INTERNAL_SERVER_ERROR, "Something went wrong while updating moderationStatus");
+    sendNotification(userId, "info", "Review groups finalized");
     return res.status(OK).json("Review groups finalized");
 });
 

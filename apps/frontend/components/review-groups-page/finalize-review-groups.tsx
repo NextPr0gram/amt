@@ -33,7 +33,7 @@ export const FinalizeReviewGroups = () => {
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                <AlertDialogDescription>This action cannot be undone. After finalizing review groups, they cannot be edited or deleted, the BOX folders will be created and the moderation status will proceed to the next phase.</AlertDialogDescription>
+                                <AlertDialogDescription>This action cannot be undone. After finalizing review groups, they cannot be edited or deleted.</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
