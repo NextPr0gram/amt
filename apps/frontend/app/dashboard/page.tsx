@@ -6,6 +6,7 @@ import { ModerationProvider } from "@/components/contexts/moderation-context";
 import { ERFoldersProvider } from "../../components/external-reviewers-folders-page/er-folders-context";
 import DashboardTabs from "@/components/dashboard-page/dashboard-tabs";
 import { DemoDateProvider } from "@/components/contexts/demo-date-context";
+import { DraggableDemoControl } from "@/components/draggable-demo-control";
 
 export default function Page() {
     return (
@@ -26,6 +27,7 @@ export default function Page() {
                                 <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                                     <DashboardTabs />
                                 </div>
+                                <DraggableDemoControl />
                             </ERFoldersProvider>
                         </ModerationProvider>
                     </WebsocketProvider>

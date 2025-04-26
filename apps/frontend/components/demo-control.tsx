@@ -84,10 +84,10 @@ const DemoControl = () => {
                 </Button>
                 <div className="flex space-x-2">
                     <Button onClick={() => protectedFetch("/demo/prev-phase", "POST")} className="flex-1" variant="outline">
-                        Prv Phase
+                        P Phase
                     </Button>
                     <Button onClick={() => protectedFetch("/demo/next-phase", "POST")} className="flex-1" variant="outline">
-                        Nxt Phase
+                        N Phase
                     </Button>
                 </div>
             </div>
