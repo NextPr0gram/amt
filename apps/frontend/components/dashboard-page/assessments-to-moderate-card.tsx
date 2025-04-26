@@ -34,7 +34,7 @@ const AssessmentsToModerateCard = ({ className }: AssessmentsToModerateCardProps
 
     useEffect(() => {
         const fetchAssessments = async () => {
-            const res = await protectedFetch("/user/assessments-to-moderate", "GET");
+            const res = await protectedFetch("/user/assessments-to-moderate-tp1", "GET");
             res.status === 200 && setAssessments(res.data);
         };
         fetchAssessments();

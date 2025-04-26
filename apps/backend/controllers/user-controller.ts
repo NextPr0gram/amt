@@ -149,7 +149,7 @@ export const getReviewGroupHandler = catchErrors(async (req, res) => {
     return res.status(OK).json(reviewGroup);
 });
 
-export const getUserAssessmentsForCurrentAcademicYearHandler = catchErrors(async (req, res) => {
+export const getUserAssessmentsForCurrentAcademicYearTp1Handler = catchErrors(async (req, res) => {
     const isModerationPhase3 = await prisma.moderationStatus.findFirst({
         select: {
             moderationPhaseId: true,
@@ -181,6 +181,9 @@ export const getUserAssessmentsForCurrentAcademicYearHandler = catchErrors(async
                     },
                 },
             ],
+            tp: {
+                id: 1,
+            },
         },
         select: {
             id: true,
@@ -200,7 +203,7 @@ export const getUserAssessmentsForCurrentAcademicYearHandler = catchErrors(async
     return res.status(OK).json(assessments);
 });
 
-export const getUserAssessmentsToModerateHandler = catchErrors(async (req, res) => {
+export const getUserAssessmentsToModerateTp1Handler = catchErrors(async (req, res) => {
     const moderationStatus = await prisma.moderationStatus.findFirst({
         select: { moderationPhaseId: true },
     });
@@ -244,6 +247,131 @@ export const getUserAssessmentsToModerateHandler = catchErrors(async (req, res) 
                 in: moduleIdsToModerate,
             },
             academicYearId: currentAcademicYear.id,
+            tp: {
+                id: 1,
+            },
+        },
+        select: {
+            id: true,
+            name: true,
+            module: {
+                select: {
+                    code: true,
+                    name: true,
+                },
+            },
+            assessmentType: true,
+            assessmentCategory: true,
+            weight: true,
+            folderId: true,
+        },
+        orderBy: [{ module: { code: "asc" } }, { name: "asc" }],
+    });
+
+    return res.status(OK).json(assessmentsToModerate);
+});
+
+export const getUserAssessmentsForCurrentAcademicYearTp2Handler = catchErrors(async (req, res) => {
+    const isModerationPhase3 = await prisma.moderationStatus.findFirst({
+        select: {
+            moderationPhaseId: true,
+        },
+    });
+    appAssert(isModerationPhase3, NOT_FOUND, "Could not retrieve assessments becuse it is not internal review phase yet");
+    if (!(isModerationPhase3.moderationPhaseId >= 3)) {
+        return res.status(INTERNAL_SERVER_ERROR).json({
+            message: "Canot retrieve review groups when not finalized",
+        });
+    }
+    const userId = getUserIdFromToken(req.cookies.accessToken);
+
+    const assessments = await prisma.academicYearAssessment.findMany({
+        where: {
+            OR: [
+                {
+                    module: {
+                        moduleLeadId: userId,
+                    },
+                },
+                {
+                    module: {
+                        moduleTutors: {
+                            some: {
+                                userId,
+                            },
+                        },
+                    },
+                },
+            ],
+            tp: {
+                id: 2,
+            },
+        },
+        select: {
+            id: true,
+            name: true,
+            module: {
+                select: {
+                    code: true,
+                },
+            },
+            assessmentType: true,
+            assessmentCategory: true,
+            weight: true,
+            folderId: true,
+        },
+    });
+    appAssert(assessments, NOT_FOUND, "Could not retrieve assessments");
+    return res.status(OK).json(assessments);
+});
+
+export const getUserAssessmentsToModerateTp2Handler = catchErrors(async (req, res) => {
+    const moderationStatus = await prisma.moderationStatus.findFirst({
+        select: { moderationPhaseId: true },
+    });
+    appAssert(moderationStatus?.moderationPhaseId && moderationStatus.moderationPhaseId >= 3, INTERNAL_SERVER_ERROR, "Cannot retrieve assessments to moderate outside of the internal review phase");
+
+    const userId = getUserIdFromToken(req.cookies.accessToken);
+    appAssert(userId, NOT_FOUND, "Could not get userId from accessToken");
+
+    const userReviewGroup = await prisma.reviewGroup.findFirst({
+        where: {
+            modules: {
+                some: {
+                    OR: [{ moduleLeadId: userId }, { moduleTutors: { some: { userId } } }],
+                },
+            },
+        },
+        select: { id: true },
+    });
+    appAssert(userReviewGroup, NOT_FOUND, "User is not part of any review group or review group not found");
+
+    const modulesToModerate = await prisma.module.findMany({
+        where: {
+            reviewGroupId: userReviewGroup.id,
+            NOT: {
+                OR: [{ moduleLeadId: userId }, { moduleTutors: { some: { userId } } }],
+            },
+        },
+        select: { id: true },
+    });
+
+    if (modulesToModerate.length === 0) {
+        return res.status(OK).json([]);
+    }
+    const moduleIdsToModerate = modulesToModerate.map((m) => m.id);
+    const currentAcademicYear = await getCurrentAcademicYear();
+    appAssert(currentAcademicYear, INTERNAL_SERVER_ERROR, "Current academic year not set");
+
+    const assessmentsToModerate = await prisma.academicYearAssessment.findMany({
+        where: {
+            moduleId: {
+                in: moduleIdsToModerate,
+            },
+            academicYearId: currentAcademicYear.id,
+            tp: {
+                id: 2,
+            },
         },
         select: {
             id: true,

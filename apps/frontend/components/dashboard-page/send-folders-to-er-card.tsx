@@ -66,7 +66,7 @@ const SendFoldersToErCard = () => {
 
     const fetchExamOnlyAssessments = async () => {
         try {
-            const res = await protectedFetch("/academic-year-assessments/current-ac-year-exams", "GET");
+            const res = await protectedFetch("/academic-year-assessments/current-ac-year-exams-tp1", "GET");
             if (res.data && Array.isArray(res.data) && res.status === 200) {
                 setIsAssessmentsFetched(true);
                 form.reset({

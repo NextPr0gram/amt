@@ -35,7 +35,7 @@ const AssessmentsCard = ({ className }: AssessmentsCardProps) => {
 
     useEffect(() => {
         const fetchAssessments = async () => {
-            const res = await protectedFetch("/user/assessments", "GET");
+            const res = await protectedFetch("/user/assessments-tp1", "GET");
             res.status === 200 && setAssessments(res.data);
         };
         fetchAssessments();
