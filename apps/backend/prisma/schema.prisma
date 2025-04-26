@@ -235,6 +235,7 @@ model ModerationStatus {
     finalizeReviewGroups          Boolean         @default(false)
     tp1DeadlinesSet               Boolean         @default(false)
     tp2DeadlinesSet               Boolean         @default(false)
+    resitEndDate                  DateTime
     erFolderId                    String?
     moderationPhase               ModerationPhase @relation(fields: [moderationPhaseId], references: [id])
 }

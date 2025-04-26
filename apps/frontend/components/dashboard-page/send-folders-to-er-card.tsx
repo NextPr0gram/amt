@@ -19,6 +19,7 @@ import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from ".
 // Removed unused SendFoldersToErDialog import
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
+import { useModeration } from "../contexts/moderation-context";
 
 // Assuming AssessmentFolder structure based on previous context
 interface AssessmentFolder {
@@ -50,6 +51,7 @@ const SendFoldersToErCard = () => {
     const [sendingForm, setSendingForm] = useState(false);
     const [message, setMessage] = useState("");
     const [isAssessmentsFetched, setIsAssessmentsFetched] = useState(false);
+    const { moderationStatus, fetchModerationStatus } = useModeration();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -66,7 +68,16 @@ const SendFoldersToErCard = () => {
 
     const fetchExamOnlyAssessments = async () => {
         try {
-            const res = await protectedFetch("/academic-year-assessments/current-ac-year-exams-tp1", "GET");
+            const fetchAcademicYearAssessmentByTP = async () => {
+                if (moderationStatus?.moderationPhase?.id === 3 || moderationStatus?.moderationPhase?.id === 4) {
+                    return await protectedFetch("/academic-year-assessments/current-ac-year-exams-tp1", "GET");
+                } else if (moderationStatus?.moderationPhase?.id === 7 || moderationStatus?.moderationPhase?.id === 8) {
+                    return await protectedFetch("/academic-year-assessments/current-ac-year-exams-tp2", "GET");
+                } else {
+                    return { data: { code: "NotExternalReview" } };
+                }
+            };
+            const res = await fetchAcademicYearAssessmentByTP();
             if (res.data && Array.isArray(res.data) && res.status === 200) {
                 setIsAssessmentsFetched(true);
                 form.reset({

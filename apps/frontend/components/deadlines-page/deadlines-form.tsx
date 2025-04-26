@@ -134,9 +134,13 @@ export const DeadlinesForm = () => {
         }
     };
 
+    // Note: Removed form dependency from useEffect to prevent potential infinite loop
+    // if form instance changes unnecessarily. fetchDeadlines depends on form.reset,
+    // so calling it once on mount is usually sufficient unless form needs external reset triggers.
     useEffect(() => {
         fetchDeadlines();
-    }, [form]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
         setIsSaving(true);
@@ -152,8 +156,9 @@ export const DeadlinesForm = () => {
 
             if (internalTp1Response.status === 200 && externalTp1Response.status === 200 && finalTp1Response.status === 200 && internalTp2Response.status === 200 && externalTp2Response.status === 200 && finalTp2Response.status === 200) {
                 toast.success("Deadlines updated successfully");
-                fetchDeadlines();
+                fetchDeadlines(); // Refetch to update originalValues and reset form state
             } else {
+                // Potentially provide more specific error feedback based on which requests failed
                 toast.error("Failed to update some deadlines");
             }
         } catch (error) {
@@ -185,189 +190,238 @@ export const DeadlinesForm = () => {
                         <FormField
                             control={form.control}
                             name="internalModerationTp1"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel>Internal moderation deadline</FormLabel>
-                                    <div className="relative">
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <FormControl>
-                                                    <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground", changedFields.internalModerationTp1 && "bg-yellow-50 border-yellow-300")}>
-                                                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                                        <div className="flex items-center justify-end ml-auto gap-x-2">
-                                                            {changedFields.internalModerationTp1 && <div className=" h-2 w-2 rounded-full bg-yellow-400" title="This date has been changed"></div>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                        </div>
-                                                    </Button>
-                                                </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar month={field.value} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date: Date) => date < new Date("1900-01-01")} initialFocus />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                    {changedFields.internalModerationTp1 && originalValues.internalModerationTp1 && <p className="text-xs text-yellow-600 mt-1">Changed from: {format(originalValues.internalModerationTp1, "PPP")}</p>}
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            render={({ field }) => {
+                                const [calendarMonth, setCalendarMonth] = useState<Date | undefined>(field.value || new Date());
+                                useEffect(() => {
+                                    if (field.value) {
+                                        setCalendarMonth(field.value);
+                                    }
+                                }, [field.value]);
+                                return (
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>Internal moderation deadline</FormLabel>
+                                        <div className="relative">
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground", changedFields.internalModerationTp1 && "bg-yellow-50 border-yellow-300")}>
+                                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                            <div className="flex items-center justify-end ml-auto gap-x-2">
+                                                                {changedFields.internalModerationTp1 && <div className=" h-2 w-2 rounded-full bg-yellow-400" title="This date has been changed"></div>}
+                                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                            </div>
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar month={calendarMonth} onMonthChange={setCalendarMonth} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date: Date) => date < new Date("1900-01-01")} initialFocus />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                        {changedFields.internalModerationTp1 && originalValues.internalModerationTp1 && <p className="text-xs text-yellow-600 mt-1">Changed from: {format(originalValues.internalModerationTp1, "PPP")}</p>}
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
                         />
                         <FormField
                             control={form.control}
                             name="externalModerationTp1"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel>External moderation deadline</FormLabel>
-                                    <div className="relative">
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <FormControl>
-                                                    <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground", changedFields.externalModerationTp1 && "bg-yellow-50 border-yellow-300")}>
-                                                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                                        <div className="flex items-center justify-end ml-auto gap-x-2">
-                                                            {changedFields.externalModerationTp1 && <div className=" h-2 w-2 rounded-full bg-yellow-400" title="This date has been changed"></div>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                        </div>
-                                                    </Button>
-                                                </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar month={field.value} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date: Date) => date < new Date("1900-01-01")} initialFocus />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                    {changedFields.externalModerationTp1 && originalValues.externalModerationTp1 && <p className="text-xs text-yellow-600 mt-1">Changed from: {format(originalValues.externalModerationTp1, "PPP")}</p>}
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            render={({ field }) => {
+                                const [calendarMonth, setCalendarMonth] = useState<Date | undefined>(field.value || new Date());
+                                useEffect(() => {
+                                    if (field.value) {
+                                        setCalendarMonth(field.value);
+                                    }
+                                }, [field.value]);
+                                return (
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>External moderation deadline</FormLabel>
+                                        <div className="relative">
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground", changedFields.externalModerationTp1 && "bg-yellow-50 border-yellow-300")}>
+                                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                            <div className="flex items-center justify-end ml-auto gap-x-2">
+                                                                {changedFields.externalModerationTp1 && <div className=" h-2 w-2 rounded-full bg-yellow-400" title="This date has been changed"></div>}
+                                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                            </div>
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar month={calendarMonth} onMonthChange={setCalendarMonth} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date: Date) => date < new Date("1900-01-01")} initialFocus />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                        {changedFields.externalModerationTp1 && originalValues.externalModerationTp1 && <p className="text-xs text-yellow-600 mt-1">Changed from: {format(originalValues.externalModerationTp1, "PPP")}</p>}
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
                         />
                         <FormField
                             control={form.control}
                             name="finalDeadlineTp1"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel>Final deadline</FormLabel>
-                                    <div className="relative">
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <FormControl>
-                                                    <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground", changedFields.finalDeadlineTp1 && "bg-yellow-50 border-yellow-300")}>
-                                                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                                        <div className="flex items-center justify-end ml-auto gap-x-2">
-                                                            {changedFields.finalDeadlineTp1 && <div className=" h-2 w-2 rounded-full bg-yellow-400" title="This date has been changed"></div>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                        </div>
-                                                    </Button>
-                                                </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar month={field.value} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date: Date) => date < new Date("1900-01-01")} initialFocus />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                    {changedFields.finalDeadlineTp1 && originalValues.finalDeadlineTp1 && <p className="text-xs text-yellow-600 mt-1">Changed from: {format(originalValues.finalDeadlineTp1, "PPP")}</p>}
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            render={({ field }) => {
+                                const [calendarMonth, setCalendarMonth] = useState<Date | undefined>(field.value || new Date());
+                                useEffect(() => {
+                                    if (field.value) {
+                                        setCalendarMonth(field.value);
+                                    }
+                                }, [field.value]);
+                                return (
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>Final deadline</FormLabel>
+                                        <div className="relative">
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground", changedFields.finalDeadlineTp1 && "bg-yellow-50 border-yellow-300")}>
+                                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                            <div className="flex items-center justify-end ml-auto gap-x-2">
+                                                                {changedFields.finalDeadlineTp1 && <div className=" h-2 w-2 rounded-full bg-yellow-400" title="This date has been changed"></div>}
+                                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                            </div>
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar month={calendarMonth} onMonthChange={setCalendarMonth} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date: Date) => date < new Date("1900-01-01")} initialFocus />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                        {changedFields.finalDeadlineTp1 && originalValues.finalDeadlineTp1 && <p className="text-xs text-yellow-600 mt-1">Changed from: {format(originalValues.finalDeadlineTp1, "PPP")}</p>}
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
                         />
                         <h4 className="">TP 2 Deadlines</h4>
                         <FormField
                             control={form.control}
                             name="internalModerationTp2"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel>Internal moderation deadline</FormLabel>
-                                    <div className="relative">
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <FormControl>
-                                                    <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground", changedFields.internalModerationTp2 && "bg-yellow-50 border-yellow-300")}>
-                                                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                                        <div className="flex items-center justify-end ml-auto gap-x-2">
-                                                            {changedFields.internalModerationTp2 && <div className=" h-2 w-2 rounded-full bg-yellow-400" title="This date has been changed"></div>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                        </div>
-                                                    </Button>
-                                                </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar month={field.value} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date: Date) => date < new Date("1900-01-01")} initialFocus />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                    {changedFields.internalModerationTp2 && originalValues.internalModerationTp2 && <p className="text-xs text-yellow-600 mt-1">Changed from: {format(originalValues.internalModerationTp2, "PPP")}</p>}
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            render={({ field }) => {
+                                const [calendarMonth, setCalendarMonth] = useState<Date | undefined>(field.value || new Date());
+                                useEffect(() => {
+                                    if (field.value) {
+                                        setCalendarMonth(field.value);
+                                    }
+                                }, [field.value]);
+                                return (
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>Internal moderation deadline</FormLabel>
+                                        <div className="relative">
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground", changedFields.internalModerationTp2 && "bg-yellow-50 border-yellow-300")}>
+                                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                            <div className="flex items-center justify-end ml-auto gap-x-2">
+                                                                {changedFields.internalModerationTp2 && <div className=" h-2 w-2 rounded-full bg-yellow-400" title="This date has been changed"></div>}
+                                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                            </div>
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar month={calendarMonth} onMonthChange={setCalendarMonth} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date: Date) => date < new Date("1900-01-01")} initialFocus />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                        {changedFields.internalModerationTp2 && originalValues.internalModerationTp2 && <p className="text-xs text-yellow-600 mt-1">Changed from: {format(originalValues.internalModerationTp2, "PPP")}</p>}
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
                         />
                         <FormField
                             control={form.control}
                             name="externalModerationTp2"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel>External moderation deadline</FormLabel>
-                                    <div className="relative">
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <FormControl>
-                                                    <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground", changedFields.externalModerationTp2 && "bg-yellow-50 border-yellow-300")}>
-                                                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                                        <div className="flex items-center justify-end ml-auto gap-x-2">
-                                                            {changedFields.externalModerationTp2 && <div className=" h-2 w-2 rounded-full bg-yellow-400" title="This date has been changed"></div>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                        </div>
-                                                    </Button>
-                                                </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar month={field.value} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date: Date) => date < new Date("1900-01-01")} initialFocus />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                    {changedFields.externalModerationTp2 && originalValues.externalModerationTp2 && <p className="text-xs text-yellow-600 mt-1">Changed from: {format(originalValues.externalModerationTp2, "PPP")}</p>}
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            render={({ field }) => {
+                                const [calendarMonth, setCalendarMonth] = useState<Date | undefined>(field.value || new Date());
+                                useEffect(() => {
+                                    if (field.value) {
+                                        setCalendarMonth(field.value);
+                                    }
+                                }, [field.value]);
+                                return (
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>External moderation deadline</FormLabel>
+                                        <div className="relative">
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground", changedFields.externalModerationTp2 && "bg-yellow-50 border-yellow-300")}>
+                                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                            <div className="flex items-center justify-end ml-auto gap-x-2">
+                                                                {changedFields.externalModerationTp2 && <div className=" h-2 w-2 rounded-full bg-yellow-400" title="This date has been changed"></div>}
+                                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                            </div>
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar month={calendarMonth} onMonthChange={setCalendarMonth} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date: Date) => date < new Date("1900-01-01")} initialFocus />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                        {changedFields.externalModerationTp2 && originalValues.externalModerationTp2 && <p className="text-xs text-yellow-600 mt-1">Changed from: {format(originalValues.externalModerationTp2, "PPP")}</p>}
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
                         />
                         <FormField
                             control={form.control}
                             name="finalDeadlineTp2"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel>Final deadline</FormLabel>
-                                    <div className="relative">
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <FormControl>
-                                                    <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground", changedFields.finalDeadlineTp2 && "bg-yellow-50 border-yellow-300")}>
-                                                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                                        <div className="flex items-center justify-end ml-auto gap-x-2">
-                                                            {changedFields.finalDeadlineTp2 && <div className=" h-2 w-2 rounded-full bg-yellow-400" title="This date has been changed"></div>}
-                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                        </div>
-                                                    </Button>
-                                                </FormControl>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar month={field.value} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date: Date) => date < new Date("1900-01-01")} initialFocus />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                    {changedFields.finalDeadlineTp2 && originalValues.finalDeadlineTp2 && <p className="text-xs text-yellow-600 mt-1">Changed from: {format(originalValues.finalDeadlineTp2, "PPP")}</p>}
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            render={({ field }) => {
+                                const [calendarMonth, setCalendarMonth] = useState<Date | undefined>(field.value || new Date());
+                                useEffect(() => {
+                                    if (field.value) {
+                                        setCalendarMonth(field.value);
+                                    }
+                                }, [field.value]);
+                                return (
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>Final deadline</FormLabel>
+                                        <div className="relative">
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                        <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground", changedFields.finalDeadlineTp2 && "bg-yellow-50 border-yellow-300")}>
+                                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                            <div className="flex items-center justify-end ml-auto gap-x-2">
+                                                                {changedFields.finalDeadlineTp2 && <div className=" h-2 w-2 rounded-full bg-yellow-400" title="This date has been changed"></div>}
+                                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                            </div>
+                                                        </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar month={calendarMonth} onMonthChange={setCalendarMonth} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date: Date) => date < new Date("1900-01-01")} initialFocus />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                        {changedFields.finalDeadlineTp2 && originalValues.finalDeadlineTp2 && <p className="text-xs text-yellow-600 mt-1">Changed from: {format(originalValues.finalDeadlineTp2, "PPP")}</p>}
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
                         />
 
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button className="w-fit" disabled={isSaving}>
+                                {/* Disable trigger if no fields have changed or if saving */}
+                                <Button className="w-fit" disabled={isSaving || !Object.values(changedFields).some(Boolean)}>
                                     {isSaving ? (
                                         <>
-                                            <Loader className="mx-auto" variant="circular" />
+                                            <Loader className="mr-2" variant="circular" size="sm" />
                                             Saving...
                                         </>
                                     ) : (
-                                        "Submit"
+                                        "Submit Changes"
                                     )}
                                 </Button>
                             </AlertDialogTrigger>
@@ -375,84 +429,81 @@ export const DeadlinesForm = () => {
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Confirm deadlines changes</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        {changedFields.internalModerationTp1 && (
-                                            <div className="text-sm text-muted-foreground">
-                                                <div>
-                                                    <p className="font-bold text-slate-900">Internal Moderation TP1:</p>{" "}
+                                        Please review the changes before submitting:
+                                        <div className="space-y-2 mt-3">
+                                            {changedFields.internalModerationTp1 && (
+                                                <div className="text-sm text-muted-foreground">
+                                                    <p className="font-bold text-slate-900">Internal Moderation TP1:</p>
                                                     <div className="flex items-center gap-1">
-                                                        {format(originalValues.internalModerationTp1, "PPP")} <MoveRight /> {format(formValues.internalModerationTp1 as Date, "PPP")}{" "}
+                                                        {format(originalValues.internalModerationTp1, "PPP")} <MoveRight className="h-4 w-4" /> {format(formValues.internalModerationTp1 as Date, "PPP")}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                        {changedFields.externalModerationTp1 && (
-                                            <div className="text-sm text-muted-foreground">
-                                                <div>
-                                                    <p className="font-bold text-slate-900">External Moderation TP1:</p>{" "}
+                                            )}
+                                            {changedFields.externalModerationTp1 && (
+                                                <div className="text-sm text-muted-foreground">
+                                                    <p className="font-bold text-slate-900">External Moderation TP1:</p>
                                                     <div className="flex items-center gap-1">
-                                                        {" "}
-                                                        {format(originalValues.externalModerationTp1, "PPP")} <MoveRight /> {format(formValues.externalModerationTp1 as Date, "PPP")}{" "}
+                                                        {format(originalValues.externalModerationTp1, "PPP")} <MoveRight className="h-4 w-4" /> {format(formValues.externalModerationTp1 as Date, "PPP")}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                        {changedFields.finalDeadlineTp1 && (
-                                            <div className="text-sm text-muted-foreground">
-                                                <div>
-                                                    <p className="font-bold text-slate-900">Final Deadline TP1:</p>{" "}
+                                            )}
+                                            {changedFields.finalDeadlineTp1 && (
+                                                <div className="text-sm text-muted-foreground">
+                                                    <p className="font-bold text-slate-900">Final Deadline TP1:</p>
                                                     <div className="flex items-center gap-1">
-                                                        {" "}
-                                                        {format(originalValues.finalDeadlineTp1, "PPP")} <MoveRight /> {format(formValues.finalDeadlineTp1 as Date, "PPP")}{" "}
+                                                        {format(originalValues.finalDeadlineTp1, "PPP")} <MoveRight className="h-4 w-4" /> {format(formValues.finalDeadlineTp1 as Date, "PPP")}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                        {changedFields.internalModerationTp2 && (
-                                            <div className="text-sm text-muted-foreground">
-                                                <div>
-                                                    <p className="font-bold text-slate-900">Internal Moderation TP2:</p>{" "}
+                                            )}
+                                            {changedFields.internalModerationTp2 && (
+                                                <div className="text-sm text-muted-foreground">
+                                                    <p className="font-bold text-slate-900">Internal Moderation TP2:</p>
                                                     <div className="flex items-center gap-1">
-                                                        {" "}
-                                                        {format(originalValues.internalModerationTp2, "PPP")} <MoveRight /> {format(formValues.internalModerationTp2 as Date, "PPP")}{" "}
+                                                        {format(originalValues.internalModerationTp2, "PPP")} <MoveRight className="h-4 w-4" /> {format(formValues.internalModerationTp2 as Date, "PPP")}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                        {changedFields.externalModerationTp2 && (
-                                            <div className="text-sm text-muted-foreground">
-                                                <div>
-                                                    <p className="font-bold text-slate-900">External Moderation TP2:</p>{" "}
+                                            )}
+                                            {changedFields.externalModerationTp2 && (
+                                                <div className="text-sm text-muted-foreground">
+                                                    <p className="font-bold text-slate-900">External Moderation TP2:</p>
                                                     <div className="flex items-center gap-1">
-                                                        {" "}
-                                                        {format(originalValues.externalModerationTp2, "PPP")} <MoveRight /> {format(formValues.externalModerationTp2 as Date, "PPP")}{" "}
+                                                        {format(originalValues.externalModerationTp2, "PPP")} <MoveRight className="h-4 w-4" /> {format(formValues.externalModerationTp2 as Date, "PPP")}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                        {changedFields.finalDeadlineTp2 && (
-                                            <div className="text-sm text-muted-foreground">
-                                                <div>
-                                                    <p className="font-bold text-slate-900">Final Deadline TP2:</p>{" "}
+                                            )}
+                                            {changedFields.finalDeadlineTp2 && (
+                                                <div className="text-sm text-muted-foreground">
+                                                    <p className="font-bold text-slate-900">Final Deadline TP2:</p>
                                                     <div className="flex items-center gap-1">
-                                                        {" "}
-                                                        {format(originalValues.finalDeadlineTp2, "PPP")} <MoveRight /> {format(formValues.finalDeadlineTp2 as Date, "PPP")}{" "}
+                                                        {format(originalValues.finalDeadlineTp2, "PPP")} <MoveRight className="h-4 w-4" /> {format(formValues.finalDeadlineTp2 as Date, "PPP")}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction asChild>
-                                        <Button className="w-fit" type="submit" disabled={isSaving}>
+                                    {/*
+                    Using form.handleSubmit here inside the onClick ensures validation runs
+                    *before* the onSubmit logic is executed when clicking the confirmation button.
+                    We prevent the default form submission triggered by the outer form tag.
+                   */}
+                                    <AlertDialogAction
+                                        asChild
+                                        onClick={(e) => {
+                                            e.preventDefault(); // Prevent default dialog close/form submit
+                                            form.handleSubmit(onSubmit)(); // Trigger validation and submit
+                                        }}
+                                    >
+                                        <Button className="w-fit" type="button" disabled={isSaving}>
                                             {isSaving ? (
                                                 <>
-                                                    <Loader className="mx-auto" variant="circular" />
+                                                    <Loader className="mr-2" variant="circular" size="sm" />
                                                     Saving...
                                                 </>
                                             ) : (
-                                                "Submit"
+                                                "Confirm and Save"
                                             )}
                                         </Button>
                                     </AlertDialogAction>

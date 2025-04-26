@@ -11,12 +11,14 @@ let isReviewGroupsCreatedNotificationSent = false;
 let isBoxfoldersAreBeingCreatedNotificationSent = false;
 let assessmentsCopied = false;
 let isBoxFoldersCleared = false;
-let internalReviewTp1Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false }; // 5 days, 2 days, on deadline
+let internalReviewTp1Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
 let externalReviewTp1Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
 let finalTp1Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
 let internalReviewTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
 let externalReviewTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
 let finalTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
+let flagsReset = false;
+let lastResetAcademicYearId: number | null = null;
 
 export const processModerationStatus = async () => {
     logMsg(logType.MODERATION, "Starting processStatus...");
@@ -180,12 +182,51 @@ const sendDeadlineNotifications = async (deadline: Date, notificationState: Dead
     return updatedState;
 };
 
+const resetFlags = async () => {
+    isCannotCreateBoxFolderNotificationSent = false;
+    isReviewGroupsCreatedNotificationSent = false;
+    isBoxfoldersAreBeingCreatedNotificationSent = false;
+    assessmentsCopied = false;
+    isBoxFoldersCleared = false;
+    internalReviewTp1Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
+    externalReviewTp1Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
+    finalTp1Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
+    internalReviewTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
+    externalReviewTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
+    finalTp2Notifications = { notification1Sent: false, notification2Sent: false, notification3Sent: false };
+
+    await prisma.moderationStatus.update({
+        where: {
+            id: 1,
+        },
+        data: {
+            finalizeReviewGroups: false,
+            tp1DeadlinesSet: false,
+            tp2DeadlinesSet: false,
+        },
+    });
+    flagsReset = true; // Consider if this flag is still needed with the new logic
+    logMsg(logType.MODERATION, "Flags and relevant DB fields reset.");
+};
+
 // Outside moderation
 const handleModerationPhaseOne = async (statusData: any) => {
     try {
         logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+        const currentAcademicYear = await getCurrentAcademicYear();
+        if (!currentAcademicYear) {
+            logMsg(logType.ERROR, "Could not determine current academic year in handleModerationPhaseTwo. Cannot reset flags.");
+            // Depending on requirements, you might want to return or throw an error here
+        } else {
+            if (lastResetAcademicYearId !== currentAcademicYear.id) {
+                logMsg(logType.MODERATION, `New academic year detected (ID: ${currentAcademicYear.id}). Resetting flags.`);
+                await resetFlags();
+                lastResetAcademicYearId = currentAcademicYear.id; // Update the tracker
+            } else {
+                logMsg(logType.MODERATION, `Flags already reset for academic year ID: ${currentAcademicYear.id}. Skipping reset.`);
+            }
+        }
         const date = await getCurrentDateTime();
-
         const userId = await getAssessmentLeadId();
         /* if (!isBoxFoldersCleared) {
             await clearFolderContents("0", userId);
@@ -228,6 +269,7 @@ const handleModerationPhaseOne = async (statusData: any) => {
 const handleModerationPhaseTwo = async (statusData: any) => {
     try {
         logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+
         // get userid of the user who's role is assessment lead
         const isReviewGroupFinalized = await getIsReviewGroupsFinalized();
         const isTp1DeadlinesSet = await prisma.moderationStatus.findFirst({
@@ -333,7 +375,7 @@ const handleModerationPhaseFour = async (statusData: any) => {
         });
 
         if (!deadlineData || !deadlineData.externalModerationDeadlineTp1) {
-            logMsg(logType.ERROR, "Internal moderation deadline TP1 not found for phase 3");
+            logMsg(logType.ERROR, "external moderation deadline TP1 not found for phase 4");
             return;
         }
 
@@ -361,13 +403,13 @@ const handleModerationPhaseFive = async (statusData: any) => {
         });
 
         if (!deadlineData || !deadlineData.finalDeadlineTp1) {
-            logMsg(logType.ERROR, "Internal moderation deadline TP1 not found for phase 3");
+            logMsg(logType.ERROR, "Final deadline TP1 not found for phase 5");
             return;
         }
 
         const deadline = deadlineData.finalDeadlineTp1;
 
-        finalTp1Notifications = await sendDeadlineNotifications(deadline, finalTp1Notifications, "Final");
+        finalTp1Notifications = await sendDeadlineNotifications(deadline, finalTp1Notifications, "Final TP 1");
 
         const currentAcademicYear = await prisma.academicYear.findFirst({
             orderBy: {
@@ -408,7 +450,6 @@ const handleModerationPhaseFive = async (statusData: any) => {
 const handleModerationPhaseSix = async (statusData: any) => {
     try {
         logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
-        // check if deadlines are set
         const isTp2DeadlinesSet = await prisma.moderationStatus.findFirst({
             select: {
                 tp2DeadlinesSet: true,
@@ -429,22 +470,153 @@ const handleModerationPhaseSix = async (statusData: any) => {
 
 // tp 2, stage 1, internal review
 const handleModerationPhaseSeven = async (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+    try {
+        logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+
+        const deadlineData = await prisma.moderationStatus.findFirst({
+            select: {
+                internalModerationDeadlineTp2: true,
+            },
+        });
+
+        if (!deadlineData || !deadlineData.internalModerationDeadlineTp2) {
+            logMsg(logType.ERROR, "Internal moderation deadline TP2 not found for phase 7");
+            return;
+        }
+
+        const deadline = deadlineData.internalModerationDeadlineTp2;
+
+        internalReviewTp2Notifications = await sendDeadlineNotifications(deadline, internalReviewTp2Notifications, "Internal moderation TP2");
+
+        if (await isPastDate(deadline)) {
+            await broadcastNotification("info", "Moderation Phase", "Moderation phase advanced to TP 2 - Stage 1 - External Review");
+            await advanceModerationStatus();
+        }
+    } catch (error: any) {
+        logMsg(logType.ERROR, error.message);
+    }
 };
 
 // tp 2, stage 1, external review
 const handleModerationPhaseEight = async (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+    try {
+        logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+        const deadlineData = await prisma.moderationStatus.findFirst({
+            select: {
+                externalModerationDeadlineTp2: true,
+            },
+        });
+
+        if (!deadlineData || !deadlineData.externalModerationDeadlineTp2) {
+            logMsg(logType.ERROR, "External moderation deadline TP2 not found for phase 8");
+            return;
+        }
+
+        const deadline = deadlineData.externalModerationDeadlineTp2;
+
+        externalReviewTp2Notifications = await sendDeadlineNotifications(deadline, externalReviewTp2Notifications, "External moderation TP2");
+
+        if (await isPastDate(deadline)) {
+            await broadcastNotification("info", "Moderation Phase", "Moderation phase advanced to TP 2 - Stage 2");
+            await advanceModerationStatus();
+        }
+    } catch (error: any) {
+        logMsg(logType.ERROR, error.message);
+    }
 };
 
 // tp 2, stage 2
 const handleModerationPhaseNine = async (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+    try {
+        logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+        const deadlineData = await prisma.moderationStatus.findFirst({
+            select: {
+                finalDeadlineTp2: true,
+            },
+        });
+
+        if (!deadlineData || !deadlineData.finalDeadlineTp2) {
+            logMsg(logType.ERROR, "Final deadline TP2 not found for phase 9");
+            return;
+        }
+
+        const deadline = deadlineData.finalDeadlineTp2;
+
+        finalTp2Notifications = await sendDeadlineNotifications(deadline, finalTp2Notifications, "Final TP 2");
+
+        const currentAcademicYear = await prisma.academicYear.findFirst({
+            orderBy: {
+                year: "desc",
+            },
+            select: {
+                year: true,
+            },
+        });
+        if (!currentAcademicYear) {
+            logMsg(logType.ERROR, "No academic year found");
+            return;
+        }
+        const academicYear = currentAcademicYear.year;
+        const nextYear = academicYear + 1;
+        const tp2endDate = await prisma.moderationStatus.findFirst({
+            select: {
+                tp2EndDate: true,
+            },
+        });
+        if (!tp2endDate || !tp2endDate.tp2EndDate) {
+            logMsg(logType.ERROR, "tp2endDate not found");
+            return;
+        }
+
+        const tp2endDateWithYear = new Date(tp2endDate.tp2EndDate);
+        tp2endDateWithYear.setFullYear(nextYear);
+        if (await isPastDate(tp2endDateWithYear)) {
+            await broadcastNotification("info", "Moderation Phase", "Moderation phase advanced to Resit - Stage 2");
+            await advanceModerationStatus();
+        }
+    } catch (error: any) {
+        logMsg(logType.ERROR, error.message);
+    }
 };
 
 // resit, stage 2
 const handleModerationPhaseTen = async (statusData: any) => {
-    logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+    try {
+        logMsg(logType.MODERATION, `Processing Status ${statusData.moderationPhaseId}`);
+
+        const currentAcademicYear = await prisma.academicYear.findFirst({
+            orderBy: {
+                year: "desc",
+            },
+            select: {
+                year: true,
+            },
+        });
+        if (!currentAcademicYear) {
+            logMsg(logType.ERROR, "No academic year found");
+            return;
+        }
+        const academicYear = currentAcademicYear.year;
+        const nextYear = academicYear + 1;
+        const resitEndDate = await prisma.moderationStatus.findFirst({
+            select: {
+                resitEndDate: true,
+            },
+        });
+        if (!resitEndDate || !resitEndDate.resitEndDate) {
+            logMsg(logType.ERROR, "resitEndDate not found");
+            return;
+        }
+
+        const resitEndDateWithYear = new Date(resitEndDate.resitEndDate);
+        resitEndDateWithYear.setFullYear(nextYear);
+        if (await isPastDate(resitEndDateWithYear)) {
+            await broadcastNotification("info", "Moderation Phase", "Academic year had ended");
+            await advanceModerationStatus();
+        }
+    } catch (error: any) {
+        logMsg(logType.ERROR, error.message);
+    }
 };
 const updateProcessState = async (statusData: any) => {
     logMsg(logType.MODERATION, `Status processed, updating process state for status: ${statusData.moderationPhaseId}`);

@@ -37,12 +37,19 @@ const AssessmentsCard = ({ className }: AssessmentsCardProps) => {
 
     useEffect(() => {
         const fetchAssessments = async () => {
-            const res = await protectedFetch("/user/assessments-tp1", "GET");
-            res.status === 200 && setAssessments(res.data);
+            const fetchAssessmentByTP = async () => {
+                if (moderationStatus?.moderationPhase?.id === 3 || moderationStatus?.moderationPhase?.id === 4) {
+                    return await protectedFetch("/user/assessments-tp1", "GET");
+                } else if (moderationStatus?.moderationPhase?.id === 7 || moderationStatus?.moderationPhase?.id === 8) {
+                    return await protectedFetch("/user/assessments-tp2", "GET");
+                }
+            };
+            const res = await fetchAssessmentByTP();
+            (await res.status) === 200 && setAssessments(res.data);
         };
         fetchAssessments();
         setIsLoading(false);
-    }, []);
+    }, [moderationStatus]);
 
     if (isLoading) {
         return (
@@ -54,10 +61,10 @@ const AssessmentsCard = ({ className }: AssessmentsCardProps) => {
     return (
         <Card className={className}>
             <CardHeader className="flex flex-row justify-between">
-                <CardTitle className="text-lg w-fit">Your assessments</CardTitle>
+                <CardTitle className="text-lg w-fit">{moderationStatus?.moderationPhase?.id === 3 || moderationStatus?.moderationPhase?.id === 4 ? `Your assessments for TP 1` : moderationStatus?.moderationPhase?.id === 7 || moderationStatus?.moderationPhase?.id === 8 ? `Your assessments for TP 2` : "Your assessments"}</CardTitle>
             </CardHeader>
             <CardContent className="text-sm">
-                {assessments?.length && (moderationStatus?.moderationPhase.id > 1 && moderationStatus?.moderationPhase.id <= 3) || (moderationStatus?.moderationPhase.id > 4 && moderationStatus?.moderationPhase.id <= 6) ? (
+                {assessments?.length ? (
                     <div>
                         <Separator />
                         {assessments.map((assessment) => (

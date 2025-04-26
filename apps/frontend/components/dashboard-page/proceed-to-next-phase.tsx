@@ -8,16 +8,18 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { Button } from "../ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
+import { useModeration } from "../contexts/moderation-context";
 
 interface ProceesToNextPhaseCardProps {
     cname: string;
 }
 
 const ProceesToNextPhaseCard = ({ cname }: ProceesToNextPhaseCardProps) => {
-    const [isTp1DeadlinesSetRes, setIsTp1DeadlinesSetRes] = useState<boolean | null>(false);
+    const [isTpDeadlinesSetRes, setIsTpDeadlinesSetRes] = useState<boolean | null>(false);
     const [isReviewGroupsFinalizedRes, setIsReviewGroupsFinalizedRes] = useState<boolean | null>(false);
+    const { moderationStatus } = useModeration();
     const [checkedItems, setCheckedItems] = useState({
-        isTp1DeadlinesSet: false,
+        isTpDeadlinesSet: false,
         isReviewGroupsFinalized: false,
     });
 
@@ -25,23 +27,27 @@ const ProceesToNextPhaseCard = ({ cname }: ProceesToNextPhaseCardProps) => {
 
     useEffect(() => {
         const fetchIsTp1DeadlinesSet = async () => {
-            const res = await protectedFetch("/moderation/deadlines/tp1-deadlines-set", "GET");
-            setIsTp1DeadlinesSetRes(res.data);
+            let res;
+            if (moderationStatus?.moderationPhase?.id === 2) {
+                res = await protectedFetch("/moderation/deadlines/tp1-deadlines-set", "GET");
+            } else if (moderationStatus?.moderationPhase?.id === 6) {
+                res = await protectedFetch("/moderation/deadlines/tp2-deadlines-set", "GET");
+            }
+            setIsTpDeadlinesSetRes(res.data);
         };
         const fetchIsReviewGroupsFinalized = async () => {
             const res = await protectedFetch("/review-groups/get-finalize", "GET");
             setIsReviewGroupsFinalizedRes(res.data.finalizeReviewGroups as boolean);
         };
-        console.log("isTp1DeadlinesSetRes", isTp1DeadlinesSetRes);
         setCheckedItems({
-            isTp1DeadlinesSet: isTp1DeadlinesSetRes ?? false,
+            isTpDeadlinesSet: isTpDeadlinesSetRes ?? false,
             isReviewGroupsFinalized: isReviewGroupsFinalizedRes ?? false,
         });
 
         fetchIsTp1DeadlinesSet();
         fetchIsReviewGroupsFinalized();
         setIsLoading(false);
-    }, [isReviewGroupsFinalizedRes, isTp1DeadlinesSetRes]);
+    }, [isReviewGroupsFinalizedRes, isTpDeadlinesSetRes, moderationStatus]);
 
     if (isLoading) {
         return (
@@ -53,7 +59,10 @@ const ProceesToNextPhaseCard = ({ cname }: ProceesToNextPhaseCardProps) => {
     return (
         <Card className={cname}>
             <CardHeader className="flex flex-row justify-between">
-                <CardTitle className="text-lg w-fit">Proceed to next phase</CardTitle>
+                <CardTitle className="text-lg w-fit">
+                    {moderationStatus?.moderationPhase?.id === 2 && "Proceed to next phase (TP1 - Internal Review)"}
+                    {moderationStatus?.moderationPhase?.id === 6 && "Proceed to next phase (TP2 - Internal Review)"}
+                </CardTitle>
             </CardHeader>
             <CardContent className="text-sm">
                 <div className="flex flex-col gap-2">
@@ -61,14 +70,15 @@ const ProceesToNextPhaseCard = ({ cname }: ProceesToNextPhaseCardProps) => {
                         <div className="border rounded-md p-2 hover:bg-muted/50 transition-colors flex-1">
                             <div className="flex items-center gap-3">
                                 <div className="flex-shrink-0">
-                                    <div className={`h-5 w-5 rounded border flex items-center justify-center ${checkedItems.isTp1DeadlinesSet ? "bg-primary border-primary" : "border-input"}`}>{checkedItems.isTp1DeadlinesSet && <Check className="h-3.5 w-3.5 text-primary-foreground" />}</div>
+                                    <div className={`h-5 w-5 rounded border flex items-center justify-center ${checkedItems.isTpDeadlinesSet ? "bg-primary border-primary" : "border-input"}`}>{checkedItems.isTpDeadlinesSet && <Check className="h-3.5 w-3.5 text-primary-foreground" />}</div>
                                 </div>
                                 <Link href="/deadlines" className="text-sm text-primary flex-grow">
-                                    Check deadlines for TP1
+                                    {moderationStatus?.moderationPhase?.id === 2 && "Check deadlines for TP1"}
+                                    {moderationStatus?.moderationPhase?.id === 6 && "Check deadlines for TP2"}
                                 </Link>
                             </div>
                         </div>
-                        {!checkedItems.isTp1DeadlinesSet &&
+                        {!checkedItems.isTpDeadlinesSet &&
                             (isReviewGroupsFinalizedRes ? (
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
@@ -77,57 +87,103 @@ const ProceesToNextPhaseCard = ({ cname }: ProceesToNextPhaseCardProps) => {
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
                                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                            <AlertDialogDescription>This action cannot be undone. After pressing checked Box folders will be created and the moderation status will procees to the next phase</AlertDialogDescription>
+                                            <AlertDialogDescription>{`This action cannot be undone. After pressing checked, ${moderationStatus?.moderationPhase?.id === 2 ? "Box folders will be created and " : ""}the moderation status will procees to the next phase`}</AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                                             <AlertDialogAction asChild>
-                                                <Button
-                                                    onClick={async () => {
-                                                        await protectedFetch("/moderation/deadlines/tp1-deadlines-set", "POST");
+                                                <>
+                                                    {moderationStatus?.moderationPhase?.id === 2 && (
+                                                        <Button
+                                                            onClick={async () => {
+                                                                await protectedFetch("/moderation/deadlines/tp1-deadlines-set", "POST");
 
-                                                        const res = await protectedFetch("/moderation/deadlines/tp1-deadlines-set", "GET");
-                                                        res.status === 200 &&
-                                                            setCheckedItems({
-                                                                isTp1DeadlinesSet: res.data ?? false,
-                                                            });
-                                                    }}
-                                                    size="sm"
-                                                >
-                                                    Checked
-                                                </Button>
+                                                                const res = await protectedFetch("/moderation/deadlines/tp1-deadlines-set", "GET");
+                                                                res.status === 200 &&
+                                                                    setCheckedItems({
+                                                                        ...checkedItems, // Keep existing state
+                                                                        isTpDeadlinesSet: res.data ?? false,
+                                                                    });
+                                                            }}
+                                                            size="sm"
+                                                        >
+                                                            Checked
+                                                        </Button>
+                                                    )}
+                                                    {moderationStatus?.moderationPhase?.id === 6 && (
+                                                        <Button
+                                                            onClick={async () => {
+                                                                await protectedFetch("/moderation/deadlines/tp2-deadlines-set", "POST");
+
+                                                                const res = await protectedFetch("/moderation/deadlines/tp2-deadlines-set", "GET");
+                                                                res.status === 200 &&
+                                                                    setCheckedItems({
+                                                                        ...checkedItems, // Keep existing state
+                                                                        isTpDeadlinesSet: res.data ?? false,
+                                                                    });
+                                                            }}
+                                                            size="sm"
+                                                        >
+                                                            Checked
+                                                        </Button>
+                                                    )}
+                                                </>
                                             </AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>
                             ) : (
-                                <Button
-                                    onClick={async () => {
-                                        await protectedFetch("/moderation/deadlines/tp1-deadlines-set", "POST");
+                                <>
+                                    {moderationStatus?.moderationPhase?.id === 2 && (
+                                        <Button
+                                            onClick={async () => {
+                                                await protectedFetch("/moderation/deadlines/tp1-deadlines-set", "POST");
 
-                                        const res = await protectedFetch("/moderation/deadlines/tp1-deadlines-set", "GET");
-                                        res.status === 200 &&
-                                            setCheckedItems({
-                                                isTp1DeadlinesSet: res.data ?? false,
-                                            });
-                                    }}
-                                    size="sm"
-                                >
-                                    Checked
-                                </Button>
+                                                const res = await protectedFetch("/moderation/deadlines/tp1-deadlines-set", "GET");
+                                                res.status === 200 &&
+                                                    setCheckedItems({
+                                                        ...checkedItems, // Keep existing state
+                                                        isTpDeadlinesSet: res.data ?? false,
+                                                    });
+                                            }}
+                                            size="sm"
+                                        >
+                                            Checked
+                                        </Button>
+                                    )}
+                                    {moderationStatus?.moderationPhase?.id === 6 && (
+                                        <Button
+                                            onClick={async () => {
+                                                await protectedFetch("/moderation/deadlines/tp2-deadlines-set", "POST");
+
+                                                const res = await protectedFetch("/moderation/deadlines/tp2-deadlines-set", "GET");
+                                                res.status === 200 &&
+                                                    setCheckedItems({
+                                                        ...checkedItems, // Keep existing state
+                                                        isTpDeadlinesSet: res.data ?? false,
+                                                    });
+                                            }}
+                                            size="sm"
+                                        >
+                                            Checked
+                                        </Button>
+                                    )}
+                                </>
                             ))}
                     </div>
 
-                    <div className="border rounded-md p-2 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-3">
-                            <div className="flex-shrink-0">
-                                <div className={`h-5 w-5 rounded border flex items-center justify-center ${checkedItems.isReviewGroupsFinalized ? "bg-primary border-primary" : "border-input"}`}>{checkedItems.isReviewGroupsFinalized && <Check className="h-3.5 w-3.5 text-primary-foreground" />}</div>
+                    {moderationStatus?.moderationPhase?.id === 2 && (
+                        <div className="border rounded-md p-2 hover:bg-muted/50 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <div className="flex-shrink-0">
+                                    <div className={`h-5 w-5 rounded border flex items-center justify-center ${checkedItems.isReviewGroupsFinalized ? "bg-primary border-primary" : "border-input"}`}>{checkedItems.isReviewGroupsFinalized && <Check className="h-3.5 w-3.5 text-primary-foreground" />}</div>
+                                </div>
+                                <Link href="/review-groups" className="text-sm text-primary flex-grow">
+                                    Finalize review groups
+                                </Link>
                             </div>
-                            <Link href="/review-groups" className="text-sm text-primary flex-grow">
-                                Finalize review groups
-                            </Link>
                         </div>
-                    </div>
+                    )}
                 </div>
             </CardContent>
         </Card>

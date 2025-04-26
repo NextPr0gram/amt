@@ -699,10 +699,11 @@ async function main() {
             finalDeadlineTp1: new Date("2025-12-30"),
             internalModerationDeadlineTp2: new Date("2026-02-28"),
             externalModerationDeadlineTp2: new Date("2026-03-15"),
-            finalDeadlineTp2: new Date("2026-02-25"),
+            finalDeadlineTp2: new Date("2026-03-29"),
             tp1StartDate: new Date("2025-09-16"),
             tp2StartDate: new Date("2026-01-06"),
             tp2EndDate: new Date("2026-04-30"),
+            resitEndDate: new Date("2026-07-25"),
             finalizeReviewGroups: false,
         },
     });

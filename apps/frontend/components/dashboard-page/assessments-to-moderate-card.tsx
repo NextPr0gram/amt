@@ -5,6 +5,7 @@ import { protectedFetch } from "@/utils/protected-fetch";
 import { Separator } from "../ui/separator";
 import { Loader } from "../ui/loader";
 import { cn } from "@/lib/utils";
+import { useModeration } from "../contexts/moderation-context";
 
 export type Assessment = {
     id: number;
@@ -31,15 +32,27 @@ type AssessmentsToModerateCardProps = {
 const AssessmentsToModerateCard = ({ className }: AssessmentsToModerateCardProps) => {
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { moderationStatus, fetchModerationStatus } = useModeration();
 
     useEffect(() => {
         const fetchAssessments = async () => {
-            const res = await protectedFetch("/user/assessments-to-moderate-tp1", "GET");
+            const fetchAssessmensToModerateByTP = async () => {
+                if (moderationStatus?.moderationPhase?.id === 3 || moderationStatus?.moderationPhase?.id === 4) {
+                    const res = await protectedFetch("/user/assessments-to-moderate-tp1", "GET");
+                    return res;
+                } else if (moderationStatus?.moderationPhase?.id === 7 || moderationStatus?.moderationPhase?.id === 8) {
+                    const res = await protectedFetch("/user/assessments-to-moderate-tp2", "GET");
+                    return res;
+                }
+            };
+
+            const res = await fetchAssessmensToModerateByTP();
+
             res.status === 200 && setAssessments(res.data);
         };
         fetchAssessments();
         setIsLoading(false);
-    }, []);
+    }, [moderationStatus]);
 
     if (isLoading) {
         return (
@@ -51,7 +64,7 @@ const AssessmentsToModerateCard = ({ className }: AssessmentsToModerateCardProps
     return (
         <Card className={className}>
             <CardHeader className="flex flex-row justify-between">
-                <CardTitle className="text-lg w-fit">Assessments to moderate</CardTitle>
+                <CardTitle className="text-lg w-fit">{moderationStatus?.moderationPhase?.id === 3 || moderationStatus?.moderationPhase?.id === 4 ? `Assessments to moderate for TP 1` : moderationStatus?.moderationPhase?.id === 7 || moderationStatus?.moderationPhase?.id === 8 ? `Assessments to moderate for TP 2` : "Assessments to moderate"}</CardTitle>
             </CardHeader>
             <CardContent className="text-sm">
                 {assessments?.length ? (
