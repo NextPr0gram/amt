@@ -4,9 +4,10 @@ import prisma from "../prisma/primsa-client";
 import appAssert from "../utils/app-assert";
 import { catchErrors } from "../utils/catch-errors";
 import { getUserIdFromToken } from "../utils/jwt";
-import { addFolderCollaborator, BoxCollaborationRole, copyBoxFolder, createSingleBoxFolder, deleteBoxFolder, getBoxAccessToken } from "../services/box-service";
+import { addFolderCollaborator, BoxCollaborationRole, copyBoxFolder, createSingleBoxFolder, deleteBoxFolder, findOrCreateFolder, getBoxAccessToken } from "../services/box-service";
 import { logMsg, logType } from "../utils/logger";
 import AppErrorCode from "../constants/app-error-code";
+import { getCurrentAcademicYear } from "../services/moderation-status-service";
 
 export const getErFoldersHandler = catchErrors(async (req, res) => {
     const ers = await prisma.er.findMany({
@@ -154,8 +155,12 @@ export const copyExamAssessmentFolderToErHandler = catchErrors(async (req, res) 
         });
         appAssert(erFolder?.folderId, NOT_FOUND, `ER with ID ${erFolderId} or its folderId not found`);
 
+        // Find or create folder for current academic year
+        const currentAcademicYear = await getCurrentAcademicYear();
+        const currentAcademicYearFolderId = await findOrCreateFolder(erFolder.folderId, `${String(currentAcademicYear.year)}-${String(currentAcademicYear.year + 1)}`, userId);
+
         const sourceFolderId = assessmentFolder.folderId;
-        const destinationFolderId = erFolder.folderId;
+        const destinationFolderId = currentAcademicYearFolderId;
 
         logMsg(logType.BOX, `Attempting to copy folder ${sourceFolderId} to ${destinationFolderId} for user ${userId}`);
         const isBoxFolderCopied = await copyBoxFolder(sourceFolderId, destinationFolderId, userId);

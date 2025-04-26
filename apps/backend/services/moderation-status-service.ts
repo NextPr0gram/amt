@@ -62,7 +62,6 @@ export const advanceModerationStatus = async () => {
     return changeToNextPhase;
 };
 
-// ...existing code...
 export const getCurrentAcademicYear = async () => {
     const now = await getCurrentDateTime();
     const currentMonth = now.getMonth();
