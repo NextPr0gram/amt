@@ -10,7 +10,7 @@ const moduleSchema = z.object({
         .min(1)
         .max(255)
         .refine((s) => !s.includes(" "), "Id cannot have spaces"),
-    tpIds: z.array(z.number().int()), // Changed from tpId to tpIds
+    tpIds: z.array(z.number().int()),
     name: z.string().min(1).max(255),
     yearId: z.number().int(),
     moduleLeadId: z.number().int(),

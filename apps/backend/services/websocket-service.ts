@@ -31,5 +31,3 @@ export const setupWebSocket = (io: Server) => {
         });
     });
 };
-
-// Notifications
